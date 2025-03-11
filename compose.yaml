@@ -1,0 +1,11 @@
+services:
+  server:
+    build:
+      context: .
+    environment:
+      NODE_ENV: development  # Changed from production for development
+    ports:
+      - 5173:5173
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules  # Modified this line
