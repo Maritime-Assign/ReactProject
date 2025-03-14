@@ -1,0 +1,84 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+/*collapse into cols */
+@media (max-width: 768px) {
+    .navBarContainer {
+        flex-direction: column;
+        
+    }
+
+    .navBarText {
+        font-size: small; 
+
+    }
+}
+
+.toolbar {
+    background: #ffffff;
+    width: 100%;
+    margin: 0 auto; 
+    padding: 5px 10px; 
+    display: flex;
+    align-items: center; 
+}
+
+.maritimeLogo {
+    height: 60px;
+}
+
+.navBarIcon{
+    color: #003b5c;
+}
+
+.navBarContainer {
+    flex-grow: 2;
+    display: flex;
+    justify-content: center;
+    /* space between menu items */
+    gap: 20px;
+}
+
+
+
+.navButtonText {
+    /* spacing between menu icon and text */
+    margin: 0 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    text-transform: none;
+    color: #003b5c;
+   
+}
+
+
+/* Need to make a style for hover effect */
+.navButton {
+    position: relative; 
+    text-decoration: none; 
+    color: inherit; 
+    
+    
+}
+
+.navButton:hover {
+    background-color: #ffffff;
+}
+
+.navButton::after {
+    content: ''; 
+    position: absolute; 
+    left: 0; 
+    bottom: -2px; 
+    height: 2px;
+    width: 100%; 
+    background-color: #003b5c;
+    transform: scaleX(0); /* return underline to zero */
+    transition: transform 0.3s ease;
+    
+ 
+}
+
+.navButton:hover::after {
+    transform: scaleX(1.0); /* scale for how wide the underline is */
+}
