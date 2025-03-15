@@ -1,35 +1,63 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-
+import { useState } from 'react';
+import Tile from './components/Tile'
+import Header from './components/Header'
+import Filter from './components/Filter'
+import OptionBar from './components/OptionBar'
 function App() {
-  const [count, setCount] = useState(0)
+    // Default view is set to tile
+    const [view, setView] = useState('tile');
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Cloud Chasers</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    return (
+        <>
+            <div className='flex flex-col items-center'>
+                <OptionBar />
+                <Header />
+                <div className='w-full pt-4'>
+                    <div className='flex justify-center py-4 bg-neutral-300 rounded-md w-full'>
+                        <span className='text-2xl font-semibold'>
+                            Open Board 2025
+                        </span>
+                    </div>
+                </div>
+                <Filter setView = {setView}/>
+                <div className='w-full'>
+                    {/* This logic switch between list and tile view depending on which button is pressed */}
+                    {view == 'tile' ? (
+                        <div className='grid md:grid-cols-2 grid-cols-1 justify-start place-items-center gap-4'>
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                        </div>
+                    ):(
+                        <div className='space-y-4'>
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                            <Tile />
+                        </div>
+                    )}
+                </div>
+            </div>
+        </>
+    )
 }
 
 export default App
