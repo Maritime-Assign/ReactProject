@@ -5,7 +5,7 @@ const Filter = () => {
         <div className='w-full py-4'>
             <div className='grid grid-cols-6 gap-2 w-full bg-neutral-300 rounded-md text-lg p-2 text-black'>
                 <button
-                    className='bg-neutral-200 rounded-md flex justify-center items-center text-2xl
+                    className='bg-neutral-200 rounded-md flex justify-center items-center text-xl
                                 col-span-1 hover:bg-neutral-100'
                 >
                     <IoGrid />
