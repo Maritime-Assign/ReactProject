@@ -19,25 +19,46 @@ const Tile = (props) => {
             className='flex flex-col bg-neutral-300 w-full min-h-[20rem] rounded-md transform 
                         transition-transform duration-300 hover:scale-102 hover:z-10'
         >
-            <div className='bg-amber-300 w-full h-8 flex rounded-t-md'></div>
+            {/* Post heading */}
+            <div className='bg-amber-300 w-full h-8 flex rounded-t-md'>
+                <h1 className='px-4 py-1'>
+                    Post Author (#777)
+                </h1>
+            </div>
+
+            {/* Post dropdown and image button*/}
+            <div className='flex gap-4 p-4 pb-0'>
+                <select
+                    className='flex-1 bg-white border border-gray-300 px-3 py-1 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500'    
+                >
+                    <option value='open'>Open</option>
+                    <option value='closed'>Closed</option>
+                </select>
+                <img
+                    src=''
+                    className='w-20 h-15 bg-white border border-gray-300 px-1 py-1 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500'    
+                />
+            </div>
+
             {/* Two textboxes on the first line of each tile */}
             <div className='flex w-full gap-4 p-4'>
                 <input
                     type='text'
-                    placeholder='Ship Name'
+                    placeholder='Job Title'
                     className='flex-1 bg-white border border-gray-300 px-4 py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                 />
                 <input
                     type='text'
-                    placeholder='Open/Closed'
+                    placeholder='Payout'
                     className='flex-1 bg-white border border-gray-300 px-4 py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                 />
             </div>
+            
 
             {/* Larger scrollable textbox */}
             <div className='p-4'>
                 <textarea
-                    placeholder='Requirements/notes'
+                    placeholder='Job Description'
                     className='w-full bg-white border border-gray-300 px-4 py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 overflow-y-auto'
                     rows="6"
                 />
@@ -47,12 +68,12 @@ const Tile = (props) => {
             <div className="flex flex-col gap-4 p-4">
                 <input
                     type='text'
-                    placeholder='Other Info'
+                    placeholder='Related Equipment'
                     className='flex-1 bg-white border border-gray-300 px-4 py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                 />
                 <input
                     type='text'
-                    placeholder='Other Info'
+                    placeholder='Tags'
                     className='flex-1 bg-white border border-gray-300 px-4 py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                 />
             </div>
