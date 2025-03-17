@@ -16,12 +16,12 @@ const Tile = (props) => {
 
     return (
         <div
-            className='flex flex-col bg-neutral-300 w-full min-h-[20rem] rounded-md transform 
-                        transition-transform duration-300 hover:scale-102 hover:z-10'
+            className='flex flex-col bg-[#4b86a7] w-full min-h-[20rem] rounded-md transform 
+                        transition-transform duration-300 hover:scale-102 hover:z-10 shadow-xl'
         >
             {/* Post heading */}
-            <div className='bg-amber-300 w-full h-8 flex rounded-t-md'>
-                <h1 className='px-4 py-1'>
+            <div className='bg-[#003b5c] w-full h-12 flex rounded-t-md'>
+                <h1 className='text-amber-300 px-4 py-3 font-semibold'>
                     Post Author (#777)
                 </h1>
             </div>

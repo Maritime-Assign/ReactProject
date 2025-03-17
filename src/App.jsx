@@ -12,11 +12,11 @@ function App() {
         <>
             <div className='flex flex-col items-center'>
                 <OptionBar />
-                <Header />
+                {/*<Header />*/}
                 <div className='w-full pt-4'>
-                    <div className='flex justify-center py-4 bg-neutral-300 rounded-md w-full'>
-                        <span className='text-2xl font-semibold'>
-                            Open Board 2025
+                    <div className='flex justify-center py-4 bg-[#003b5c] rounded-md w-full shadow-xl'>
+                        <span className='text-amber-300 text-2xl font-semibold'>
+                            Job Board
                         </span>
                     </div>
                 </div>
