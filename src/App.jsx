@@ -1,12 +1,12 @@
 import './App.css'
-import { useState } from 'react';
+import { useState } from 'react'
 import Tile from './components/Tile'
-import Header from './components/Header'
 import Filter from './components/Filter'
 import OptionBar from './components/OptionBar'
+
 function App() {
     // Default view is set to tile
-    const [view, setView] = useState('tile');
+    const [view, setView] = useState('tile')
 
     return (
         <>
@@ -20,7 +20,7 @@ function App() {
                         </span>
                     </div>
                 </div>
-                <Filter setView = {setView}/>
+                <Filter setView={setView} />
                 <div className='w-full'>
                     {/* This logic switch between list and tile view depending on which button is pressed */}
                     {view == 'tile' ? (
@@ -40,7 +40,7 @@ function App() {
                             <Tile />
                             <Tile />
                         </div>
-                    ):(
+                    ) : (
                         <div className='space-y-4'>
                             <Tile />
                             <Tile />
