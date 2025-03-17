@@ -3,6 +3,34 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
+function LoginScreen({ setScreen }) {
+  return (
+    <>
+      <h2>Login Screen</h2>
+      <button onClick={() => setScreen('database')}>Login</button>
+      <button onClick={() => setScreen('recovery')}>Forgot Password?</button>
+    </>
+  );
+}
+
+function DatabaseScreen({ setScreen }) {
+  return (
+    <>
+      <h2>Database Screen</h2>
+      <button onClick={() => setScreen('login')}>Logout</button>
+    </>
+  );
+}
+
+function PasswordRecoveryScreen({ setScreen }) {
+  return (
+    <>
+      <h2>Password Recovery</h2>
+      <button onClick={() => setScreen('login')}>Back to Login</button>
+    </>
+  );
+}
+
 function App() {
   const [count, setCount] = useState(0)
 
