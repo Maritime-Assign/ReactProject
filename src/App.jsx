@@ -1,35 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { Routes, Route, Link } from 'react-router-dom'
+import OptionBar from './components/OptionBar'
+import Dashboard from './pages/Dashboard'
+import ViewBoard from './pages/ViewBoard'
+import PasswordRecovery from './pages/PasswordRecovery'
+import Login from './pages/Login'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+    return (
+        <div className='flex flex-col h-screen'>
+            <OptionBar />
+            <div className='w-full flex flex-col items-center justify-center'>
+                <span className='text-xl p-4'>Developer Navigation</span>
+                {/* Developer Nav Bar */}
+                <nav className='flex space-x-4 text-white text-lg font-medium'>
+                    <Link to='/dashboard'>
+                        <button className='p-4 bg-mebablue-dark rounded'>
+                            Dashboard
+                        </button>
+                    </Link>
+                    <Link to='/login'>
+                        <button className='p-4 bg-mebablue-dark rounded'>
+                            Login
+                        </button>
+                    </Link>
+                    <Link to='/board'>
+                        <button className='p-4 bg-mebablue-dark rounded'>
+                            Job Board
+                        </button>
+                    </Link>
+                </nav>
+            </div>
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Cloud Chasers</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+            <Routes>
+                <Route path='/dashboard' element={<Dashboard />} />
+                <Route path='/login' element={<Login />} />
+                <Route path='/recovery' element={<PasswordRecovery />} />
+                <Route path='/board' element={<ViewBoard />} />
+            </Routes>
+        </div>
+    )
 }
 
 export default App
