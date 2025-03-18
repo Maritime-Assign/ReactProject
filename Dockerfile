@@ -14,6 +14,7 @@ COPY package.json package-lock.json ./
 RUN npm install @rollup/rollup-linux-x64-musl --no-save
 RUN npm install 
 RUN npm install -g vite
+RUN npm install js-cookie
 
 # Copy the rest of the source files
 COPY . .
