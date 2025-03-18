@@ -1,62 +1,44 @@
-import './App.css'
-import { useState } from 'react'
-import Tile from './components/Tile'
-import Filter from './components/Filter'
+import { Routes, Route, Link } from 'react-router-dom'
 import OptionBar from './components/OptionBar'
+import Dashboard from './pages/Dashboard'
+import ViewBoard from './pages/ViewBoard'
+import PasswordRecovery from './pages/PasswordRecovery'
+import Login from './pages/Login'
+import './App.css'
 
-function App() {
-    // Default view is set to tile
-    const [view, setView] = useState('tile')
-
+const App = () => {
     return (
-        <>
-            <div className='flex flex-col items-center'>
-                <OptionBar />
-                {/*<Header />*/}
-                <div className='w-full pt-4'>
-                    <div className='flex justify-center py-4 bg-[#003b5c] rounded-md w-full shadow-xl'>
-                        <span className='text-amber-300 text-2xl font-semibold'>
+        <div className='flex flex-col h-screen'>
+            <OptionBar />
+            <div className='w-full flex flex-col items-center justify-center'>
+                <span className='text-xl p-4'>Developer Navigation</span>
+                {/* Developer Nav Bar */}
+                <nav className='flex space-x-4 text-white text-lg font-medium'>
+                    <Link to='/dashboard'>
+                        <button className='p-4 bg-mebablue-dark rounded'>
+                            Dashboard
+                        </button>
+                    </Link>
+                    <Link to='/login'>
+                        <button className='p-4 bg-mebablue-dark rounded'>
+                            Login
+                        </button>
+                    </Link>
+                    <Link to='/board'>
+                        <button className='p-4 bg-mebablue-dark rounded'>
                             Job Board
-                        </span>
-                    </div>
-                </div>
-                <Filter setView={setView} />
-                <div className='w-full'>
-                    {/* This logic switch between list and tile view depending on which button is pressed */}
-                    {view == 'tile' ? (
-                        <div className='grid md:grid-cols-2 grid-cols-1 justify-start place-items-center gap-4'>
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                        </div>
-                    ) : (
-                        <div className='space-y-4'>
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                            <Tile />
-                        </div>
-                    )}
-                </div>
+                        </button>
+                    </Link>
+                </nav>
             </div>
-        </>
+
+            <Routes>
+                <Route path='/dashboard' element={<Dashboard />} />
+                <Route path='/login' element={<Login />} />
+                <Route path='/recovery' element={<PasswordRecovery />} />
+                <Route path='/board' element={<ViewBoard />} />
+            </Routes>
+        </div>
     )
 }
 
