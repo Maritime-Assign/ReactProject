@@ -1,4 +1,5 @@
 // Import the needed stuff to make things look nice
+// Test commit for new git branch - NJ
 import React from 'react'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
