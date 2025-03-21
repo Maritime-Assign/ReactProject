@@ -19,7 +19,11 @@ const Tile = (props) => {
         // main tile container
         <div className='flex flex-col bg-mebablue-hover w-full h-fit rounded-md'>
             {/* top window bar */}
-            <div className='bg-mebablue-dark w-full h-8 flex rounded-t-md'></div>
+            <div className='bg-mebablue-dark w-full h-8 flex rounded-t-md justify-end'>
+                <button className='bg-mebablue-light rounded-md text-sm my-auto px-2 text-white font-medium mr-2 hover:bg-mebablue-hover'>
+                    Edit
+                </button>
+            </div>
             {/* Tile Content container*/}
             <div className='flex flex-col w-full h-full px-2'>
                 {/* Row 1: Ship Name, Branches, Status 3 Col Grid*/}
@@ -56,7 +60,7 @@ const Tile = (props) => {
                         Date Called: {props.dateCalled}
                     </div>
                     <div className={`${boxStyle()} col-span-2`}>
-                        Join date: {props.joinDate}
+                        Join Date: {props.joinDate}
                     </div>
                     <div className={`${boxStyle()} col-span-2`}>
                         Company: {props.company}
