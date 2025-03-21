@@ -1,6 +1,8 @@
+// Filter component is top bar of job board to filter/sort jobs or display list/tile view
+
 import { IoGrid, IoList } from 'react-icons/io5'
 
-const Filter = ({ setView }) => {
+const Filter = ({ setView, setFilterOpen }) => {
     return (
         <div className='w-full py-4'>
             <div className='grid grid-cols-6 gap-2 w-full bg-mebablue-dark rounded-md text-lg p-3 text-white font-semibold shadow-xl'>
@@ -21,10 +23,16 @@ const Filter = ({ setView }) => {
                     <IoList />
                 </button>
                 {/* Next two buttons filter jobs, to be implemented */}
-                <button className='bg-mebablue-light rounded-md py-1 hover:bg-mebablue-hover col-span-2'>
+                <button
+                    className='bg-mebablue-light rounded-md py-1 hover:bg-mebablue-hover col-span-2'
+                    onClick={() => setFilterOpen(false)}
+                >
                     View All Jobs
                 </button>
-                <button className='bg-mebablue-light rounded-md hover:bg-mebablue-hover col-span-2'>
+                <button
+                    className='bg-mebablue-light rounded-md hover:bg-mebablue-hover col-span-2'
+                    onClick={() => setFilterOpen(true)}
+                >
                     View Open Jobs
                 </button>
             </div>
