@@ -15,22 +15,21 @@ import logo from '../assets/maritimelogo4.png';
 import tempAccountPic from '../assets/tom.jpg';
 // styles file
 import './OptionBar.css';
+// import link to nav to internal pages
+import { Link } from 'react-router-dom'; 
 
-// really needed to rework this because I did not properly containerize items
-// this way it should be really easy to not only add more objects to the navigation bar
-// but also modify parameters of all objects and their children
 
 // array for center nav options
 const nav_Items = [
     {
         text: 'Home', // name
         icon: <HomeIcon className='navBarIcon' />, // icon and css assignment
-        onClick: () => {}, // on click do something
+        to: '/dashboard', // on click go to dash
     },
     {
         text: 'Job Board',
         icon: <WorkIcon className='navBarIcon' />,
-        onClick: () => {}, // on click do something
+        to: '/board', // on click go to job board
     },
     /*add more here*/
 ];
@@ -45,6 +44,8 @@ const nav_Items = [
           /   \
     Button#1 Button#2
 */
+
+// contains the core 3 components
 const optionBar = () => {
     // set to false, will trigger to true on an event which for now is just click
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -82,8 +83,10 @@ const NavBar = ({ items }) => (
 // renders a button with icon and text with its own css
 const NavButton = ({ item }) => (
     <Button className='navButton'>
-        {item.icon}
-        <span className='navButtonText'>{item.text}</span>
+        <Link to={item.to} className='navLink'>
+            {item.icon}
+            <span className='navButtonText'>{item.text}</span>
+        </Link>
     </Button>
 );
 
@@ -97,18 +100,20 @@ const SessionManager = ({ isLoggedIn, toggleLogin }) => (
             className='userAvatar' 
         />
         {isLoggedIn ? (
-            <Button onClick={toggleLogin} className='navButton'>
-                <LogoutIcon className='navBarIcon' />
-                <span className='navButtonText'>Logout</span>
-            </Button>
+            <Link to="/tempProfile" className='navLink'> 
+                <Button onClick={toggleLogin} className='navButton'>
+                    <LogoutIcon className='navBarIcon' />
+                    <span className='navButtonText'>Logout</span>
+                </Button>
+            </Link>
         ) : (
-            <Button onClick={toggleLogin} className='navButton'>
-                <LoginIcon className='navBarIcon' />
-                <span className='navButtonText'>Login</span>
-            </Button>
+            <Link to="/login" className='navLink'> 
+                <Button onClick={toggleLogin} className='navButton'>
+                    <LoginIcon className='navBarIcon' />
+                    <span className='navButtonText'>Login</span>
+                </Button>
+            </Link>
         )}
     </div>
 );
-
-
 export default optionBar;
