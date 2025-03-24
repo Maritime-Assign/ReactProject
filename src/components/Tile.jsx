@@ -29,7 +29,7 @@ const Tile = (props) => {
             {/* Post dropdown and image button*/}
             <div className='flex gap-4 p-4 pb-0'>
                 <select
-                    className='flex-1 bg-white border border-gray-300 px-3 py-1 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500'    
+                    className='flex-1 bg-white border border-gray-300 px-3 py-1 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 non-interactive'    
                 >
                     <option value='open'>Open</option>
                     <option value='closed'>Closed</option>
@@ -46,11 +46,13 @@ const Tile = (props) => {
                     type='text'
                     placeholder='Job Title'
                     className='flex-1 bg-white border border-gray-300 px-4 py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                    disabled
                 />
                 <input
                     type='text'
                     placeholder='Payout'
                     className='flex-1 bg-white border border-gray-300 px-4 py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                    disabled
                 />
             </div>
             
@@ -61,6 +63,7 @@ const Tile = (props) => {
                     placeholder='Job Description'
                     className='w-full bg-white border border-gray-300 px-4 py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 overflow-y-auto'
                     rows="6"
+                    readOnly
                 />
             </div>
 
@@ -70,11 +73,13 @@ const Tile = (props) => {
                     type='text'
                     placeholder='Related Equipment'
                     className='flex-1 bg-white border border-gray-300 px-4 py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                    disabled
                 />
                 <input
                     type='text'
                     placeholder='Tags'
                     className='flex-1 bg-white border border-gray-300 px-4 py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                    disabled
                 />
             </div>
         </div>

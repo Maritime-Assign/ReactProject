@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Tile from '../components/Tile'
 import Filter from '../components/Filter'
-import OptionBar from '../components/OptionBar'
+
 
 function ViewBoard() {
     // Default view is set to tile
