@@ -2,3 +2,8 @@ textarea
 {
    resize: none;
 }
+
+.non-interactive
+{
+   pointer-events: none;
+}

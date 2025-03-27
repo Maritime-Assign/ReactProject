@@ -5,6 +5,7 @@ import ViewBoard from './pages/ViewBoard'
 import PasswordRecovery from './pages/PasswordRecovery'
 import Login from './pages/Login'
 import './App.css'
+import AddJob from './pages/AddJob'
 
 const App = () => {
     return (
@@ -37,6 +38,7 @@ const App = () => {
                 <Route path='/login' element={<Login />} />
                 <Route path='/recovery' element={<PasswordRecovery />} />
                 <Route path='/board' element={<ViewBoard />} />
+                <Route path='/addJob' element={<AddJob />} />
             </Routes>
         </div>
     )
