@@ -8,7 +8,7 @@ import './App.css'
 
 const App = () => {
     return (
-        <div className='flex flex-col h-screen'>
+        <div className='flex flex-col min-h-screen'>
             <OptionBar />
             <div className='w-full flex flex-col items-center justify-center'>
                 <span className='text-xl p-4'>Developer Navigation</span>
