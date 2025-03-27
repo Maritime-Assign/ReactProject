@@ -1,11 +1,11 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './Dashboard.css';
+import React from 'react'
+import { Link } from 'react-router-dom'
+import '../pages/Dashboard.css'
 
 // Import the PNG file
-import jobBoardIcon from '../assets/jobBoard.png';
-import userPermissionsIcon from '../assets/user_permissions.png';
-import devToolsIcon from '../assets/dev_tools.png';
+//import jobBoardIcon from '../assets/jobBoard.png'
+//import userPermissionsIcon from '../assets/user_permissions.png'
+//import devToolsIcon from '../assets/dev_tools.png';
 
 const Dashboard = () => {
     return (
@@ -25,12 +25,15 @@ const Dashboard = () => {
                     </div>
                     <div className='option'>
                         <Link to='/developer-tools'>
-                        <img src={devToolsIcon} alt='Dev Tools' />
+                            <img src={devToolsIcon} alt='Dev Tools' />
                         </Link>
                     </div>
                     <div className='option'>
                         <Link to='/user-permissions'>
-                        <img src={userPermissionsIcon} alt='User Permissions' />
+                            <img
+                                src={userPermissionsIcon}
+                                alt='User Permissions'
+                            />
                         </Link>
                     </div>
                     <div className='option'>
@@ -41,7 +44,7 @@ const Dashboard = () => {
                 </div>
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default Dashboard;
+export default Dashboard
