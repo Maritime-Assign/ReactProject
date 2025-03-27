@@ -1,84 +1,97 @@
-
+/*Need this for specific font*/
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
-/*collapse into cols */
-@media (max-width: 768px) {
-    .navBarContainer {
-        flex-direction: column;
-        
-    }
-
-    .navBarText {
-        font-size: small; 
-
-    }
+/**/
+.navbar {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 10px; 
+    background: #ffffff;
+    width: 100%; 
+    box-sizing: border-box; 
 }
 
-.toolbar {
-    background: #ffffff;
-    width: 100%;
-    margin: 0 auto; 
-    padding: 5px 10px; 
+.logoContainer {
+    flex: 0 0 auto; /* stop flex-grow */
+}
+
+.navBarContainer {
+    display: flex; 
+    flex-grow: 1; 
+    justify-content: center; 
+    gap: 20px; 
+}
+
+.sessionContainer {
     display: flex;
-    align-items: center; 
+    align-items: center;
+    gap: 20px; 
+    padding-left: 130px; /*adjust for logo offsetting true center 
+                            while maintaining logo size*/
 }
 
 .maritimeLogo {
     height: 60px;
 }
 
-.navBarIcon{
-    color: #003b5c;
-}
-
-.navBarContainer {
-    flex-grow: 2;
+.navButton {
+    text-decoration: none;
     display: flex;
-    justify-content: center;
-    /* space between menu items */
-    gap: 20px;
+    align-items: center; 
+    width: 150px; /*how wide the button can be*/
+    position: relative;
 }
-
-
 
 .navButtonText {
-    /* spacing between menu icon and text */
-    margin: 0 10px;
+    margin-left: 10px;
     font-family: 'Montserrat', sans-serif;
     font-weight: 400;
-    text-transform: none;
     color: #003b5c;
-   
-}
-
-
-/* Need to make a style for hover effect */
-.navButton {
-    position: relative; 
-    text-decoration: none; 
-    color: inherit; 
-    
-    
 }
 
 .navButton:hover {
+    color: #003b5c; 
     background-color: #ffffff;
 }
 
 .navButton::after {
-    content: ''; 
+    content: ""; 
     position: absolute; 
-    left: 0; 
-    bottom: -2px; 
-    height: 2px;
-    width: 100%; 
-    background-color: #003b5c;
-    transform: scaleX(0); /* return underline to zero */
+    left: 0;
+    right: 0;
+    bottom: 0; 
+    height: 2px; 
+    background-color: #003b5c; 
+    transform: scaleX(0); 
     transition: transform 0.3s ease;
-    
- 
 }
 
 .navButton:hover::after {
-    transform: scaleX(1.0); /* scale for how wide the underline is */
+    transform: scaleX(0.80);
+}
+
+.navBarIcon {
+    color: #003b5c;
+
+}
+
+/* columns on resize */
+@media (max-width: 600px) { 
+    .navbar {
+        flex-direction: column; 
+        align-items: center; 
+    }
+    /*separate if need to distinguish*/
+    .navBarContainer, .sessionContainer {
+        flex-direction: column; 
+        align-items: center;
+        padding-left: 0;
+    }
+
+    .navButton {
+        padding: 8px 16px;
+        flex-direction: column; 
+        
+    }
 }
