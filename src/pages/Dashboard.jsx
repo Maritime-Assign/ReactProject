@@ -2,10 +2,10 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import '../pages/Dashboard.css'
 
-// Import the PNG file
-//import jobBoardIcon from '../assets/jobBoard.png'
-//import userPermissionsIcon from '../assets/user_permissions.png'
-//import devToolsIcon from '../assets/dev_tools.png';
+//Import the PNG file
+import jobBoardIcon from '../assets/jobBoard.png'
+import userPermissionsIcon from '../assets/user_permissions.png'
+import devToolsIcon from '../assets/dev_tools.png'
 
 const Dashboard = () => {
     return (
