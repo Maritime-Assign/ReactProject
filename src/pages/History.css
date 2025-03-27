@@ -1,0 +1,130 @@
+.History-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background-color: #f5f5f5;
+    font-family: 'Inter', 'Roboto', sans-serif;
+  }
+  
+  .History-panel {
+    flex: 1;
+    margin: 20px;
+    background-color: #E6EDF3;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .History-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #1A3A5E;
+    color: white;
+  }
+  
+  .History-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+  
+  .History-close-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 10px;
+  }
+  
+  .History-list {
+    overflow-y: auto;
+    max-height: calc(100vh - 100px);
+  }
+  
+  .History-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #d0d7e0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .History-row:nth-child(odd) {
+    background-color: #E6EDF3;
+  }
+  
+  .History-row:nth-child(even) {
+    background-color: #D9E4F0;
+  }
+  
+  .History-row.History-hovered {
+    background-color: #D0E0F0;
+  }
+  
+  .History-row.History-expanded {
+    background-color: #C5D6E8;
+  }
+  
+  .History-row-content {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+  }
+  
+  .History-date {
+    width: 100px;
+    color: #333;
+    font-size: 14px;
+  }
+  
+  .History-change {
+    flex: 1;
+    color: #222;
+    font-size: 14px;
+  }
+  
+  .History-author {
+    width: 150px;
+    color: #555;
+    font-size: 14px;
+    font-style: italic;
+  }
+  
+  .History-expand-icon {
+    font-size: 20px;
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+    color: #1A3A5E;
+  }
+  
+  .History-row.History-expanded .History-expand-icon {
+    transform: rotate(90deg);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 1200px) {
+    .History-container {
+      flex-direction: column;
+    }
+    
+    .History-panel {
+      margin: 10px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .History-row-content {
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .History-date, .History-change, .History-author {
+      width: auto;
+    }
+  }
