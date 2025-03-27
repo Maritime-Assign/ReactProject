@@ -12,7 +12,7 @@ const Filter = ({ setView, setFilterOpen }) => {
     }
 
     return (
-        <div className='w-full py-4'>
+        <div className='w-full py-2'>
             <div className='grid grid-cols-5 gap-2 w-full bg-mebablue-dark rounded-md text-lg p-3 text-white font-semibold shadow-xl'>
                 {/* Tile layout button, select to switch the viewing mode to tile, does nothing if already in tile view */}
                 <button
