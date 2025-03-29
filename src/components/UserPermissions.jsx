@@ -1,11 +1,11 @@
 import './PermissionsColors.css'
 
-function ButtonInput({ LabelText, LastDiv }) {
-        if (!LastDiv) {
-            return (
-            <div className='flex ml-3 mr-3 justify-between border border-black border-b-0 bg-white h-10'>
+function ButtonInput({ User, LabelText, LastDiv }) {
+    if (!LastDiv) {
+        return (
+            <div className='flex col-span-3 ml-3 mr-3 justify-between border border-black border-b-0 bg-white h-10'>
                 <div className='self-center ml-2'>
-                    Users
+                    { User }
                 </div>
                 <div className='self-center'>
                     { LabelText }
@@ -16,11 +16,11 @@ function ButtonInput({ LabelText, LastDiv }) {
                     Manage Roles
                 </button>
             </div>
-            )
-        }
-        else {
-            return(
-            <div className='flex ml-3 mr-3 justify-between border border-black bg-white h-10'>
+        )
+    }
+    else {
+        return(
+            <div className='flex col-span-3 ml-3 mr-3 justify-between border border-black bg-white h-10'>
                 <div className='self-center ml-2'>
                     ...
                 </div>
@@ -33,8 +33,8 @@ function ButtonInput({ LabelText, LastDiv }) {
                     Manage Roles
                 </button>
             </div>
-            );
-        }
+        );
+    }
 }
 
 export default function UserPermissions() {
@@ -57,13 +57,12 @@ export default function UserPermissions() {
                 </div>
             </div>
             {/* form containing all checkbox inputs */}
-            <form className='grid grid-flow-row justify-stretch m-3 pb-10'>
-                <ButtonInput LabelText='Roles' LastDiv={false} /> 
-                <ButtonInput LabelText='Union Leader' LastDiv={false} /> 
-                <ButtonInput LabelText='Administrative Member' LastDiv={false} /> 
-                <ButtonInput LabelText='Union Member' LastDiv={false} /> 
-                <ButtonInput LabelText='Viewer' LastDiv={false} /> 
-                <ButtonInput LabelText='...' LastDiv={true} /> 
+            <form className='grid grid-cols-3 m-3 pb-10'>
+                <ButtonInput User='User1' LabelText='Union Leader' LastDiv={false} /> 
+                <ButtonInput User='User2' LabelText='Administrative Member' LastDiv={false} /> 
+                <ButtonInput User='User3' LabelText='Union Member' LastDiv={false} /> 
+                <ButtonInput User='User4' LabelText='Viewer' LastDiv={false} /> 
+                <ButtonInput User='User5' LabelText='...' LastDiv={true} /> 
             </form>
         </div>
     );

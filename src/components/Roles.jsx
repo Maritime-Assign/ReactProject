@@ -59,7 +59,6 @@ export default function Roles() {
             </div>
             {/* form containing all checkbox inputs */}
             <form className='grid justify-center m-3 pb-10'>
-                <ButtonInput LabelText='Roles' LastDiv={false} /> 
                 <ButtonInput LabelText='Union Leader' LastDiv={false} /> 
                 <ButtonInput LabelText='Administrative Member' LastDiv={false} /> 
                 <ButtonInput LabelText='Union Member' LastDiv={false} /> 

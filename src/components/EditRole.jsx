@@ -56,7 +56,6 @@ export default function EditRole() {
 
             {/* form containing all checkbox inputs */}
             <form className='grid place-content-center m-3 pb-10'>
-                <CheckBoxInput LabelText='Permissions' LastDiv={false}/>
                 <CheckBoxInput LabelText='Edit User Permissions' LastDiv={false}/>
                 <CheckBoxInput LabelText='Edit Account Info' LastDiv={false}/>
                 <CheckBoxInput LabelText='Generate Reports' LastDiv={false}/>
