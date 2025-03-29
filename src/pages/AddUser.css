@@ -1,0 +1,14 @@
+input[type="checkbox"] {
+    width: 40px;
+    height: 40px;
+  }
+
+input[type="text"] {
+    width: 300px;
+    height: 48px;
+}
+
+input[type="text-search"] {
+    width: 400px;
+    height: 48px;
+}
