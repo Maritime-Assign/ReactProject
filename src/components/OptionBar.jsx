@@ -1,99 +1,119 @@
-// Import the needed stuff to make things look nice
-import React from 'react'
-import AppBar from '@mui/material/AppBar'
-import Toolbar from '@mui/material/Toolbar'
-import Button from '@mui/material/Button'
-import Box from '@mui/material/Box'
-import HomeIcon from '@mui/icons-material/Home'
-import WorkIcon from '@mui/icons-material/Work'
-import LinkIcon from '@mui/icons-material/Link'
-import ContactsIcon from '@mui/icons-material/Contacts'
-import './OptionBar.css'
-import logo from '../assets/maritimelogo4.png'
-import { Link } from 'react-router-dom'
+// Need this to manage login and logout states
+import React, { useState } from 'react'; 
+// mui containers
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+// display icons
+import HomeIcon from '@mui/icons-material/Home';
+import WorkIcon from '@mui/icons-material/Work';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
+// mui avatar for login logout
+import Avatar from '@mui/material/Avatar';
+// pictures as objects
+import logo from '../assets/maritimelogo4.png';
+import tempAccountPic from '../assets/tom.jpg';
+// styles file
+import './OptionBar.css';
+// import link to nav to internal pages
+import { Link } from 'react-router-dom'; 
 
-// header functional component
-export default function OptionBar() {
-    // center menu items with actions
-    const centerMenuItems = [
-        {
-            text: 'Home',
-            icon: <HomeIcon className='navBarIcon' fontSize='medium' />,
-            onClick: () => {},
-        },
-        {
-            text: 'Job Board',
-            icon: <WorkIcon className='navBarIcon' fontSize='medium' />,
-            onClick: () => {
-                /* navigation logic */
-            },
-        },
-        {
-            text: 'M.E.B.A. Union',
-            icon: <LinkIcon className='navBarIcon' fontSize='medium' />,
-            onClick: () => {
-                window.open('https://www.mebaunion.org/')
-            },
-        },
-        {
-            text: 'Contact',
-            icon: <ContactsIcon className='navBarIcon' fontSize='medium' />,
-            onClick: () => {
-                window.open('https://www.mebaunion.org/contact/')
-            },
-        },
-    ]
 
-    /* 
-    We are working with Mui components which offer a lot of flexibility and responsiveness built it to make the nav header for the web app.
-    We can use sx to define properties of MUI components, however for the sake of simplistic code the majority of the stylings are in the Header.css file to avoid inline css.
+// array for center nav options
+const nav_Items = [
+    {
+        text: 'Home', // name
+        icon: <HomeIcon className='navBarIcon' />, // icon and css assignment
+        to: '/dashboard', // on click go to dash
+    },
+    {
+        text: 'Job Board',
+        icon: <WorkIcon className='navBarIcon' />,
+        to: '/board', // on click go to job board
+    },
+    /*add more here*/
+];
 
-        - AppBar: 
-                container for the top navigation bar of the application
-                position="static" -> AppBar will stay at the top of the page and will not scroll. Other options: fixed, absolute, sticky
+/*structure of option bar:
+        optionBar
+            |
+          / | \
+        /   |   \
+    lOGO NAVBAR LOGIN/OUT
+            |
+          /   \
+    Button#1 Button#2
+*/
 
-        
-        - Toolbar:
-                 child of the AppBar used to hold and arrange the contents of the AppBar
+// contains the core 3 components
+const optionBar = () => {
+    // set to false, will trigger to true on an event which for now is just click
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-        - Box:
-                like a preset "div" container for other elements
-
-    To modify or add  parameters such as spacing, padding etc., reference the Header.css file
-    
-    */
-
-    // now we can actually render the header component
+    // renders the nav items we made and toggles logged in or out
     return (
-        // AppBar is the top navigation bar
-        <AppBar position='static' elevation={0}>
-            {/* Toolbar holds the objects in the appbar */}
-            <Toolbar className='toolbar'>
-                {/* MEBA LOGO */}
-                <img
-                    src={logo}
-                    alt='Maritime Assign Logo'
-                    className='maritimeLogo'
-                />
+        <nav className='navbar'>
+            <Logo />
+            <NavBar items={nav_Items} />
+            <SessionManager isLoggedIn={isLoggedIn} toggleLogin={() => setIsLoggedIn(!isLoggedIn)} />
+        </nav>
+    );
+};
 
-                {/* Center menu buttons */}
-                <Box className='navBarContainer'>
-                    {centerMenuItems.map((item, index) => (
-                        // loop to create center menu buttons
-                        <Button
-                            key={index}
-                            color='inherit'
-                            onClick={item.onClick}
-                            className='navButton'
-                        >
-                            {/* the corresponding icon image from those we imported is rendered */}
-                            {item.icon}
-                            {/* spacing between icon and text */}
-                            <span className='navButtonText'>{item.text}</span>
-                        </Button>
-                    ))}
-                </Box>
-            </Toolbar>
-        </AppBar>
-    )
-}
+
+// logo component renders a container div with an image element
+// both the container and the image have their own CSS linked with className
+const Logo = () => (
+    <div className='logoContainer'>
+        <img src={logo} alt='Maritime Assign Logo' className='maritimeLogo' />
+    </div>
+);
+
+// navbar component renders a button for each of the nav items.
+// navbar has its own css
+const NavBar = ({ items }) => (
+    <Box className='navBarContainer'>
+        {items.map((item, index) => (
+            <NavButton key={index} item={item} />
+        ))}
+    </Box>
+);
+
+// button components that are rendered from NavBar
+// renders a button with icon and text with its own css
+const NavButton = ({ item }) => (
+    <Button className='navButton'>
+        <Link to={item.to} className='navLink'>
+            {item.icon}
+            <span className='navButtonText'>{item.text}</span>
+        </Link>
+    </Button>
+);
+
+// session manager component deals with the authentication login/logout ui
+// isLoggedIn determines the current authentication state
+const SessionManager = ({ isLoggedIn, toggleLogin }) => (
+    <div className='sessionContainer'>
+        <Avatar 
+            alt={isLoggedIn ? "User Avatar" : "Guest Avatar"} 
+            src={isLoggedIn ? tempAccountPic : ''} 
+            className='userAvatar' 
+        />
+        {isLoggedIn ? (
+            <Link to="/tempProfile" className='navLink'> 
+                <Button onClick={toggleLogin} className='navButton'>
+                    <LogoutIcon className='navBarIcon' />
+                    <span className='navButtonText'>Logout</span>
+                </Button>
+            </Link>
+        ) : (
+            <Link to="/login" className='navLink'> 
+                <Button onClick={toggleLogin} className='navButton'>
+                    <LoginIcon className='navBarIcon' />
+                    <span className='navButtonText'>Login</span>
+                </Button>
+            </Link>
+        )}
+    </div>
+);
+export default optionBar;
