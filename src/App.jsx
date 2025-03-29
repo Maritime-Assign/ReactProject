@@ -5,10 +5,11 @@ import ViewBoard from './pages/ViewBoard'
 import PasswordRecovery from './pages/PasswordRecovery'
 import Login from './pages/Login'
 import './App.css'
+import AddJob from './pages/AddJob'
 
 const App = () => {
     return (
-        <div className='flex flex-col h-screen'>
+        <div className='flex flex-col min-h-screen'>
             <OptionBar />
             <div className='w-full flex flex-col items-center justify-center'>
                 <span className='text-xl p-4'>Developer Navigation</span>
@@ -37,6 +38,7 @@ const App = () => {
                 <Route path='/login' element={<Login />} />
                 <Route path='/recovery' element={<PasswordRecovery />} />
                 <Route path='/board' element={<ViewBoard />} />
+                <Route path='/addJob' element={<AddJob />} />
             </Routes>
         </div>
     )
