@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard'
 import ViewBoard from './pages/ViewBoard'
 import PasswordRecovery from './pages/PasswordRecovery'
 import Login from './pages/Login'
+import AddUser from './pages/AddUser'
 import './App.css'
 import AddJob from './pages/AddJob'
 
@@ -30,6 +31,11 @@ const App = () => {
                             Job Board
                         </button>
                     </Link>
+                    <Link to= '/add-user'>
+                        <button className = 'p-4 bg-mebablue-dark rounded'>
+                            Add New User
+                        </button>
+                    </Link>
                 </nav>
             </div>
 
@@ -38,6 +44,7 @@ const App = () => {
                 <Route path='/login' element={<Login />} />
                 <Route path='/recovery' element={<PasswordRecovery />} />
                 <Route path='/board' element={<ViewBoard />} />
+                <Route path='/add-user' element = {<AddUser />} />
                 <Route path='/addJob' element={<AddJob />} />
             </Routes>
         </div>
