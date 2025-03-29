@@ -1,4 +1,4 @@
-import './EditRole.css'
+import './PermissionsColors.css'
 
 function CheckBoxInput({ LabelText, LastDiv }) {
         if (!LastDiv) {
@@ -38,7 +38,7 @@ export default function EditRole() {
                     Edit Role/New Role
                 </span>
             </div>
-            {/* div containing two elements under the header */}
+            {/* div containing navigational elements under the header */}
             <div className='flex h-10 mt-5 mb-3 justify-center'>
                 <div className='self-center p-2 w-30 mr-6 bg-white text-center border-black border-1'>
                     <span className='mt-10'>
