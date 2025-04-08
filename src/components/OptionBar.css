@@ -4,12 +4,15 @@
 /**/
 .navbar {
     display: flex;
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 10px; 
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
     background: #ffffff;
-    width: 100%; 
-    box-sizing: border-box; 
+    width: 100%;
+    max-width: 1280px;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .logoContainer {
@@ -17,16 +20,16 @@
 }
 
 .navBarContainer {
-    display: flex; 
-    flex-grow: 1; 
-    justify-content: center; 
-    gap: 20px; 
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+    gap: 20px;
 }
 
 .sessionContainer {
     display: flex;
     align-items: center;
-    gap: 20px; 
+    gap: 20px;
     padding-left: 130px; /*adjust for logo offsetting true center 
                             while maintaining logo size*/
 }
@@ -38,7 +41,7 @@
 .navButton {
     text-decoration: none;
     display: flex;
-    align-items: center; 
+    align-items: center;
     width: 150px; /*how wide the button can be*/
     position: relative;
 }
@@ -51,47 +54,46 @@
 }
 
 .navButton:hover {
-    color: #003b5c; 
+    color: #003b5c;
     background-color: #ffffff;
 }
 
 .navButton::after {
-    content: ""; 
-    position: absolute; 
+    content: '';
+    position: absolute;
     left: 0;
     right: 0;
-    bottom: 0; 
-    height: 2px; 
-    background-color: #003b5c; 
-    transform: scaleX(0); 
+    bottom: 0;
+    height: 2px;
+    background-color: #003b5c;
+    transform: scaleX(0);
     transition: transform 0.3s ease;
 }
 
 .navButton:hover::after {
-    transform: scaleX(0.80);
+    transform: scaleX(0.8);
 }
 
 .navBarIcon {
     color: #003b5c;
-
 }
 
 /* columns on resize */
-@media (max-width: 600px) { 
+@media (max-width: 600px) {
     .navbar {
-        flex-direction: column; 
-        align-items: center; 
+        flex-direction: column;
+        align-items: center;
     }
     /*separate if need to distinguish*/
-    .navBarContainer, .sessionContainer {
-        flex-direction: column; 
+    .navBarContainer,
+    .sessionContainer {
+        flex-direction: column;
         align-items: center;
         padding-left: 0;
     }
 
     .navButton {
         padding: 8px 16px;
-        flex-direction: column; 
-        
+        flex-direction: column;
     }
 }

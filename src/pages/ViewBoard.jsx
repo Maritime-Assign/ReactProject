@@ -10,7 +10,7 @@ function ViewBoard() {
 
     return (
         <>
-            <div className='flex flex-col items-center mb-4 min-h-screen flex-grow'>
+            <div className='flex flex-col items-center mb-4 min-h-screen flex-grow max-w-[1280px] mx-auto'>
                 <div className='w-full pt-4'>
                     <div className='flex justify-center py-4 bg-mebablue-dark rounded-md w-full shadow-xl'>
                         <span className='text-white text-2xl font-semibold'>

@@ -6,28 +6,34 @@ import PasswordRecovery from './pages/PasswordRecovery'
 import Login from './pages/Login'
 import './App.css'
 import AddJob from './pages/AddJob'
+import FSboard from './pages/FSboard'
 
 const App = () => {
     return (
         <div className='flex flex-col min-h-screen'>
             <OptionBar />
             <div className='w-full flex flex-col items-center justify-center'>
-                <span className='text-xl p-4'>Developer Navigation</span>
+                <span className='text-xl p-2'>Developer Navigation</span>
                 {/* Developer Nav Bar */}
                 <nav className='flex space-x-4 text-white text-lg font-medium'>
                     <Link to='/dashboard'>
-                        <button className='p-4 bg-mebablue-dark rounded'>
+                        <button className='px-4 py-1 bg-mebablue-dark rounded'>
                             Dashboard
                         </button>
                     </Link>
                     <Link to='/login'>
-                        <button className='p-4 bg-mebablue-dark rounded'>
+                        <button className='px-4 py-1 bg-mebablue-dark rounded'>
                             Login
                         </button>
                     </Link>
                     <Link to='/board'>
-                        <button className='p-4 bg-mebablue-dark rounded'>
+                        <button className='px-4 py-1 bg-mebablue-dark rounded'>
                             Job Board
+                        </button>
+                    </Link>
+                    <Link to='/fsb'>
+                        <button className='px-4 py-1 bg-mebablue-dark rounded'>
+                            Full Screen Board
                         </button>
                     </Link>
                 </nav>
@@ -38,7 +44,8 @@ const App = () => {
                 <Route path='/login' element={<Login />} />
                 <Route path='/recovery' element={<PasswordRecovery />} />
                 <Route path='/board' element={<ViewBoard />} />
-                <Route path='/addJob' element={<AddJob />} />
+                <Route path='/fsb' element={<FSboard />} />
+                <Route path='/addjob' element={<AddJob />} />
             </Routes>
         </div>
     )
