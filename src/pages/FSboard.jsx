@@ -7,7 +7,7 @@ const FSboard = () => {
     return (
         <div className='w-full h-screen flex flex-col py-2'>
             <FSBheader />
-            {jobData.map((job) => (
+            {jobData.map((job, index) => (
                 <JobListing
                     id={job.id}
                     branch1={job.branch1}
@@ -24,6 +24,7 @@ const FSboard = () => {
                     crewRelieved={job.crewRelieved}
                     notes={job.notes}
                     company={job.company}
+                    rowIndex={index}
                 />
             ))}
         </div>

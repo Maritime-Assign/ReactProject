@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState } from 'react'
 import JobEntry from '../components/JobEntry'
 
 const AddJob = () => {
     return (
-        <div className='w-full pt-4 flex flex-col items-center'>
+        <div className='w-full pt-4 flex flex-col items-center max-w-[1280px] mx-auto'>
             <div className='flex justify-center py-4 bg-mebablue-dark rounded-t-md w-full shadow-xl'>
                 <span className='text-white text-2xl font-semibold'>
                     Add New Job
@@ -14,6 +14,6 @@ const AddJob = () => {
             </div>
         </div>
     )
-};
+}
 
-export default AddJob;
+export default AddJob

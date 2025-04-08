@@ -44,6 +44,8 @@ const App = () => {
                 <Route path='/login' element={<Login />} />
                 <Route path='/recovery' element={<PasswordRecovery />} />
                 <Route path='/board' element={<ViewBoard />} />
+                <Route path='/fsb' element={<FSboard />} />
+                <Route path='/addjob' element={<AddJob />} />
             </Routes>
         </div>
     )
