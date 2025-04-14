@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import './App.css'
 import AddJob from './pages/AddJob'
 import FSboard from './pages/FSboard'
+import EditJob from './pages/EditJob'
 
 const App = () => {
     return (
@@ -46,6 +47,7 @@ const App = () => {
                 <Route path='/board' element={<ViewBoard />} />
                 <Route path='/fsb' element={<FSboard />} />
                 <Route path='/addjob' element={<AddJob />} />
+                <Route path='/editjob' element={<EditJob />} />
             </Routes>
         </div>
     )
