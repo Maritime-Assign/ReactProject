@@ -1,13 +1,13 @@
 import FSBheader from '../components/FSBheader'
 import Filter from '../components/Filter'
-import jobData from '../components/jobData'
+import {jobs} from '../components/jobData'
 import JobListing from '../components/JobListing'
 
 const FSboard = () => {
     return (
         <div className='w-full h-screen flex flex-col py-2'>
             <FSBheader />
-            {jobData.map((job, index) => (
+            {jobs.map((job, index) => (
                 <JobListing
                     id={job.id}
                     branch1={job.branch1}
