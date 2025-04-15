@@ -1,5 +1,4 @@
 import * as yup from 'yup'
-import branchNames from './branchNames'
 
 const jobValidationSchema = yup.object().shape({
     status: yup.string().required('Required'),

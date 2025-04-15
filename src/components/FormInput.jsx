@@ -1,10 +1,23 @@
-import { sliderClasses } from '@mui/material'
+/**
+ * Form input element component, takes a prop 'type' which determines what type of form to render with label displayed above
+ * Utilizes 'react-datepicker' component for selecting dates and reformats the value
+ */
+
 import React from 'react'
-import { useState } from 'react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import './FormInput.css'
 
+// reformate output date string to desired string format
+const formatDateString = (date) => {
+    if (!date) return ''
+    return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date
+        .getDate()
+        .toString()
+        .padStart(2, '0')}/${date.getFullYear()}`
+}
+
+// Form Input Component
 const FormInput = ({
     label,
     type = 'text',
@@ -21,11 +34,10 @@ const FormInput = ({
     errors,
     touched,
 }) => {
-    const inputId = `input-${name}`
-    const baseClass = 'w-sm p-2 rounded-md border-1'
+    const inputId = `input-${name}` // save an input id for later use if needed
 
     const renderInput = () => {
-        // For dropdown select
+        // For dropdown select type
         if (type === 'select') {
             return (
                 <select
@@ -59,21 +71,19 @@ const FormInput = ({
                 </select>
             )
         }
+        // For date form type
         if (type === 'date') {
             return (
                 <DatePicker
                     name={name}
-                    selected={value ? new Date(value) : null}
+                    selected={value}
                     onChange={(date) => {
-                        // Create a synthetic event with the date value
-                        const synthEvent = {
+                        onChange({
                             target: {
                                 name: name,
-                                value: date, // Pass the Date object directly
-                                type: 'date',
+                                value: formatDateString(date),
                             },
-                        }
-                        onChange(synthEvent) // This calls your parent handleChange function
+                        })
                     }}
                     dateFormat='MM/dd/yyyy'
                     placeholderText={placeholder}
@@ -82,7 +92,7 @@ const FormInput = ({
                 />
             )
         }
-        // For multiline text input
+        // For multiline form element type
         if (multiline) {
             return (
                 <textarea
@@ -113,6 +123,7 @@ const FormInput = ({
         )
     }
 
+    // final displayed component with error css applied if errors are passed in as props
     return (
         <div className='flex flex-col mb-2 items-start justify-start'>
             <span
