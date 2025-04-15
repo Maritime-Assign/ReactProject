@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Tile from '../components/Tile'
 import Filter from '../components/Filter'
-import jobData from '../components/jobData'
+import jobData from '../data/jobData'
 
 function ViewBoard() {
     // Default view is set to tile and view all jobs , state is changed with filter buttons to change view
@@ -26,6 +26,7 @@ function ViewBoard() {
                             {!filterOpen
                                 ? jobData.map((job) => (
                                       <Tile
+                                          key={job.id}
                                           id={job.id}
                                           branch1={job.branch1}
                                           branch2={job.branch2}
@@ -71,6 +72,7 @@ function ViewBoard() {
                             {!filterOpen
                                 ? jobData.map((job) => (
                                       <Tile
+                                          key={job.id}
                                           id={job.id}
                                           branch1={job.branch1}
                                           branch2={job.branch2}
