@@ -30,12 +30,12 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    padding-left: 130px; /*adjust for logo offsetting true center 
+    padding-left: 30px; /*adjust for logo offsetting true center 
                             while maintaining logo size*/
 }
 
 .maritimeLogo {
-    height: 60px;
+    height: 40px;
 }
 
 .navButton {
@@ -50,11 +50,11 @@
     margin-left: 10px;
     font-family: 'Montserrat', sans-serif;
     font-weight: 400;
-    color: #003b5c;
+    color: #252761;
 }
 
 .navButton:hover {
-    color: #003b5c;
+    color: #252761;
     background-color: #ffffff;
 }
 
@@ -65,7 +65,7 @@
     right: 0;
     bottom: 0;
     height: 2px;
-    background-color: #003b5c;
+    background-color: #252761;
     transform: scaleX(0);
     transition: transform 0.3s ease;
 }
@@ -75,7 +75,7 @@
 }
 
 .navBarIcon {
-    color: #003b5c;
+    color: #252761;
 }
 
 /* columns on resize */

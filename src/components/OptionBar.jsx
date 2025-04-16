@@ -11,7 +11,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 // mui avatar for login logout
 import Avatar from '@mui/material/Avatar';
 // pictures as objects
-import logo from '../assets/maritimelogo4.png';
+import logo from '../assets/maritimelogo5.png';
 import tempAccountPic from '../assets/tom.jpg';
 // styles file
 import './OptionBar.css';
