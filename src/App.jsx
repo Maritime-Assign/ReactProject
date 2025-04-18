@@ -8,6 +8,7 @@ import './App.css'
 import AddJob from './pages/AddJob'
 import FSboard from './pages/FSboard'
 import UsersAndRoles from './pages/UsersAndRoles';
+import EditJob from './pages/EditJob'
 
 const App = () => {
     return (
@@ -48,6 +49,7 @@ const App = () => {
                 <Route path='/fsb' element={<FSboard />} />
                 <Route path='/addjob' element={<AddJob />} />
                 <Route path='/users-roles' element={<UsersAndRoles />} />
+                <Route path='/editjob' element={<EditJob />} />
             </Routes>
         </div>
     )

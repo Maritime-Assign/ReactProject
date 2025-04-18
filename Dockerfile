@@ -5,27 +5,29 @@ FROM node:${NODE_VERSION}-alpine
 # Set working directory
 WORKDIR /usr/src/app
 
-# Copy package files and install dependencies
-
+# Install global packages
 RUN npm install -g npm@11.2.0
-
-COPY package.json package-lock.json ./
-
-RUN npm install @rollup/rollup-linux-x64-musl --no-save
-RUN npm install 
 RUN npm install -g vite
 
-# Copy the rest of the source files
-COPY . .
+# Create and set ownership of directories
+RUN mkdir -p /usr/src/app/node_modules && \
+    chown -R node:node /usr/src/app
 
-# Change ownership of all files to node user
-RUN chown -R node:node /usr/src/app
-
-# Switch to non-root user
+# Switch to non-root user for all subsequent operations
 USER node
+
+# Copy package files with proper ownership
+COPY --chown=node:node package*.json ./
+
+# Install dependencies
+RUN npm install @rollup/rollup-linux-x64-musl --no-save
+RUN npm install
+
+# No need to copy the rest of the source files here
+# They will be mounted via the volume in docker-compose
 
 # Expose Vite's default dev port
 EXPOSE 5173
 
-# Run Vite dev server
-CMD ["npm", "run", "dev"]
+# Run Vite dev server with host flag to allow external access
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
