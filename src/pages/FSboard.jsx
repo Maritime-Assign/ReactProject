@@ -1,6 +1,5 @@
 import FSBheader from '../components/FSBheader'
-import Filter from '../components/Filter'
-import jobData from '../components/jobData'
+import jobData from '../data/jobData'
 import JobListing from '../components/JobListing'
 
 const FSboard = () => {
