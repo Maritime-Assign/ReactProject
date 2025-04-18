@@ -1,6 +1,7 @@
 // tile component which takes in props as parameter (data)
 
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const Tile = (props) => {
     const [status, setStatus] = useState(props.open)
@@ -15,12 +16,22 @@ const Tile = (props) => {
         return 'bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white'
     }
 
+    const navigate = useNavigate()
+
+    const handleEdit = () => {
+        navigate('/editjob', {
+            state: { jobData : props }  // Pass the specific job data
+        })
+    }
+
     return (
         // main tile container
         <div className='flex flex-col bg-mebablue-hover w-full h-fit rounded-md'>
             {/* top window bar */}
             <div className='bg-mebablue-dark w-full h-8 flex rounded-t-md justify-end'>
-                <button className='bg-mebablue-light rounded-md text-sm my-auto px-2 text-white font-medium mr-2 hover:bg-mebablue-hover'>
+                <button 
+                  onClick={handleEdit}
+                  className='bg-mebablue-light rounded-md text-sm my-auto px-2 text-white font-medium mr-2 hover:bg-mebablue-hover'>
                     Edit
                 </button>
             </div>

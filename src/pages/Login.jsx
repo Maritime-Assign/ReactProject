@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import './Login.css'
 import Cookies from 'js-cookie'
 import showPasswordIcon from '../assets/show_password_icon.svg'
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Link, useNavigate } from 'react-router-dom'
+import supabase from '../supabaseClient'
 
 const Login = () => {
     const [email, setEmail] = useState('')
@@ -18,15 +19,41 @@ const Login = () => {
         }
     }, [])
 
-    const handleSubmit = () => {
-        console.log('Email:', email)
-        console.log('Password:', password)
-        if (rememberMe) {
-            Cookies.set('email', email, { expires: 7 })
-        } else {
-            console.log('Email cookie removed')
-            Cookies.remove('email')
+    // * const handleSubmit = () => {
+    //    console.log('Email:', email)
+    //    console.log('Password:', password)
+    //    if (rememberMe) {
+    //        Cookies.set('email', email, { expires: 7 })
+    //    } else {
+    //        console.log('Email cookie removed')
+    //        Cookies.remove('email')
+    //    }
+    //}
+
+    const [err, setErr] = useState('')
+    const [busy, setBusy] = useState(false)
+    const navigate = useNavigate()
+
+    const handleSubmit = async() => {
+        setBusy(true); setErr('')
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        })
+        setBusy(false)
+        if (error) {
+            setErr(error.message)
+            return
         }
+
+    // redirect upon successful login
+        navigate('/dashboard')
+
+
+
+
+
     }
 
     const toggleShowPassword = () => {
@@ -82,6 +109,12 @@ const Login = () => {
                         <span>RECOVER PASSWORD</span>
                     </Link>
                 </div>
+
+              
+                {err  && <p style={{ color: 'red',  textAlign: 'center' }}>{err}</p>}
+                {busy && <p style={{ textAlign: 'center' }}>Signing in…</p>}
+             
+
                 <div className='submit-container'>
                     <div className='submit' onClick={handleSubmit}>
                         Login
