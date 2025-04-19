@@ -129,8 +129,8 @@ const FormInput = ({
             <span
                 className={
                     errors && touched
-                        ? 'text-lg font-medium text-red-500 mb-1'
-                        : 'text-lg font-medium text-mebablue-dark mb-1'
+                        ? 'text-lg font-medium text-red-500 mb-1 font-fig'
+                        : 'text-lg font-medium text-mebablue-dark mb-1 font-fig'
                 }
             >
                 {errors && touched ? label + ' Required*' : label}

@@ -1,59 +1,48 @@
+@import 'tailwindcss';
+@reference "../index.css";
+
 .container {
     display: flex;
     flex-direction: column;
-    margin: auto;
+    width: 100%;
+    height: 100%;
     background: rgba(255, 255, 255, 0.5);
-    border: #000000 solid 5px;
+    border: #252761 solid 2px;
     border-radius: 8%;
     align-items: center;
+    margin-top: 10px;
 }
 
 .header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 10px;
     width: 100%;
     margin-top: 10%;
 }
 
 .text {
-    color: #003b5c;
+    color: #252761;
     font-size: x-large;
     font-weight: bold;
+    font-family: 'Monteserrat', sans-serif;
+    margin-top: 0px;
+    margin-bottom: 0px;
 }
 .underline {
     width: 120px;
     height: 6px;
-    background: #003b5c;
+    background: #252761;
     border-radius: 10px;
 }
-.input-box {
-    margin-top: 55px;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-}
+
 .input {
-    display: flex;
-    align-items: center;
-    margin: auto;
-    width: 400px;
-    height: 80px;
-    margin-left: 20px;
-    margin-right: 20px;
-    background: #f5f5f5;
-    border-radius: 6px;
+    @apply border-none w-full h-full p-0 m-0 font-fig text-lg text-mebablue-dark focus:border-mebagold;
 }
 
-.input input {
-    height: 50px;
-    width: 100%;
-    align-items: center;
-    background: transparent;
-    border: none;
-    font-size: large;
-    color: #003b5c;
+.checkbox {
+    @apply h-5 w-5 m-0 p-0;
 }
 
 .showPasswordIcon {
@@ -65,7 +54,7 @@
     flex-direction: row;
     margin-right: 20px;
     margin-top: 10px;
-    color: #003b5c;
+    color: #252761;
     font-size: medium;
     align-items: center;
 }
@@ -82,12 +71,12 @@
     justify-content: center;
     margin-right: 20px;
     margin-top: 10px;
-    color: #003b5c;
+    color: #252761;
     font-size: medium;
 }
 
 .forgot-password span {
-    color: #003b5c;
+    color: #252761;
     font-weight: bold;
     cursor: pointer;
 }
@@ -104,10 +93,11 @@
     align-items: center;
     width: 200px;
     height: 50px;
-    color: #003b5c;
+    color: white;
     border-radius: 500px;
-    background: #a4d8e1;
+    background: #252761;
     font-size: large;
-    font-weight: bold;
+    font-weight: normal;
     cursor: pointer;
+    font-family: 'Monteserrat', sans-serif;
 }

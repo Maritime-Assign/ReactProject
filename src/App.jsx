@@ -7,7 +7,7 @@ import Login from './pages/Login'
 import './App.css'
 import AddJob from './pages/AddJob'
 import FSboard from './pages/FSboard'
-import UsersAndRoles from './pages/UsersAndRoles';
+import UsersAndRoles from './pages/UsersAndRoles'
 import EditJob from './pages/EditJob'
 
 const App = () => {

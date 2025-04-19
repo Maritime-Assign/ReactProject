@@ -14,7 +14,7 @@ const JobListing = ({ rowIndex, ...props }) => {
     const statusColor = status == true ? 'bg-green-600' : 'bg-red-600'
 
     return (
-        <div className='grid grid-cols-20 w-full gap-1 mb-1 text-xs h-full'>
+        <div className='grid grid-cols-20 w-full gap-1 mb-1 text-sm h-full'>
             <div
                 className={`col-span-1  ${statusColor} px-1 py-2 items-center justify-center flex`}
             >

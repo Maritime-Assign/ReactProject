@@ -2,9 +2,9 @@
 @reference "../index.css";
 
 .submitBase {
-    @apply w-sm rounded-md bg-mebablue-dark text-white text-xl py-2 hover:bg-mebablue-hover;
+    @apply w-sm rounded-md bg-mebablue-dark text-white text-xl py-2 hover:bg-mebablue-hover font-fig hover:cursor-pointer;
 }
 
 .submitSubmitting {
-    @apply w-sm rounded-md bg-neutral-300 text-white text-xl py-2;
+    @apply w-sm rounded-md bg-neutral-300 text-white text-xl py-2 font-fig;
 }

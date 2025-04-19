@@ -10,7 +10,7 @@ function PasswordRecovery() {
     }
 
     return (
-        <div>
+        <div className='h-full w-full flex justify-center items-center'>
             <div className='passwordContainer'>
                 <h3>Forgot Password?</h3>
                 <div className='content'>
