@@ -2,8 +2,10 @@
     display: flex;
     align-items: center;
     width: fit-content;
+    height: 1rem;
     padding: 1rem;
     background-color: #007A33;
+    color: white;
     cursor: pointer;
 }
 

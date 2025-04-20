@@ -1,3 +1,4 @@
+import './Dropdown.css'
 import DropdownButton from './DropdownButton.jsx'
 import DropdownContent from './DropdownContent.jsx'
 import DropdownItem from './DropdownItem.jsx'
@@ -13,7 +14,7 @@ const Dropdown = ({buttonText, content}) => {
     };
 
     return(
-        <div>
+        <div className='dropdown'>
             <DropdownButton
             toggle={toggleDropdown}
             open={open}>
