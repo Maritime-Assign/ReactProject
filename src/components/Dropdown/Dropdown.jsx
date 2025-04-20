@@ -1,5 +1,6 @@
 import DropdownButton from './DropdownButton.jsx'
 import DropdownContent from './DropdownContent.jsx'
+import DropdownItem from './DropdownItem.jsx'
 
 import { useState } from 'react';
 
@@ -20,7 +21,9 @@ const Dropdown = ({buttonText, content}) => {
             </DropdownButton>
             <DropdownContent
             open={open}>
+                <DropdownItem>
                 {content}
+                </DropdownItem>
             </DropdownContent>
         </div>
     );
