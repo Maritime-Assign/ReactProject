@@ -24,20 +24,20 @@ const Dashboard = () => {
                         </Link>
                     </div>
                     <div className='option'>
-                        <Link to='/developer-tools'>
-                            <img src={devToolsIcon} alt='Dev Tools' />
+                        <Link to='/fsb'>
+                            <img src={devToolsIcon} alt='Full Screen Board' />
                         </Link>
                     </div>
                     <div className='option'>
-                        <Link to='/user-permissions'>
+                        <Link to='/addjob'>
                             <img
                                 src={userPermissionsIcon}
-                                alt='User Permissions'
+                                alt='Add Job'
                             />
                         </Link>
                     </div>
                     <div className='option'>
-                        <Link to='/user-listings'>
+                        <Link to='/users-roles'>
                             <span>User Listings</span>
                         </Link>
                     </div>

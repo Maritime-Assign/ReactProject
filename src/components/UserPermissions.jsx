@@ -1,4 +1,6 @@
 import './PermissionsColors.css'
+import Dropdown from './Dropdown/Dropdown.jsx'
+import DropdownItem from './Dropdown/DropdownItem.jsx'
 
 function ButtonInput({ User, LabelText, LastDiv }) {
     if (!LastDiv) {
@@ -10,11 +12,15 @@ function ButtonInput({ User, LabelText, LastDiv }) {
                 <div className='self-center'>
                     { LabelText }
                 </div>
-                <button
-                    className='Button w-32 h-7 self-center text-white mr-2 rounded-full'           
-                >
-                    Manage Roles
-                </button>
+                <div>
+                    <Dropdown buttonText='Manage Roles'
+                    content={
+                        <DropdownItem>
+                        <span>Option 1:</span><input id='option 1' type='checkbox' />
+                        </DropdownItem>
+                    }
+                    />
+                </div>
             </div>
         )
     }
@@ -27,11 +33,15 @@ function ButtonInput({ User, LabelText, LastDiv }) {
                 <div className='self-center'>
                     { LabelText }
                 </div>
-                <button
-                    className='Button w-32 h-7 self-center text-white mr-2 rounded-full'           
-                >
-                    Manage Roles
-                </button>
+                <div>
+                    <Dropdown buttonText='Manage Roles'
+                    content={
+                        <DropdownItem>
+                        <span>Option 1:</span><input id='option 1' type='checkbox' />
+                        </DropdownItem>
+                    }
+                    />
+                </div>
             </div>
         );
     }
