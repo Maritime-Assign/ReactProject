@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import './Login.css'
+import styles from './Login.module.css'
 import Cookies from 'js-cookie'
 import showPasswordIcon from '../assets/show_password_icon.svg'
 import { Routes, Route, Link, useNavigate } from 'react-router-dom'
@@ -57,15 +57,13 @@ const Login = () => {
     }
 
     return (
-        <div className='w-full'>
-            <div className='w-full flex flex-col items-center justify-center'>
-                <div className='header'>
-                    <div className='text-2xl font-fig font-medium text-mebablue-dark'>
-                        Login
-                    </div>
-                    <div className='underline'></div>
+        <div className='w-full h-[calc(100vh-100px)] flex items-center justify-center'>
+            <div className='w-fit p-12 shadow-[0_0_10px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center rounded-md'>
+                <div className='text-2xl font-mont font-medium text-mebablue-dark mb-3'>
+                    Login
                 </div>
-                <div className='flex flex-col gap-4'>
+                <div className={styles.underline}></div>
+                <div className='flex flex-col gap-4 mt-4'>
                     <div className='flex border border-neutral-300 rounded-md h-12 w-100 focus-within:border-mebagold'>
                         <input
                             type='email'
@@ -73,7 +71,8 @@ const Login = () => {
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className='input'
+                            className={styles.input}
+                            autoComplete='off'
                         />
                     </div>
                     <div className='w-100 h-12 flex flex-row border border-neutral-300 rounded-md items-center focus-within:border-mebagold'>
@@ -83,7 +82,8 @@ const Login = () => {
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className='input'
+                            className={styles.input}
+                            autoComplete='off'
                         />
                         <img
                             className='mr-2 hover:cursor-pointer'
@@ -100,20 +100,20 @@ const Login = () => {
                         cursor='pointer'
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className='checkbox'
+                        className={styles.checkbox}
                     />
                     <span
                         htmlFor='checkbox'
-                        className='font-fig text-mebablue-dark ml-2 py-2 font-medium text-lg'
+                        className='font-mont text-mebablue-dark ml-2 py-2 font-medium text-lg'
                     >
                         Remember Me
                     </span>
                 </div>
                 <div className=''>
-                    <button className='bg-mebablue-light rounded-md px-4 py-2 w-50'>
+                    <button className='bg-mebablue-light rounded-md px-4 py-2 w-100'>
                         <Link to='/recovery'>
-                            <span className='text-lg font-fig text-white'>
-                                Recover Password
+                            <span className='text-lg font-mont text-white'>
+                                Forgot Password?
                             </span>
                         </Link>
                     </button>
@@ -121,7 +121,7 @@ const Login = () => {
 
                 <div className='py-2'>
                     <button
-                        className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-50 cursor-pointer'
+                        className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont'
                         onClick={handleSubmit}
                     >
                         Login

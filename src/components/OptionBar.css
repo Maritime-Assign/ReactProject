@@ -13,6 +13,7 @@
     box-sizing: border-box;
     margin-left: auto;
     margin-right: auto;
+    height: 80px;
 }
 
 .logoContainer {
@@ -35,7 +36,7 @@
 }
 
 .maritimeLogo {
-    height: 60px;
+    height: 70px;
 }
 
 .navButton {

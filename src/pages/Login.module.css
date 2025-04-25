@@ -31,14 +31,14 @@
     margin-bottom: 0px;
 }
 .underline {
-    width: 120px;
-    height: 6px;
+    width: 400px;
+    height: 5px;
     background: #252761;
     border-radius: 10px;
 }
 
 .input {
-    @apply border-none w-full h-full p-0 m-0 font-fig text-lg text-mebablue-dark focus:border-mebagold;
+    @apply border-none w-full h-full p-0 m-0 font-mont text-lg text-mebablue-dark focus:outline-none text-center;
 }
 
 .checkbox {

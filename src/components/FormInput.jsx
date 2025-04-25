@@ -6,7 +6,7 @@
 import React from 'react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import './FormInput.css'
+import styles from './FormInput.module.css'
 
 // reformate output date string to desired string format
 const formatDateString = (date) => {
@@ -36,6 +36,8 @@ const FormInput = ({
 }) => {
     const inputId = `input-${name}` // save an input id for later use if needed
 
+    const appliedClass = styles[className]
+
     const renderInput = () => {
         // For dropdown select type
         if (type === 'select') {
@@ -47,7 +49,7 @@ const FormInput = ({
                     onChange={onChange}
                     onBlur={onBlur}
                     disabled={disabled}
-                    className={className}
+                    className={appliedClass}
                 >
                     <option value='' disabled>
                         {placeholder || 'Select an option'}
@@ -87,7 +89,7 @@ const FormInput = ({
                     }}
                     dateFormat='MM/dd/yyyy'
                     placeholderText={placeholder}
-                    className={className}
+                    className={appliedClass}
                     onBlur={onBlur}
                 />
             )
@@ -103,7 +105,7 @@ const FormInput = ({
                     rows={rows}
                     placeholder={placeholder}
                     disabled={disabled}
-                    className='multi'
+                    className={styles.multi}
                 />
             )
         }
@@ -118,7 +120,7 @@ const FormInput = ({
                 onChange={onChange}
                 placeholder={placeholder}
                 disabled={disabled}
-                className={className}
+                className={appliedClass}
             />
         )
     }
@@ -129,8 +131,8 @@ const FormInput = ({
             <span
                 className={
                     errors && touched
-                        ? 'text-lg font-medium text-red-500 mb-1 font-fig'
-                        : 'text-lg font-medium text-mebablue-dark mb-1 font-fig'
+                        ? 'text-lg font-medium text-red-500 mb-1 font-mont'
+                        : 'text-lg font-medium text-mebablue-dark mb-1 font-mont'
                 }
             >
                 {errors && touched ? label + ' Required*' : label}

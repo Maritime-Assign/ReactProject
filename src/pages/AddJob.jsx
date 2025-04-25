@@ -4,7 +4,7 @@
  * Forms handled with Formik,Yup open source components installed in the project
  */
 
-import './AddJob.css'
+import styles from './AddJob.module.css'
 import FormInput from '../components/FormInput'
 import branchNames from '../data/branchNames'
 import { useFormik } from 'formik'
@@ -82,13 +82,13 @@ const AddJob = () => {
 
                 {/* Centered page header */}
                 <div className='w-full text-center'>
-                    <span className='text-white text-2xl font-semibold font-fig '>
+                    <span className='text-white text-2xl font-medium font-mont'>
                         Add New Job
                     </span>
                 </div>
             </div>
             {/* Form */}
-            <div className='my-4 w-full font-fig'>
+            <div className='my-4 w-full font-mont'>
                 <form onSubmit={handleSubmit} autoComplete='off'>
                     <div className='flex flex-col items-center'>
                         <FormInput
@@ -314,7 +314,9 @@ const AddJob = () => {
                             disabled={isSubmitting}
                             type='submit'
                             className={
-                                isSubmitting ? 'submitSubmitting' : 'submitBase'
+                                isSubmitting
+                                    ? styles.submitSubmitting
+                                    : styles.submitBase
                             }
                         >
                             {isSubmitting ? 'Adding Job...' : 'Submit'}
