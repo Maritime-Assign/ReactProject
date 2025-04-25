@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import './Login.css'
+import styles from './Login.module.css'
 import Cookies from 'js-cookie'
 import showPasswordIcon from '../assets/show_password_icon.svg'
 import { Routes, Route, Link, useNavigate } from 'react-router-dom'
@@ -34,8 +34,9 @@ const Login = () => {
     const [busy, setBusy] = useState(false)
     const navigate = useNavigate()
 
-    const handleSubmit = async() => {
-        setBusy(true); setErr('')
+    const handleSubmit = async () => {
+        setBusy(true)
+        setErr('')
 
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
@@ -47,13 +48,8 @@ const Login = () => {
             return
         }
 
-    // redirect upon successful login
+        // redirect upon successful login
         navigate('/dashboard')
-
-
-
-
-
     }
 
     const toggleShowPassword = () => {
@@ -61,65 +57,80 @@ const Login = () => {
     }
 
     return (
-        <div>
-            <h3>Marine Engineers Beneficial Association (MEBA)</h3>
-            <div className='container'>
-                <div className='header'>
-                    <div className='text'>login</div>
-                    <div className='underline'></div>
+        <div className='w-full h-[calc(100vh-100px)] flex items-center justify-center'>
+            <div className='w-fit p-12 shadow-[0_0_10px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center rounded-md'>
+                <div className='text-2xl font-mont font-medium text-mebablue-dark mb-3'>
+                    Login
                 </div>
-                <div className='input-box'>
-                    <div className='input'>
+                <div className={styles.underline}></div>
+                <div className='flex flex-col gap-4 mt-4'>
+                    <div className='flex border border-neutral-300 rounded-md h-12 w-100 focus-within:border-mebagold'>
                         <input
                             type='email'
                             placeholder=' Enter your email'
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            className={styles.input}
+                            autoComplete='off'
                         />
                     </div>
-                    <div className='input'>
+                    <div className='w-100 h-12 flex flex-row border border-neutral-300 rounded-md items-center focus-within:border-mebagold'>
                         <input
                             type={showPassword ? 'text' : 'password'}
                             placeholder=' Enter your password'
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            className={styles.input}
+                            autoComplete='off'
                         />
                         <img
-                            className='showPasswordIcon'
+                            className='mr-2 hover:cursor-pointer'
                             src={showPasswordIcon}
                             alt='show password icon'
                             onClick={toggleShowPassword}
                         />
                     </div>
                 </div>
-                <div className='remember-me'>
+                <div className='flex flex-row w-full items-center justify-center py-2'>
                     <input
                         type='checkbox'
                         id='checkbox'
                         cursor='pointer'
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
+                        className={styles.checkbox}
                     />
-                    <label htmlFor='checkbox'>Remember Me</label>
+                    <span
+                        htmlFor='checkbox'
+                        className='font-mont text-mebablue-dark ml-2 py-2 font-medium text-lg'
+                    >
+                        Remember Me
+                    </span>
                 </div>
-                <div className='forgot-password'>
-                    <Link to='/recovery'>
-                        <span>RECOVER PASSWORD</span>
-                    </Link>
+                <div className=''>
+                    <button className='bg-mebablue-light rounded-md px-4 py-2 w-100'>
+                        <Link to='/recovery'>
+                            <span className='text-lg font-mont text-white'>
+                                Forgot Password?
+                            </span>
+                        </Link>
+                    </button>
                 </div>
 
-              
-                {err  && <p style={{ color: 'red',  textAlign: 'center' }}>{err}</p>}
-                {busy && <p style={{ textAlign: 'center' }}>Signing in…</p>}
-             
-
-                <div className='submit-container'>
-                    <div className='submit' onClick={handleSubmit}>
+                <div className='py-2'>
+                    <button
+                        className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont'
+                        onClick={handleSubmit}
+                    >
                         Login
-                    </div>
+                    </button>
                 </div>
+                {err && (
+                    <p style={{ color: 'red', textAlign: 'center' }}>{err}</p>
+                )}
+                {busy && <p style={{ textAlign: 'center' }}>Signing in…</p>}
             </div>
         </div>
     )
