@@ -1,10 +1,9 @@
 const FSBheader = () => {
-    const cellStyle =
-        'py-2 bg-gradient-to-b from-mebablue-dark to-mebablue-light'
+    const cellStyle = 'py-1 font-mont'
 
     return (
-        <div className='grid grid-cols-20 gap-1 w-full text-center font-medium text-white rounded-t-md text-xs mb-1'>
-            <div className='col-span-1 py-2 bg-gradient-to-b from-mebablue-dark to-mebablue-light rounded-tl-md'>
+        <div className='grid grid-cols-20 w-full text-center font-bold text-mebablue-dark text-sm mb-1'>
+            <div className={`col-span-1 ${cellStyle}`}>
                 <span>Status</span>
             </div>
             <div className={`col-span-1 ${cellStyle}`}>
@@ -41,7 +40,7 @@ const FSBheader = () => {
             <div className={`col-span-2 ${cellStyle}`}>
                 <span>Crew Relieved</span>
             </div>
-            <div className={`col-span-3 rounded-tr-md ${cellStyle}`}>
+            <div className={`col-span-3 ${cellStyle}`}>
                 <span>Notes</span>
             </div>
         </div>

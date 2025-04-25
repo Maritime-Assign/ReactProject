@@ -38,7 +38,7 @@ const FSboard = () => {
     }
 
     return (
-        <div className='w-full h-screen flex flex-col py-2'>
+        <div className='w-full max-h-screen flex flex-col my-2 shadow-[0_0_5px_5px_rgba(0,0,0,0.05)] rounded-md'>
             <FSBheader />
             {jobs.map((job, index) => (
                 <JobListing
