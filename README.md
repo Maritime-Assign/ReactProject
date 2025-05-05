@@ -4,7 +4,7 @@
 
 
 # Project Synopsis
-[!Meba Logo](https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/MebaLogoOfficial.png?raw=true)
+![Meba Logo](https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/MebaLogoOfficial.png?raw=true)
 ### Our Client: MEBA
 The Marine Engineers’ Beneficial Association (henceforth referred to as MEBA) is a United States-based maritime labor union. They work with maritime employees across the country, pushing for fair workplace practices and providing an important facet of national defense. MEBA operates a job distribution network, acting as the middleman for the routing of maritime jobs to qualified candidates.
 
