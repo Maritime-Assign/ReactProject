@@ -5,7 +5,7 @@
 
 ### About the Project
 
-This React project serves as the front end for the Marine Engineers' Beneficial Association (MEBA) Union website. It allows MEBA union employees to:
+This React project serves as the front end for the Marine Engineers' Beneficial Association (MEBA) Union joboard. It allows MEBA union employees to:
 
 - Log in and view current job listings (both available and claimed).
 - Edit specific columns or entire rows of data, provided they have the necessary privileges granted by an admin.
