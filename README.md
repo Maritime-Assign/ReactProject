@@ -13,28 +13,38 @@ This React project serves as the front end for the Marine Engineers' Beneficial 
 
 ### ERD
 <div align="center">
-    <img src="src/assets/screenshots/ERD.png"/>
+    <img src="src/assets/screenshots/ERD.png" alt="ERD" width="800"/>
 </div>
 
-### Running the Project for Testing and Development
+### Jira Timeline
 
-You can build the project using one of the following methods:
+Below is a visual representation of our project timeline managed in Jira:
+
+<div align="center">
+    <img src="src\assets\screenshots\Timeline TY Phong.png" alt="Jira Timeline" width="800"/>
+</div>
 
 ### Project Screenshots
 
 Here are some screenshots of the project in action:
 
 #### Login Page
-<img src="src/assets/screenshots/login_page.png" alt="Login Page" width="600"/>
-
+<div align="center">
+    <img src="src/assets/screenshots/login_page.png" alt="Login Page" width="600"/>
+</div>
 
 #### Data Editing
-
-<img src="src/assets/screenshots/data_editing.png" alt="Data Editing" width="600"/>
-
+<div align="center">
+    <img src="src/assets/screenshots/data_editing.png" alt="Data Editing" width="600"/>
+</div>
 
 #### Union Hall Display
-<img src="src/assets/screenshots/union_hall_display.png" alt="Union Hall Display" width="600"/>
+<div align="center">
+    <img src="src/assets/screenshots/union_hall_display.png" alt="Union Hall Display" width="600"/>
+</div>
+### Running the Project for Testing and Development
+
+You can build the project using one of the following methods:
 
 #### Option 1: Build with command line
 
