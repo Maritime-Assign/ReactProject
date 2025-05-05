@@ -16,28 +16,26 @@ This React project serves as the front end for the Marine Engineers' Beneficial 
     <img src="src/assets/screenshots/ERD.png"/>
 </div>
 
+### Running the Project for Testing and Development
+
+You can build the project using one of the following methods:
+
 ### Project Screenshots
 
 Here are some screenshots of the project in action:
 
 #### Login Page
-<div align="center">
-    <img src="src/assets/screenshots/login_page.png" alt="Login Page" width="600"/>
-</div>
+<img src="src/assets/screenshots/login_page.png" alt="Login Page" width="600"/>
+
 
 #### Data Editing
-<div align="center">
-    <img src="src/assets/screenshots/data_editing.png" alt="Data Editing" width="600"/>
-</div>
+
+<img src="src/assets/screenshots/data_editing.png" alt="Data Editing" width="600"/>
+
 
 #### Union Hall Display
-<div align="center">
-    <img src="src/assets/screenshots/union_hall_display.png" alt="Union Hall Display" width="600"/>
-</div>
+<img src="src/assets/screenshots/union_hall_display.png" alt="Union Hall Display" width="600"/>
 
-### Running the Project for Testing and Development
-
-You can build the project using one of the following methods:
 #### Option 1: Build with command line
 
 1. Install Node.js (Version 22 or any even-numbered version).
