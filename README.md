@@ -1,5 +1,7 @@
 # MaritimeAssign - React
-<img src="src/assets/MebaLogoOfficial.png" width="300" height="300"/>
+<div align="center">
+    <img src="src/assets/MebaLogoOfficial.png" width="300" height="300"/>
+</div>
 
 ### About the Project
 
@@ -8,29 +10,34 @@ This React project serves as the front end for the Marine Engineers' Beneficial 
 - Log in and view current job listings (both available and claimed).
 - Edit specific columns or entire rows of data, provided they have the necessary privileges granted by an admin.
 - Access a display-only page for viewing data in a union hall setting.
+
 ### ERD
-<img src="src/assets/screenshots/ERD.png"/>
-
-### Running the Project for Testing and Development
-
-You can build the project using one of the following methods:
-
-
+<div align="center">
+    <img src="src/assets/screenshots/ERD.png"/>
+</div>
 
 ### Project Screenshots
 
 Here are some screenshots of the project in action:
 
 #### Login Page
-<img src="src\assets\screenshots\login_page.png" alt="Login Page" width="600"/>
+<div align="center">
+    <img src="src/assets/screenshots/login_page.png" alt="Login Page" width="600"/>
+</div>
 
 #### Data Editing
-<img src="src\assets\screenshots\data_editing.png" alt="Data Editing" width="600"/>
+<div align="center">
+    <img src="src/assets/screenshots/data_editing.png" alt="Data Editing" width="600"/>
+</div>
 
 #### Union Hall Display
-<img src="src\assets\screenshots\union_hall_display.png" alt="Union Hall Display" width="600"/>
+<div align="center">
+    <img src="src/assets/screenshots/union_hall_display.png" alt="Union Hall Display" width="600"/>
+</div>
 
+### Running the Project for Testing and Development
 
+You can build the project using one of the following methods:
 #### Option 1: Build with command line
 
 1. Install Node.js (Version 22 or any even-numbered version).
