@@ -10,6 +10,7 @@ This React project serves as the front end for the Marine Engineers' Beneficial 
 - Access a display-only page for viewing data in a union hall setting.
 ### ERD
 <img src="src/assets/screenshots/ERD.png"/>
+
 ### Running the Project for Testing and Development
 
 You can build the project using one of the following methods:
