@@ -1,19 +1,22 @@
 # MaritimeAssign - React
-<div align="center">
-    <img src="src/assets/MebaLogoOfficial.png" width="300" height="300"/>
-</div>
+<img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/MebaLogoOfficial.png?raw=true" alt="Official_Logo" width="300" height="300"/>
 
-### About the Project
+# Project Synopsis
+### Our Client: MEBA
+The Marine Engineers’ Beneficial Association (henceforth referred to as MEBA) is a United States-based maritime labor union. They work with maritime employees across the country, pushing for fair workplace practices and providing an important facet of national defense. MEBA operates a job distribution network, acting as the middleman for the routing of maritime jobs to qualified candidates.
 
-This React project serves as the front end for the Marine Engineers' Beneficial Association (MEBA) Union joboard. It allows MEBA union employees to:
+### The Problem:
+As the association continues to grow larger and larger, the technologies that they previously relied on start to show their limitations. As such technologies were not designed with MEBA's functionality in mind, the association started to encounter various inconveniences that could become a larger problem down the line.
 
-- Log in and view current job listings (both available and claimed).
-- Edit specific columns or entire rows of data, provided they have the necessary privileges granted by an admin.
-- Access a display-only page for viewing data in a union hall setting.
+### The Solution:
+This project is tailored to address MEBA's problem, MaritimeAssign is a website that is designed to streamline all processes for all MEBA's employees. It will preserve key functions of previously used technologies while also implementing new features that seek to improve security as well as general quality of life such as:
+    - Log in and view current job listings (both available and claimed).
+    - Edit specific columns or entire rows of data, provided they have the necessary privileges granted by an admin.
+    - Access a display-only page for viewing data in a union hall setting.
 
 ### ERD
 <div align="center">
-    <img src="src/assets/screenshots/ERD.png" alt="ERD" width="800"/>
+    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/ERD.png" alt="ERD" width="800"/>
 </div>
 
 ### Jira Timeline
@@ -21,7 +24,7 @@ This React project serves as the front end for the Marine Engineers' Beneficial 
 Below is a visual representation of our project timeline managed in Jira:
 
 <div align="center">
-    <img src="src\assets\screenshots\Timeline TY Phong.png" alt="Jira Timeline" width="800"/>
+    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/Timeline TY Phong.png" alt="Jira Timeline" width="800"/>
 </div>
 
 ### Project Screenshots
@@ -30,18 +33,19 @@ Here are some screenshots of the project in action:
 
 #### Login Page
 <div align="center">
-    <img src="src/assets/screenshots/login_page.png" alt="Login Page" width="600"/>
+    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/login_page.png" alt="Login Page" width="600"/>
 </div>
 
 #### Data Editing
 <div align="center">
-    <img src="src/assets/screenshots/data_editing.png" alt="Data Editing" width="600"/>
+    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/data_editing.png" alt="Data Editing" width="600"/>
 </div>
 
 #### Union Hall Display
 <div align="center">
-    <img src="src/assets/screenshots/union_hall_display.png" alt="Union Hall Display" width="600"/>
+    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/union_hall_display.png" alt="Union Hall Display" width="600"/>
 </div>
+
 ### Running the Project for Testing and Development
 
 You can build the project using one of the following methods:
