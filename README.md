@@ -16,7 +16,7 @@ This project is tailored to address MEBA's problem, MaritimeAssign is a website 
 
 ### ERD
 <div align="center">
-    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/ERD.png" alt="ERD" width="800"/>
+    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/ERD.png?raw=true" alt="ERD" width="800"/>
 </div>
 
 ### Jira Timeline
@@ -24,7 +24,7 @@ This project is tailored to address MEBA's problem, MaritimeAssign is a website 
 Below is a visual representation of our project timeline managed in Jira:
 
 <div align="center">
-    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/Timeline TY Phong.png" alt="Jira Timeline" width="800"/>
+    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/Timeline TY Phong.png?raw=true" alt="Jira Timeline" width="800"/>
 </div>
 
 ### Project Screenshots
@@ -33,17 +33,17 @@ Here are some screenshots of the project in action:
 
 #### Login Page
 <div align="center">
-    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/login_page.png" alt="Login Page" width="600"/>
+    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/login_page.png?raw=true" alt="Login Page" width="600"/>
 </div>
 
 #### Data Editing
 <div align="center">
-    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/data_editing.png" alt="Data Editing" width="600"/>
+    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/data_editing.png?raw=true" alt="Data Editing" width="600"/>
 </div>
 
 #### Union Hall Display
 <div align="center">
-    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/union_hall_display.png" alt="Union Hall Display" width="600"/>
+    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/union_hall_display.png?raw=true" alt="Union Hall Display" width="600"/>
 </div>
 
 ### Running the Project for Testing and Development
