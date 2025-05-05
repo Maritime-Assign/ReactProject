@@ -13,11 +13,11 @@ As the association continues to grow larger and larger, the technologies that th
 
 ### The Solution:
 This project is tailored to address MEBA's problem, MaritimeAssign is a website that is designed to streamline all processes for all MEBA's employees. It will preserve key functions of previously used technologies while also implementing new features that seek to improve security as well as general quality of life. 
-##### 2 Options: Build with Vite OR Build with Docker
 
 # Timeline
 
 # Build Instructions:
+### 2 Options: Build with Vite OR Build with Docker
 #### - Docker Instructions located in [README.Docker.md](https://github.com/Maritime-Assign/ReactProject/blob/main/README.md)
 
 #### - For building with Vite you must run these commands using the command line in order:
