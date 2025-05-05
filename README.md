@@ -1,5 +1,5 @@
 # MaritimeAssign - React
-<img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/MebaLogoOfficial.png?raw=true" alt="Official_Logo" width="300" height="300"/>
+![Meba Logo](https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/MebaLogoOfficial.png?raw=true)
 
 # Project Synopsis
 ### Our Client: MEBA
