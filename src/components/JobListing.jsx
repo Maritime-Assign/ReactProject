@@ -8,17 +8,19 @@ const JobListing = ({ rowIndex, ...props }) => {
         setStatus(props.open)
     }, [props.open])
 
-    const rowClass = rowIndex % 2 === 0 ? 'bg-neutral-200' : 'bg-neutral-300'
+    const rowClass = rowIndex % 2 === 0 ? 'bg-gray-200' : 'bg-gray-100'
 
-    const cellStyle = 'px-1 py-2 items-center justify-center flex'
-    const statusColor = status == true ? 'bg-green-600' : 'bg-red-600'
+    const cellStyle = 'px-1 py-1 items-center justify-center flex'
+    const statusColor = status == true ? 'bg-green-300' : 'bg-red-300'
 
     return (
-        <div className='grid grid-cols-20 w-full gap-1 mb-1 text-sm h-full'>
+        <div className='grid grid-cols-20 w-full text-sm font-mont font-semibold h-fit'>
             <div
-                className={`col-span-1  ${statusColor} px-1 py-2 items-center justify-center flex`}
+                className={`col-span-1 px-1 py-2 ${rowClass} items-center justify-center flex`}
             >
-                <span>
+                <span
+                    className={`${statusColor} px-3 py-1 rounded-md font-semibold`}
+                >
                     {props.open
                         ? 'Open'
                         : `Filled ${props.fillDate ? props.fillDate : ''}`}
