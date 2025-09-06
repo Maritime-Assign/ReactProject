@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
-import { supabase } from './supabase.js'
+import supabase from '../supabaseClient'
 
 
 const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
@@ -20,7 +20,9 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
         if (error) {
             const timer = setTimeout(() => {
             setError(null);
+            //handleClaimJob();
             }, 3000);
+            
             return () => clearTimeout(timer);
         }
     }, [error]);
@@ -30,13 +32,16 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
     const claimJob = async () => {
         setClaim(true);
         setError(null);
-        const {
-            data: {user},
-            error: userError,
-        } = await supabase.auth.getUser();
+
+        //const { data, error: userError } = await supabase.auth.getUser();
+        //const user = data?.user;
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const user = session?.user;
+
 
         // If claim is made when not logged in
-        if (userError || !user) {
+        if (sessionError || !user) {
+            //console.log('User not logged in:', { sessionError, user });
             setError('You must be logged in to claim a job.');
             setClaim(false);
             return;
@@ -47,8 +52,10 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
             .update({
             open: false,
             fillDate: new Date().toISOString().split('T')[0],
+            // ID of user who claimed the job | this need to be added as a column in supabase
             claimedBy: user.id,
-            status: 'Filled',
+            //status: 'Filled',
+            // timestamp of claim | this need to be added as a column in supabase
             claimed_at: new Date().toISOString(),
         })
         .eq('id', props.id);
@@ -60,7 +67,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
         else {
             handleClaimJob();
         }
-        setClaimStatus(false);
+        setClaim(false);
     }
 
     const rowClass = rowIndex % 2 === 0 ? 'bg-gray-200' : 'bg-gray-100'
@@ -75,14 +82,13 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                     <button
                     onClick={claimJob}
                     disabled={makingClaim}
-                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:bg-gray-400 cursor-pointer"
+                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-150"
                     >
-                    {makingClaim ? 'Claiming...' : 'Claim'}
+                    {makingClaim ? 'Claim' : 'Claim'}
                     </button>
                 ) : (
                     <span className="text-red-700 text-sm text-center">
-                    Claimed {props.fillDate ? `on ${props.fillDate}` : ''}
-                    {props.claimedBy ? ` by ${props.claimedBy}` : ''}
+                    Claimed {props.FillDate ? `on ${props.FillDate}` : ''}
                     </span>
                 )}
             </div>
