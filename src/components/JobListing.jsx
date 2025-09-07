@@ -30,6 +30,11 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
 
     // Claim a job function
     const claimJob = async () => {
+
+        // Debugging
+        console.log('props.id:', props.id, 'type:', typeof props.id);
+
+
         setClaim(true);
         setError(null);
 
@@ -47,18 +52,33 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
             return;
         }
         // Proceed to claim the job
-        const { error: updateError } = await supabase
-            .from('jobs')
+        const { data, error: updateError } = await supabase
+            .from('Jobs')
             .update({
             open: false,
-            fillDate: new Date().toISOString().split('T')[0],
+            FillDate: new Date().toISOString().split('T')[0],
             // ID of user who claimed the job | this need to be added as a column in supabase
             claimedBy: user.id,
             //status: 'Filled',
             // timestamp of claim | this need to be added as a column in supabase
             claimed_at: new Date().toISOString(),
+            
         })
-        .eq('id', props.id);
+        .eq('id', props.id)
+        .eq('open', true) // Ensure the job is still open
+        // Return the updated row
+        .select();
+
+        // Debugging
+        console.log('Update response:', { data, updateError });
+        
+        // Debugging
+        console.log('User:', user);
+        if (updateError) {
+            console.error('Claim failed:', updateError);
+        }
+
+
 
         // Handle any errors during the claim process
         if (updateError) {
