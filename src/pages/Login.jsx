@@ -12,9 +12,15 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    
-    const { signInUser } = UserAuth();
+
+    const { signInUser, user } = UserAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+          navigate('/dashboard');
+        }
+      }, [user, navigate]);
     
     const handleLogIn = async (e) => {
         e.preventDefault();
