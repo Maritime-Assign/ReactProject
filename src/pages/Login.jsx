@@ -23,6 +23,7 @@ const Login = () => {
     
         if (error) {
           setError(error); // Set the error message if sign-in fails
+          setLoading(false);
     
           // Set a timeout to clear the error message after a specific duration (e.g., 3 seconds)
           setTimeout(() => {
@@ -99,7 +100,7 @@ const Login = () => {
                     </button>
                 </div>
                 {error && (
-                    <p style={{ color: 'red', textAlign: 'center' }}>{err}</p>
+                    <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>
                 )}
                 {loading && <p style={{ textAlign: 'center' }}>Signing in…</p>}
             </div>
