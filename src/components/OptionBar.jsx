@@ -16,7 +16,9 @@ import tempAccountPic from '../assets/tom.jpg'
 // styles file
 import './OptionBar.css'
 // import link to nav to internal pages
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+// import user auth context to manage login state
+import { UserAuth } from "../context/AuthContext";
 
 // array for center nav options
 const nav_Items = [
@@ -46,8 +48,18 @@ const nav_Items = [
 
 // contains the core 3 components
 const optionBar = () => {
-    // set to false, will trigger to true on an event which for now is just click
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const { user, signOut } = UserAuth(); // Get user and signOut from context
+    const navigate = useNavigate(); // Get navigate function
+    const isLoggedIn = !!user; // Determine login status from user object
+
+    const handleLogout = async () => {
+        try {
+            await signOut();
+            navigate('/login');
+        } catch (error) {
+            console.error("Error signing out: ", error);
+        }
+    };
 
     // renders the nav items we made and toggles logged in or out
     return (
@@ -56,11 +68,20 @@ const optionBar = () => {
             {isLoggedIn && <NavBar items={nav_Items} />}
             <SessionManager
                 isLoggedIn={isLoggedIn}
-                toggleLogin={() => setIsLoggedIn(!isLoggedIn)}
+                handleLogout={handleLogout} // Pass the new handleLogout function
             />
         </nav>
-    )
-}
+    );
+};
+
+const handleLogout = async (signOut) => {
+    try {
+        await signOut(); // Call the signOut function from context
+        navigate("/login");
+    } catch (error) {
+        console.error("Error signing out:", error);
+    }
+};
 
 // logo component renders a container div with an image element
 // both the container and the image have their own CSS linked with className
@@ -93,7 +114,7 @@ const NavButton = ({ item }) => (
 
 // session manager component deals with the authentication login/logout ui
 // isLoggedIn determines the current authentication state
-const SessionManager = ({ isLoggedIn, toggleLogin }) => (
+const SessionManager = ({ isLoggedIn, handleLogout }) => (
     <div className='sessionContainer'>
         <Avatar
             alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
@@ -102,19 +123,19 @@ const SessionManager = ({ isLoggedIn, toggleLogin }) => (
         />
         {isLoggedIn ? (
             <Link to='/login' className='navLink'>
-                <Button onClick={toggleLogin} className='navButton'>
+                <Button onClick={handleLogout} className='navButton'>
                     <LogoutIcon className='navBarIcon' />
                     <span className='navButtonText'>Logout</span>
                 </Button>
             </Link>
         ) : (
-            <Link to='/dashboard' className='navLink'>
-                <Button onClick={toggleLogin} className='navButton'>
+            <Link to='/login' className='navLink'>
+                <Button className='navButton'>
                     <LoginIcon className='navBarIcon' />
                     <span className='navButtonText'>Login</span>
                 </Button>
             </Link>
         )}
     </div>
-)
+);
 export default optionBar
