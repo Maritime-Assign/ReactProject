@@ -10,10 +10,11 @@ import { useFormik } from 'formik'
 import { useNavigate } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
 import * as yup from 'yup'
+import supabaseAdmin from '../api/supabaseAdmin'
 import supabase from '../supabaseClient'
 
 // Array for options for the dropdown
-const roleOptions = ['Admin', 'Manager', 'Member', 'Viewer']
+const roleOptions = ['display', 'minor', 'major', 'admin']
 
 // Schema for validation
 const userValidationSchema = yup.object().shape({
@@ -32,38 +33,32 @@ const userValidationSchema = yup.object().shape({
         .required('Required')
         .email('Invalid')
         .matches(/\.[a-zA-Z]{2,}$/, 'Invalid'),
-    role: yup.string().required('Required'),
+    role: yup
+        .string()
+        .oneOf(['display', 'minor', 'major', 'admin'], 'Invalid role')
+        .required('Required'),
 })
-
-const getRoleId = (role) => {
-    const roleMap = {
-        Admin: 1,
-        Manager: 2,
-        Member: 3,
-        Viewer: 4,
-    }
-    return roleMap[role] || 4
-}
 
 // Submission function to invite user to supabase with email
 
 const onSubmit = async (values, actions) => {
-    console.log(values) // logs all values being submitted
-    //console.log(actions) // displays available formik actions
-    //await new Promise((resolve) => setTimeout(resolve, 3000)) // simulating a database post promise
-    try {
-        const { data, error } = await supabase.auth.admin.inviteUserByEmail(
-            values.email,
+    const metadataToSend = {
+        role: values.role,
+        first_name: values.fName,
+        last_name: values.lName,
+    }
 
-            {
-                user_metadata: {
-                    role: values.role.toLowerCase(),
-                    role_id: getRoleId(values.role),
-                    first_name: values.fName,
-                    last_name: values.lName,
-                },
-            }
-        )
+    console.log('Values from form:', values)
+    console.log('Metadata being sent:', metadataToSend)
+
+    try {
+        const { data, error } =
+            await supabaseAdmin.auth.admin.inviteUserByEmail(values.email, {
+                data: metadataToSend,
+                redirectTo: 'http://localhost:5173/set-password',
+            })
+
+        console.log('Full Supabase response:', { data, error })
 
         if (error) {
             console.error('Error inviting user:', error)
@@ -71,9 +66,9 @@ const onSubmit = async (values, actions) => {
         }
 
         console.log('User invite success')
-        actions.resetForm() // reset/clear the form
+        actions.resetForm()
     } catch (error) {
-        console.error('Error submitting form:', err)
+        console.error('Error submitting form:', error)
     }
 }
 
@@ -93,7 +88,7 @@ const AddUser = () => {
     } = useFormik({
         initialValues: {
             email: '',
-            role: 'Viewer',
+            role: 'display',
             fName: '',
             lName: '',
         },
