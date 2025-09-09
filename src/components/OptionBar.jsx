@@ -53,7 +53,7 @@ const optionBar = () => {
     return (
         <nav className='navbar'>
             <Logo />
-            <NavBar items={nav_Items} />
+            {isLoggedIn && <NavBar items={nav_Items} />}
             <SessionManager
                 isLoggedIn={isLoggedIn}
                 toggleLogin={() => setIsLoggedIn(!isLoggedIn)}
@@ -101,14 +101,14 @@ const SessionManager = ({ isLoggedIn, toggleLogin }) => (
             className='userAvatar'
         />
         {isLoggedIn ? (
-            <Link to='/tempProfile' className='navLink'>
+            <Link to='/login' className='navLink'>
                 <Button onClick={toggleLogin} className='navButton'>
                     <LogoutIcon className='navBarIcon' />
                     <span className='navButtonText'>Logout</span>
                 </Button>
             </Link>
         ) : (
-            <Link to='/login' className='navLink'>
+            <Link to='/dashboard' className='navLink'>
                 <Button onClick={toggleLogin} className='navButton'>
                     <LoginIcon className='navBarIcon' />
                     <span className='navButtonText'>Login</span>
