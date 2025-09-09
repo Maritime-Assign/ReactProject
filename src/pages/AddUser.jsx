@@ -1,7 +1,7 @@
 /**
- * Add Job Page with Form Validation and Error Handling
- * Form elements are imported using FormInput component given a different type of form element as type prop
- * Forms handled with Formik,Yup open source components installed in the project
+ * AddUser page to allow admin to add a new user to the site and assign a role to them
+ * new users are sent an email with a link which redirects them to the SetPassword page to create a password
+ * New record is created in the user_roles table in supabase, saving the user's role for future use with sessions and permissions
  */
 
 import styles from './AddJob.module.css'
@@ -13,7 +13,8 @@ import * as yup from 'yup'
 import supabaseAdmin from '../api/supabaseAdmin'
 import supabase from '../supabaseClient'
 
-// Array for options for the dropdown
+// Array for role options in the dropdown
+// changed to match enum type for user roles
 const roleOptions = ['display', 'minor', 'major', 'admin']
 
 // Schema for validation
@@ -42,20 +43,24 @@ const userValidationSchema = yup.object().shape({
 // Submission function to invite user to supabase with email
 
 const onSubmit = async (values, actions) => {
+    // metadata sent to supabase to get name and role
     const metadataToSend = {
         role: values.role,
         first_name: values.fName,
         last_name: values.lName,
     }
 
+    // debug logs
     console.log('Values from form:', values)
     console.log('Metadata being sent:', metadataToSend)
 
     try {
+        // this function uses supabase admin service role key to invite user by email to create a password for their new account
+        // this needs to be moved to a server to hide supabase keys in production app
         const { data, error } =
             await supabaseAdmin.auth.admin.inviteUserByEmail(values.email, {
                 data: metadataToSend,
-                redirectTo: 'http://localhost:5173/set-password',
+                redirectTo: 'http://localhost:5173/set-password', // change redirect link when official site URL is created
             })
 
         console.log('Full Supabase response:', { data, error })
@@ -72,7 +77,7 @@ const onSubmit = async (values, actions) => {
     }
 }
 
-// Main AddJob Page component
+// Main AddUser component
 const AddUser = () => {
     const navigate = useNavigate() // react router function to navigate back
 
@@ -92,7 +97,7 @@ const AddUser = () => {
             fName: '',
             lName: '',
         },
-        validationSchema: userValidationSchema, // schema used to validate entries usink Formik
+        validationSchema: userValidationSchema, // schema used to validate entries using Formik
         onSubmit,
         validateOnChange: true,
         validateOnBlur: false,
