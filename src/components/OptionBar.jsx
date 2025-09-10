@@ -1,5 +1,5 @@
 // Need this to manage login and logout states
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 // mui containers
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
@@ -17,6 +17,9 @@ import tempAccountPic from '../assets/tom.jpg'
 import './OptionBar.css'
 // import link to nav to internal pages
 import { Link } from 'react-router-dom'
+
+// import supabase from '../supabaseClient' // for auth when implemented
+import supabase from '../supabaseClient'
 
 // array for center nav options
 const nav_Items = [
@@ -44,20 +47,50 @@ const nav_Items = [
     Button#1 Button#2
 */
 
-// contains the core 3 components
-const optionBar = () => {
-    // set to false, will trigger to true on an event which for now is just click
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
+//This function is to toggle dashboard on and off depending on log-in status
+const CheckLogStatus = () => {
+  const [user, setUser] = useState(null)
 
-    // renders the nav items we made and toggles logged in or out
+  useEffect(() => {
+    let mounted = true
+
+    // initial session check
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return
+      setUser(data.session?.user ?? null)
+    }).catch((err) => {
+      console.error('getSession error', err)
+    })
+
+    // subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return
+      setUser(session?.user ?? null)
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  if (user) {
+    
+    return <NavBar items={nav_Items} />
+  } else {
+    //no one is logged in
+  }
+}
+
+// contains the core 3 components
+const OptionBar = () => {
     return (
         <nav className='navbar'>
             <Logo />
-            {isLoggedIn && <NavBar items={nav_Items} />}
-            <SessionManager
-                isLoggedIn={isLoggedIn}
-                toggleLogin={() => setIsLoggedIn(!isLoggedIn)}
-            />
+
+            <CheckLogStatus />
+            <SessionManager />
+
         </nav>
     )
 }
@@ -93,28 +126,57 @@ const NavButton = ({ item }) => (
 
 // session manager component deals with the authentication login/logout ui
 // isLoggedIn determines the current authentication state
-const SessionManager = ({ isLoggedIn, toggleLogin }) => (
-    <div className='sessionContainer'>
-        <Avatar
-            alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
-            src={isLoggedIn ? tempAccountPic : ''}
-            className='userAvatar'
-        />
-        {isLoggedIn ? (
-            <Link to='/login' className='navLink'>
-                <Button onClick={toggleLogin} className='navButton'>
-                    <LogoutIcon className='navBarIcon' />
-                    <span className='navButtonText'>Logout</span>
-                </Button>
-            </Link>
-        ) : (
-            <Link to='/dashboard' className='navLink'>
-                <Button onClick={toggleLogin} className='navButton'>
-                    <LoginIcon className='navBarIcon' />
-                    <span className='navButtonText'>Login</span>
-                </Button>
-            </Link>
-        )}
-    </div>
-)
-export default optionBar
+
+// Uses supabase auth session instead of isLoggedIn state to determine login status
+const SessionManager = () => {
+    const [user, setUser] = useState(null)
+
+    useEffect(() => {
+        // Get current session on mount
+        supabase.auth.getSession().then(({ data }) => {
+            setUser(data.session?.user ?? null)
+        })
+
+        // Listen for auth state changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null)
+        })
+
+        // Cleanup subscription on unmount
+        return () => {
+            subscription.unsubscribe()
+        }
+    }, [])
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut()
+        setUser(null)
+    }
+
+    return (
+        <div className='sessionContainer'>
+            <Avatar
+                alt={user ? 'User Avatar' : 'Guest Avatar'}
+                src={user ? tempAccountPic : ''}
+                className='userAvatar'
+            />
+            {user ? (
+                <Link to='/dashboard' className='navLink'>
+                    <Button onClick={handleLogout} className='navButton'>
+                        <LogoutIcon className='navBarIcon' />
+                        <span className='navButtonText'>Logout</span>
+                    </Button>
+                </Link>
+            ) : (
+                <Link to='/login' className='navLink'>
+                    <Button className='navButton'>
+                        <LoginIcon className='navBarIcon' />
+                        <span className='navButtonText'>Login</span>
+                    </Button>
+                </Link>
+            )}
+        </div>
+    )
+}
+
+export default OptionBar
