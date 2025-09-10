@@ -1,4 +1,4 @@
-import { supabase } from './supabase.js'
+import { supabase } from './supabaseClient.js'
 
 async function fetchJobs() {
   const { data, error } = await supabase.from('Jobs').select() // Fetch all jobs from the Jobs table

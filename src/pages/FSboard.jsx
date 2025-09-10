@@ -14,8 +14,8 @@ const FSboard = () => {
                 const fetchedJobs = await getJobsArray() // Call the jobDataAPI function
                 setJobs(fetchedJobs) // Update the jobs state with the fetched data
                 setError(null) // Clear any previous errors
-            } catch (err) {
-                console.error('Error fetching jobs:', err)
+            } catch (error) {
+                console.error('Error fetching jobs:', error)
                 setError('Failed to load jobs') // Set an error message
             } finally {
                 setLoading(false) // Set loading to false after fetching
@@ -42,7 +42,7 @@ const FSboard = () => {
             <FSBheader />
             {jobs.map((job, index) => (
                 <JobListing
-                    key={job.id} // Add a unique key for each job
+                    key={job.id} // the primary key for each job
                     id={job.id}
 
                     {...job}
