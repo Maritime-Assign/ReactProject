@@ -47,13 +47,50 @@ const nav_Items = [
     Button#1 Button#2
 */
 
+//This function is to toggle dashboard on and off depending on log-in status
+const CheckLogStatus = () => {
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    let mounted = true
+
+    // initial session check
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return
+      setUser(data.session?.user ?? null)
+    }).catch((err) => {
+      console.error('getSession error', err)
+    })
+
+    // subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return
+      setUser(session?.user ?? null)
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  if (user) {
+    
+    return <NavBar items={nav_Items} />
+  } else {
+    //no one is logged in
+  }
+}
+
 // contains the core 3 components
 const OptionBar = () => {
     return (
         <nav className='navbar'>
             <Logo />
-            <NavBar items={nav_Items} />
+
+            <CheckLogStatus />
             <SessionManager />
+
         </nav>
     )
 }
@@ -89,6 +126,7 @@ const NavButton = ({ item }) => (
 
 // session manager component deals with the authentication login/logout ui
 // isLoggedIn determines the current authentication state
+
 // Uses supabase auth session instead of isLoggedIn state to determine login status
 const SessionManager = () => {
     const [user, setUser] = useState(null)
@@ -123,7 +161,7 @@ const SessionManager = () => {
                 className='userAvatar'
             />
             {user ? (
-                <Link to='/tempProfile' className='navLink'>
+                <Link to='/dashboard' className='navLink'>
                     <Button onClick={handleLogout} className='navButton'>
                         <LogoutIcon className='navBarIcon' />
                         <span className='navButtonText'>Logout</span>
