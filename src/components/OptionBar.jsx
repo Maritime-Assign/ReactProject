@@ -1,5 +1,5 @@
 // Need this to manage login and logout states
-import React, { useState } from 'react'
+import React from 'react'
 // mui containers
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
@@ -19,6 +19,9 @@ import './OptionBar.css'
 import { Link, useNavigate } from 'react-router-dom'
 // import user auth context to manage login state
 import { UserAuth } from "../context/AuthContext";
+
+// import supabase from '../supabaseClient' // for auth when implemented
+import supabase from '../supabaseClient'
 
 // array for center nav options
 const nav_Items = [
@@ -47,7 +50,7 @@ const nav_Items = [
 */
 
 // contains the core 3 components
-const optionBar = () => {
+const OptionBar = () => {
     const { user, signOut } = UserAuth(); // Get user and signOut from context
     const navigate = useNavigate(); // Get navigate function
     const isLoggedIn = !!user; // Determine login status from user object
@@ -61,7 +64,6 @@ const optionBar = () => {
         }
     };
 
-    // renders the nav items we made and toggles logged in or out
     return (
         <nav className='navbar'>
             <Logo />
@@ -72,15 +74,6 @@ const optionBar = () => {
             />
         </nav>
     );
-};
-
-const handleLogout = async (signOut) => {
-    try {
-        await signOut(); // Call the signOut function from context
-        navigate("/login");
-    } catch (error) {
-        console.error("Error signing out:", error);
-    }
 };
 
 // logo component renders a container div with an image element
@@ -138,4 +131,5 @@ const SessionManager = ({ isLoggedIn, handleLogout }) => (
         )}
     </div>
 );
-export default optionBar
+
+export default OptionBar
