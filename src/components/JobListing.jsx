@@ -1,6 +1,7 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
 import { UserAuth } from '../context/AuthContext.jsx'
+import { supabase } from './supabaseClient.js'
 
 
 const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
