@@ -35,7 +35,7 @@ const DashboardUser = () => {
                     </div>
                     <div className={dashButton}>
                         <span className='mb-1'>View Changes</span>
-                        <Link to='/dashboard'>
+                        <Link to='/dashboard/user'>
                             <button className='cursor-pointer'>
                                 <AiOutlineHistory className='w-[100px] h-[100px]' />
                             </button>
@@ -43,7 +43,7 @@ const DashboardUser = () => {
                     </div>
                     <div className={dashButton}>
                         <span className='mb-1'>Manage Account</span>
-                        <Link to='/dashboard'>
+                        <Link to='/dashboard/user'>
                             <button className='cursor-pointer'>
                                 <LiaUsersCogSolid className='w-[100px] h-[100px]' />
                             </button>
