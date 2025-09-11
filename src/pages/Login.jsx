@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './Login.module.css'
-import Cookies from 'js-cookie'
 import showPasswordIcon from '../assets/show_password_icon.svg'
-import { Routes, Route, Link, useNavigate } from 'react-router-dom'
-import supabase from '../supabaseClient'
+import {Link, useNavigate } from 'react-router-dom'
 import { UserAuth } from "../context/AuthContext";
 
 const Login = () => {
