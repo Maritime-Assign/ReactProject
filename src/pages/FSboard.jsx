@@ -44,6 +44,14 @@ const FSboard = () => {
                 <JobListing
                     key={job.id} // the primary key for each job
                     id={job.id}
+
+                    {...job}
+                    handleClaimJob={() => {
+                        // need to refresh jobs after claiming'
+                        setLoading(true);
+                        getJobsArray().then(setJobs).finally(() => setLoading(false));
+                    }} 
+
                     branch1={job.branch1}
                     branch2={job.branch2}
                     open={job.open}

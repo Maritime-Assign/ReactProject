@@ -49,6 +49,41 @@ const nav_Items = [
     Button#1 Button#2
 */
 
+//This function is to toggle dashboard on and off depending on log-in status
+const CheckLogStatus = () => {
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    let mounted = true
+
+    // initial session check
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return
+      setUser(data.session?.user ?? null)
+    }).catch((err) => {
+      console.error('getSession error', err)
+    })
+
+    // subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return
+      setUser(session?.user ?? null)
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  if (user) {
+    
+    return <NavBar items={nav_Items} />
+  } else {
+    //no one is logged in
+  }
+}
+
 // contains the core 3 components
 const OptionBar = () => {
     const { user, signOut } = UserAuth(); // Get user and signOut from context
