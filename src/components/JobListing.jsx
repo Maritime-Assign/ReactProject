@@ -1,12 +1,11 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
-import supabase from '../supabaseClient'
+import { UserAuth } from '../context/AuthContext.jsx'
 
 
 const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
+    const { user } = UserAuth();
     const [status, setStatus] = useState(props.open);
-    
-    
     const [makingClaim, setClaim] = useState(false);
     const [error, setError] = useState(null);
 
@@ -34,19 +33,11 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
         // Debugging
         console.log('props.id:', props.id, 'type:', typeof props.id);
 
-
         setClaim(true);
         setError(null);
 
-        //const { data, error: userError } = await supabase.auth.getUser();
-        //const user = data?.user;
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        const user = session?.user;
-
-
         // If claim is made when not logged in
-        if (sessionError || !user) {
-            //console.log('User not logged in:', { sessionError, user });
+        if (!user) {
             setError('You must be logged in to claim a job.');
             setClaim(false);
             return;

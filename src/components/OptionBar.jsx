@@ -1,5 +1,5 @@
 // Need this to manage login and logout states
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 // mui containers
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
@@ -16,7 +16,9 @@ import tempAccountPic from '../assets/tom.jpg'
 // styles file
 import './OptionBar.css'
 // import link to nav to internal pages
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+// import user auth context to manage login state
+import { UserAuth } from "../context/AuthContext";
 
 // import supabase from '../supabaseClient' // for auth when implemented
 import supabase from '../supabaseClient'
@@ -84,16 +86,30 @@ const CheckLogStatus = () => {
 
 // contains the core 3 components
 const OptionBar = () => {
+    const { user, signOut } = UserAuth(); // Get user and signOut from context
+    const navigate = useNavigate(); // Get navigate function
+    const isLoggedIn = !!user; // Determine login status from user object
+
+    const handleLogout = async () => {
+        try {
+            await signOut();
+            navigate('/login');
+        } catch (error) {
+            console.error("Error signing out: ", error);
+        }
+    };
+
     return (
         <nav className='navbar'>
             <Logo />
-
-            <CheckLogStatus />
-            <SessionManager />
-
+            {isLoggedIn && <NavBar items={nav_Items} />}
+            <SessionManager
+                isLoggedIn={isLoggedIn}
+                handleLogout={handleLogout} // Pass the new handleLogout function
+            />
         </nav>
-    )
-}
+    );
+};
 
 // logo component renders a container div with an image element
 // both the container and the image have their own CSS linked with className
@@ -126,57 +142,29 @@ const NavButton = ({ item }) => (
 
 // session manager component deals with the authentication login/logout ui
 // isLoggedIn determines the current authentication state
-
-// Uses supabase auth session instead of isLoggedIn state to determine login status
-const SessionManager = () => {
-    const [user, setUser] = useState(null)
-
-    useEffect(() => {
-        // Get current session on mount
-        supabase.auth.getSession().then(({ data }) => {
-            setUser(data.session?.user ?? null)
-        })
-
-        // Listen for auth state changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null)
-        })
-
-        // Cleanup subscription on unmount
-        return () => {
-            subscription.unsubscribe()
-        }
-    }, [])
-
-    const handleLogout = async () => {
-        await supabase.auth.signOut()
-        setUser(null)
-    }
-
-    return (
-        <div className='sessionContainer'>
-            <Avatar
-                alt={user ? 'User Avatar' : 'Guest Avatar'}
-                src={user ? tempAccountPic : ''}
-                className='userAvatar'
-            />
-            {user ? (
-                <Link to='/dashboard' className='navLink'>
-                    <Button onClick={handleLogout} className='navButton'>
-                        <LogoutIcon className='navBarIcon' />
-                        <span className='navButtonText'>Logout</span>
-                    </Button>
-                </Link>
-            ) : (
-                <Link to='/login' className='navLink'>
-                    <Button className='navButton'>
-                        <LoginIcon className='navBarIcon' />
-                        <span className='navButtonText'>Login</span>
-                    </Button>
-                </Link>
-            )}
-        </div>
-    )
-}
+const SessionManager = ({ isLoggedIn, handleLogout }) => (
+    <div className='sessionContainer'>
+        <Avatar
+            alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
+            src={isLoggedIn ? tempAccountPic : ''}
+            className='userAvatar'
+        />
+        {isLoggedIn ? (
+            <Link to='/login' className='navLink'>
+                <Button onClick={handleLogout} className='navButton'>
+                    <LogoutIcon className='navBarIcon' />
+                    <span className='navButtonText'>Logout</span>
+                </Button>
+            </Link>
+        ) : (
+            <Link to='/login' className='navLink'>
+                <Button className='navButton'>
+                    <LoginIcon className='navBarIcon' />
+                    <span className='navButtonText'>Login</span>
+                </Button>
+            </Link>
+        )}
+    </div>
+);
 
 export default OptionBar
