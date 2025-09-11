@@ -7,6 +7,7 @@ import { faker } from '@faker-js/faker';
 import './UsersAndRoles.css';
 import { FaEdit } from 'react-icons/fa';
 import supabase from '../supabaseClient';
+import ImageDropdown from '../components/ImageDropdown/ImageDropdown'
   
 const getAllUsers = async () => {
   const { data, error } = await supabase.from("Users").select("*");
@@ -71,9 +72,14 @@ const UsersAndRoles = () => {
         {filteredUsers.map((user) => (
           <div className="grid-row" key={user.id}>
             <div className="grid-cell">
-              <button className="edit-button" title="Edit Role"><FaEdit /></button>
+              <ImageDropdown 
+                userId={user.id} 
+                currentRole={user.role_id}
+                onRoleChange={(newRole) => {
+                  console.log(`User ${user.id} changed role to: ${newRole}`);
+                }}
+              />
             </div>
-            <div className="grid-cell">{user.role_id}</div>
             <div className="grid-cell">{user.first_name}</div>
             <div className="grid-cell">{user.email}</div>
           </div>
