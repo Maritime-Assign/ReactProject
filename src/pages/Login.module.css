@@ -1,0 +1,103 @@
+@import 'tailwindcss';
+@reference "../index.css";
+
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    border: #252761 solid 2px;
+    border-radius: 8%;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10%;
+}
+
+.text {
+    color: #252761;
+    font-size: x-large;
+    font-weight: bold;
+    font-family: 'Monteserrat', sans-serif;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.underline {
+    width: 400px;
+    height: 5px;
+    background: #252761;
+    border-radius: 10px;
+}
+
+.input {
+    @apply border-none w-full h-full p-0 m-0 font-mont text-lg text-mebablue-dark focus:outline-none text-center;
+}
+
+.checkbox {
+    @apply h-5 w-5 m-0 p-0;
+}
+
+.showPasswordIcon {
+    cursor: pointer;
+}
+
+.remember-me {
+    display: flex;
+    flex-direction: row;
+    margin-right: 20px;
+    margin-top: 10px;
+    color: #252761;
+    font-size: medium;
+    align-items: center;
+}
+
+.remember-me input {
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    margin-bottom: 10px;
+}
+
+.forgot-password {
+    display: flex;
+    justify-content: center;
+    margin-right: 20px;
+    margin-top: 10px;
+    color: #252761;
+    font-size: medium;
+}
+
+.forgot-password span {
+    color: #252761;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.submit-container {
+    display: flex;
+    gap: 20px;
+    margin: 50px auto;
+}
+
+.submit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
+    height: 50px;
+    color: white;
+    border-radius: 500px;
+    background: #252761;
+    font-size: large;
+    font-weight: normal;
+    cursor: pointer;
+    font-family: 'Monteserrat', sans-serif;
+}

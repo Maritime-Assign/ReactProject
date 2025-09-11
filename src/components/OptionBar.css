@@ -1,0 +1,100 @@
+/*Need this for specific font*/
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+/**/
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #ffffff;
+    width: 100%;
+    max-width: 1280px;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+    height: 80px;
+}
+
+.logoContainer {
+    flex: 0 0 auto; /* stop flex-grow */
+}
+
+.navBarContainer {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+    gap: 20px;
+}
+
+.sessionContainer {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-left: 30px; /*adjust for logo offsetting true center 
+                            while maintaining logo size*/
+}
+
+.maritimeLogo {
+    height: 70px;
+}
+
+.navButton {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    width: 150px; /*how wide the button can be*/
+    position: relative;
+}
+
+.navButtonText {
+    margin-left: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    color: #252761;
+}
+
+.navButton:hover {
+    color: #252761;
+    background-color: #ffffff;
+}
+
+.navButton::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background-color: #252761;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.navButton:hover::after {
+    transform: scaleX(0.8);
+}
+
+.navBarIcon {
+    color: #252761;
+}
+
+/* columns on resize */
+@media (max-width: 600px) {
+    .navbar {
+        flex-direction: column;
+        align-items: center;
+    }
+    /*separate if need to distinguish*/
+    .navBarContainer,
+    .sessionContainer {
+        flex-direction: column;
+        align-items: center;
+        padding-left: 0;
+    }
+
+    .navButton {
+        padding: 8px 16px;
+        flex-direction: column;
+    }
+}

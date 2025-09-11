@@ -1,0 +1,29 @@
+@import 'tailwindcss';
+
+@theme {
+    --breakpoint-md: 54rem;
+    --color-mebablue-dark: #252761;
+    --color-mebablue-light: #4e5598;
+    --color-mebagold: #ffce1e;
+    --color-mebablue-hover: #757cc1;
+    --font-mont: 'Montserrat', sans-serif;
+    --font-fig: 'Figtree', sans-serif;
+}
+
+:root {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    font-size: 16px;
+
+    color-scheme: light dark;
+    color: black;
+    background-color: white;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    min-height: 100%;
+}

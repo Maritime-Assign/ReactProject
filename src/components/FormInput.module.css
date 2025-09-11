@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+@reference '../index.css';
+
+.datePickerBase {
+    @apply border border-neutral-300 ml-0 mt-0 w-sm p-3 rounded-md text-left focus:border-1 focus:border-mebagold focus:outline-none;
+}
+
+.datePickerError {
+    @apply border-red-500 ml-0 mt-0 w-sm text-left;
+}
+
+.textBase {
+    @apply border rounded-md p-3 border-neutral-300 border w-sm mt-0 text-left focus:border-1 focus:border-mebagold focus:outline-none;
+}
+
+.textError {
+    @apply border-red-500 border w-sm mt-0 text-left p-3 rounded-md focus:outline-none;
+}
+
+.multi {
+    @apply border border-neutral-300 border w-sm mt-0 text-left rounded-md p-3 focus:outline-none focus:border-mebagold;
+}
+
+.selectBase {
+    @apply w-sm p-3 rounded-md border-1 border-neutral-300 focus:border focus:border-mebagold focus:outline-none;
+}
+
+.selectError {
+    @apply w-sm p-3 rounded-md border-1 border-red-500;
+}

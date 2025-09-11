@@ -1,0 +1,92 @@
+/*\
+import for meba font
+font-family: 'Monteserrat', sans-serif;
+*/
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+
+/*Page Root container*/
+.users-roles-container {
+    width: 1200px;
+    max-width: 100%;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    font-family: 'Montserrat', sans-serif;
+  }
+  /*Page Title*/
+  h1 {
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: larger;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+  }
+  
+  .search-box {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .search-input {
+    padding: 10px;
+    width: 100%;
+    max-width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: left;
+  }
+  /*Results root container under search bar*/
+  .grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    width: 100%;
+    margin-top: 20px;
+  }
+  
+  .grid-header, .grid-row {
+    display: grid;
+    grid-template-columns: 80px 200px 300px 1fr;
+    align-items: center;
+    padding: 10px;
+  }
+  
+  .grid-header {
+    background-color: #fff    ;
+    font-weight: bold;
+  }
+  /*prevent layout being changed by overflow*/
+  .grid-cell {
+    padding: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /*alternating grey and white results for easier viewing*/
+  .grid-row:nth-child(even) {
+    background-color: #e6e8f4;
+  }
+  
+  .edit-button {
+    padding: 5px 10px;
+    background-color: inherit;
+    color: #003b5c;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .edit-button:nth-child(even) {
+    background-color: #e6e8f4;
+  }
+  
+  /*keep just in case we move away from icon symbol for edit*/
+  .edit-button:hover {
+    background-color: inherit
+  }
+
+  

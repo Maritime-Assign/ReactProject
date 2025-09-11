@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+
+@theme {
+    --breakpoint-md: 54rem;
+}
+
+#root {
+    height: 100%;
+    margin: 0 auto;
+    padding: 1rem;
+}
