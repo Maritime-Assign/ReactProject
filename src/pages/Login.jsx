@@ -1,56 +1,48 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './Login.module.css'
-import Cookies from 'js-cookie'
 import showPasswordIcon from '../assets/show_password_icon.svg'
-import { Routes, Route, Link, useNavigate } from 'react-router-dom'
-import supabase from '../supabaseClient'
+import {Link, useNavigate } from 'react-router-dom'
+import { UserAuth } from "../context/AuthContext";
 
 const Login = () => {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false)
-    const [rememberMe, setRememberMe] = useState(false)
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const { signInUser, user } = UserAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const savedEmail = Cookies.get('email')
-        if (savedEmail) {
-            setEmail(savedEmail)
-            setRememberMe(true)
+        if (user) {
+          navigate('/dashboard');
         }
-    }, [])
-
-    // * const handleSubmit = () => {
-    //    console.log('Email:', email)
-    //    console.log('Password:', password)
-    //    if (rememberMe) {
-    //        Cookies.set('email', email, { expires: 7 })
-    //    } else {
-    //        console.log('Email cookie removed')
-    //        Cookies.remove('email')
-    //    }
-    //}
-
-    const [err, setErr] = useState('')
-    const [busy, setBusy] = useState(false)
-    const navigate = useNavigate()
-
-    const handleSubmit = async () => {
-        setBusy(true)
-        setErr('')
-
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        })
-        setBusy(false)
+      }, [user, navigate]);
+    
+    const handleLogIn = async (e) => {
+        e.preventDefault();
+        setLoading(true)
+        const { session, error } = await signInUser(email, password); // Use your signIn function
+    
         if (error) {
-            setErr(error.message)
-            return
+          setError(error); // Set the error message if sign-in fails
+          setLoading(false);
+    
+          // Set a timeout to clear the error message after a specific duration (e.g., 3 seconds)
+          setTimeout(() => {
+            setError("");
+          }, 3000); // 3000 milliseconds = 3 seconds
+        } else {
+          // Redirect or perform any necessary actions after successful sign-in
+          navigate("/dashboard");
         }
-
-        // redirect upon successful login
-        navigate('/dashboard')
-    }
+    
+        if (session) {
+          closeModal();
+          setError(""); // Reset the error when there's a session
+        }
+      };
 
     const toggleShowPassword = () => {
         setShowPassword(!showPassword)
@@ -93,22 +85,6 @@ const Login = () => {
                         />
                     </div>
                 </div>
-                <div className='flex flex-row w-full items-center justify-center py-2'>
-                    <input
-                        type='checkbox'
-                        id='checkbox'
-                        cursor='pointer'
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                        className={styles.checkbox}
-                    />
-                    <span
-                        htmlFor='checkbox'
-                        className='font-mont text-mebablue-dark ml-2 py-2 font-medium text-lg'
-                    >
-                        Remember Me
-                    </span>
-                </div>
                 <div className=''>
                     <button className='bg-mebablue-light rounded-md px-4 py-2 w-100'>
                         <Link to='/recovery'>
@@ -122,15 +98,15 @@ const Login = () => {
                 <div className='py-2'>
                     <button
                         className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont'
-                        onClick={handleSubmit}
+                        onClick={handleLogIn}
                     >
                         Login
                     </button>
                 </div>
-                {err && (
-                    <p style={{ color: 'red', textAlign: 'center' }}>{err}</p>
+                {error && (
+                    <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>
                 )}
-                {busy && <p style={{ textAlign: 'center' }}>Signing in…</p>}
+                {loading && <p style={{ textAlign: 'center' }}>Signing in…</p>}
             </div>
         </div>
     )
