@@ -22,6 +22,7 @@ const onSubmit = async (values, actions) => {
     console.log(values) // logs all values being submitted
     //console.log(actions) // displays available formik actions
     await new Promise((resolve) => setTimeout(resolve, 3000)) // simulating a database post promise
+
     actions.resetForm() // reset/clear the form
 }
 
@@ -166,7 +167,7 @@ const AddJob = () => {
                             value={values.shipName}
                             placeholder='Enter Ship Name'
                             onChange={handleChange}
-                            onBlue={handleBlur}
+                            onBlur={handleBlur}
                             className={
                                 errors.shipName && touched.shipName
                                     ? 'textError'
