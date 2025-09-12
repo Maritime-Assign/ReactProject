@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import styles from './Login.module.css'
 import showPasswordIcon from '../assets/show_password_icon.svg'
-import {Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { UserAuth } from "../context/AuthContext";
+import supabase from "../supabaseClient";
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -16,33 +17,53 @@ const Login = () => {
 
     useEffect(() => {
         if (user) {
-          navigate('/dashboard');
+            navigate('/dashboard');
         }
-      }, [user, navigate]);
-    
+    }, [user, navigate]);
+
     const handleLogIn = async (e) => {
         e.preventDefault();
-        setLoading(true)
-        const { session, error } = await signInUser(email, password); // Use your signIn function
-    
-        if (error) {
-          setError(error); // Set the error message if sign-in fails
-          setLoading(false);
-    
-          // Set a timeout to clear the error message after a specific duration (e.g., 3 seconds)
-          setTimeout(() => {
-            setError("");
-          }, 3000); // 3000 milliseconds = 3 seconds
-        } else {
-          // Redirect or perform any necessary actions after successful sign-in
-          navigate("/dashboard");
+        setLoading(true);
+        setError(null);
+
+        try {
+            const result = await signInUser(email, password);
+
+            if (!result.success) {
+                setError(result.error);
+                setTimeout(() => setError(""), 3000);
+                return;
+            }
+
+            const loggedInUser = result.data.user;
+            if (loggedInUser) {
+                const { error: insertError } = await supabase
+                    .from("login_events")
+                    .insert([
+                        {
+                            user_id: loggedInUser.id,
+                            timestamp: new Date().toISOString(), // matches table column
+                            email: loggedInUser.email,
+                        },
+                    ]);
+
+                if (insertError) {
+                    console.error("Failed to log event:", insertError.message);
+                } else {
+                    console.log("Login event inserted for user:", loggedInUser.id);
+                }
+            }
+
+            navigate("/dashboard");
+        } catch (err) {
+            console.error(err);
+            setError("Unexpected error logging in");
+        } finally {
+            setLoading(false);
         }
-    
-        if (session) {
-          closeModal();
-          setError(""); // Reset the error when there's a session
-        }
-      };
+    };
+
+
 
     const toggleShowPassword = () => {
         setShowPassword(!showPassword)
