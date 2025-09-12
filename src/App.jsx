@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import OptionBar from './components/OptionBar'
 import Dashboard from './pages/Dashboard'
+import DashboardManager from './pages/DashboardManager'
+import DashboardUser from './pages/DashboardUser'
+import DashboardViewer from './pages/DashboardViewer'
 import ViewBoard from './pages/ViewBoard'
 import PasswordRecovery from './pages/PasswordRecovery'
 import Login from './pages/Login'
@@ -30,6 +33,9 @@ const App = () => {
                     <Route path='/addjob' element={<AddJob />} />
                     <Route path='/users-roles' element={<UsersAndRoles />} />
                     <Route path='/editjob' element={<EditJob />} />
+                    <Route path ='/dashboard/manager' element={<DashboardManager />} />
+                    <Route path ='/dashboard/user' element={<DashboardUser />} />
+                    <Route path ='/dashboard/viewer' element={<DashboardViewer />} />
                 </Routes>
             </div>
         </div>
