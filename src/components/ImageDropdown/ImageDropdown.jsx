@@ -56,7 +56,7 @@ const ImageDropdown = ({ userId, currentRole, onRoleChange }) => {
   return (
     <div ref={containerRef} style={{ position: "relative", display: "inline-block" }}>
       <img
-        src="https://via.placeholder.com/40"
+        src="null"
         alt="Edit"
         style={{ cursor: "pointer" }}
         onClick={handleImageClick}
