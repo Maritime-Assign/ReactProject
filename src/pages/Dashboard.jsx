@@ -1,7 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { MdLogin, MdTableRows } from 'react-icons/md'
-import { LiaUserLockSolid, LiaUsersCogSolid } from 'react-icons/lia'
+import {
+    LiaUserLockSolid,
+    LiaUserPlusSolid,
+    LiaUsersCogSolid,
+} from 'react-icons/lia'
 import { AiOutlineHistory } from 'react-icons/ai'
 import {
     RiListSettingsLine,
@@ -59,17 +63,17 @@ const Dashboard = () => {
                     </div>
                     <div className={dashButton}>
                         <span className='mb-1'>Manage Users</span>
-                        <Link to='/dashboard'>
+                        <Link to='/users-roles'>
                             <button className='cursor-pointer'>
                                 <LiaUsersCogSolid className='w-[100px] h-[100px]' />
                             </button>
                         </Link>
                     </div>
                     <div className={dashButton}>
-                        <span className='mb-1'>User Permissions</span>
-                        <Link to='/users-roles'>
+                        <span className='mb-1'>Add New User</span>
+                        <Link to='/add-user'>
                             <button className='cursor-pointer'>
-                                <LiaUserLockSolid className='w-[100px] h-[100px]' />
+                                <LiaUserPlusSolid className='w-[100px] h-[100px]' />
                             </button>
                         </Link>
                     </div>
