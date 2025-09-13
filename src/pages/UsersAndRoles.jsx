@@ -39,7 +39,7 @@ const UsersAndRoles = () => {
     String(user.first_name || "")
       .toLowerCase()
       .includes(searchWord.toLowerCase()) ||
-    String(user.role_id || "")
+    String(user.role || "")
       .toLowerCase()
       .includes(searchWord.toLowerCase())
   );
@@ -74,12 +74,13 @@ const UsersAndRoles = () => {
             <div className="grid-cell">
               <ImageDropdown 
                 userId={user.id} 
-                currentRole={user.role_id}
+                currentRole={user.role}
                 onRoleChange={(newRole) => {
                   console.log(`User ${user.id} changed role to: ${newRole}`);
                 }}
               />
             </div>
+            <div className="grid-cell">{user.role}</div>
             <div className="grid-cell">{user.first_name}</div>
             <div className="grid-cell">{user.email}</div>
           </div>

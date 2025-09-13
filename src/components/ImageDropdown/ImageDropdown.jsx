@@ -7,7 +7,7 @@ const ImageDropdown = ({ userId, currentRole, onRoleChange }) => {
   const selectRef = useRef(null);
   const containerRef = useRef(null);
 
-  const roles = ["Admin", "Editor", "Viewer", "MEBA Member"];
+  const roles = ["display", "major", "admin", "minor"];
 
   // Focus the dropdown immediately on open
   useEffect(() => {
@@ -40,7 +40,7 @@ const ImageDropdown = ({ userId, currentRole, onRoleChange }) => {
     // Update in Supabase
     const { error } = await supabase
       .from("Users")
-      .update({ role_id: newRole }) // or the actual column name
+      .update({ role: newRole }) // or the actual column name
       .eq("id", userId);
 
     if (error) {
