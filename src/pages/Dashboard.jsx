@@ -51,7 +51,7 @@ const Dashboard = () => {
                 <div className='flex flex-row gap-4 font-mont text-white font-medium text-2xl justify-center items-center'>
                     <div className={dashButton}>
                         <span className='mb-1'>View Changes</span>
-                        <Link to='/dashboard'>
+                        <Link to='/history'>
                             <button className='cursor-pointer'>
                                 <AiOutlineHistory className='w-[100px] h-[100px]' />
                             </button>
