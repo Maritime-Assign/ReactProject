@@ -12,6 +12,7 @@ import AddJob from './pages/AddJob'
 import FSboard from './pages/FSboard'
 import UsersAndRoles from './pages/UsersAndRoles'
 import EditJob from './pages/EditJob'
+import ViewHistory from './components/ViewHistory'
 import AddUser from './pages/AddUser'
 import SetPassword from './pages/SetPassword'
 
@@ -40,6 +41,7 @@ const App = () => {
                     <Route path ='/dashboard/manager' element={<DashboardManager />} />
                     <Route path ='/dashboard/user' element={<DashboardUser />} />
                     <Route path ='/dashboard/viewer' element={<DashboardViewer />} />
+                    <Route path='/history' element={<ViewHistory />} />
                 </Routes>
             </div>
         </div>
