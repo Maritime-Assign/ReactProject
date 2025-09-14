@@ -70,13 +70,14 @@ const UsersAndRoles = () => {
           <div className="grid-cell">Email</div>
         </div>
         {filteredUsers.map((user) => (
-          <div className="grid-row" key={user.id}>
+          <div className="grid-row" key={user.UUID}>
+            {console.log(user.UUID)}
             <div className="grid-cell">
-              <ImageDropdown 
-                userId={user.id} 
+              <ImageDropdown
+                userId={user.UUID}
                 currentRole={user.role}
                 onRoleChange={(newRole) => {
-                  console.log(`User ${user.id} changed role to: ${newRole}`);
+                  console.log(`User ${user.UUID} changed role to: ${newRole}`);
                 }}
               />
             </div>

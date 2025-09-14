@@ -41,7 +41,7 @@ const ImageDropdown = ({ userId, currentRole, onRoleChange }) => {
     const { error } = await supabase
       .from("Users")
       .update({ role: newRole }) // or the actual column name
-      .eq("id", userId);
+      .eq("UUID", userId);
 
     if (error) {
       console.error("Error updating role:", error.message);
@@ -55,13 +55,9 @@ const ImageDropdown = ({ userId, currentRole, onRoleChange }) => {
 
   return (
     <div ref={containerRef} style={{ position: "relative", display: "inline-block" }}>
-      <img
-        src="null"
-        alt="Edit"
-        style={{ cursor: "pointer" }}
-        onClick={handleImageClick}
-      />
-
+      <button onClick={handleImageClick} style={{ cursor: "pointer" }}>
+        Edit
+      </button>
       {showDropdown && (
         <select
           ref={selectRef}
