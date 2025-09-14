@@ -42,7 +42,7 @@ const ImageDropdown = ({ userId, currentRole, onRoleChange }) => {
       .from("Users")
       .update({ role: newRole }) // or the actual column name
       .eq("UUID", userId);
-
+      
     if (error) {
       console.error("Error updating role:", error.message);
       alert("Failed to update role.");

@@ -24,16 +24,26 @@ const getAllUsers = async () => {
 const UsersAndRoles = () => {
   const [searchWord, setSearchWord] = useState('');
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const supabaseUsers = await getAllUsers();
-      console.log("Fetched users:", supabaseUsers);
-      setUsers(supabaseUsers);
+      setLoading(true);
+      try {
+        const supabaseUsers = await getAllUsers();
+        console.log("Fetched users:", supabaseUsers);
+        setUsers(supabaseUsers);
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchUsers();
   }, []);
+
+  if (loading) {
+    return <div className="users-roles-container">Loading users...</div>;
+  }
 
   const filteredUsers = users.filter((user) =>
     String(user.first_name || "")
@@ -77,6 +87,14 @@ const UsersAndRoles = () => {
                 userId={user.UUID}
                 currentRole={user.role}
                 onRoleChange={(newRole) => {
+                  // Show loading while we refresh the users list after a role change
+                  setLoading(true);
+                  // Refresh users from the server to reflect the change
+                  getAllUsers()
+                    .then((supabaseUsers) => setUsers(supabaseUsers))
+                    .catch((err) => console.error('Error refreshing users after role change', err))
+                    .finally(() => setLoading(false));
+
                   console.log(`User ${user.UUID} changed role to: ${newRole}`);
                 }}
               />
