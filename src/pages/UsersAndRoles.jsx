@@ -4,7 +4,8 @@
 import React, { useState } from 'react';
 import { faker } from '@faker-js/faker';
 import './UsersAndRoles.css';
-import { FaEdit } from 'react-icons/fa';
+import { FaEdit, FaUserPlus, FaUserMinus } from 'react-icons/fa';
+import { Link } from 'react-router-dom'
 
 // generate 25 fake users based user tiers
 const generateFakeUsers = () => {
@@ -34,15 +35,24 @@ const UsersAndRoles = () => {
   return (
     <div className="users-roles-container">
       <h1>Maritime Assign Role Manager</h1>
-      <div className="search-box">
-        <input
-          type="text"
-          placeholder="Search by name or role..."
-          value={searchWord}
-          onChange={(e) => setSearchWord(e.target.value)}
-          className="search-input"
-        />
+      <div className='flex justify-center gap-2'>
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Search by name or role..."
+            value={searchWord}
+            onChange={(e) => setSearchWord(e.target.value)}
+            className="search-input"
+          />
+        </div>
+        {/*Button that links to the add user page; Add link later*/}
+        <Link className='content-center'>
+          <button className="add-button" title="Add User">
+            <FaUserPlus/>
+          </button>
+        </Link>
       </div>
+
       <div className="grid-container">
         <div className="grid-header">
           <div className="grid-cell"></div>
@@ -57,11 +67,26 @@ const UsersAndRoles = () => {
         {filteredUsers.map((user) => (
           <div className="grid-row" key={user.id}>
             <div className="grid-cell">
-              <button className="edit-button" title="Edit Role"><FaEdit /></button>
+
+              {/*Button that links to the edit user page*/}
+              <Link to={'/edituser'} state={user}>
+                <button className="edit-button" title="Edit Role">
+                  <FaEdit />
+                </button>
+              </Link>
             </div>
             <div className="grid-cell">{user.role}</div>
             <div className="grid-cell">{user.name}</div>
             <div className="grid-cell">{user.email}</div>
+
+            {/*Button that deletes a user; NOT IMPLEMENTED WITH SUPABASE YET*/}
+            <button 
+              className="remove-button" 
+              title="Remove User" 
+              onClick={() => {setUsers(users.filter(a => a.id !== user.id))}}
+            >
+              <FaUserMinus />
+            </button>
           </div>
         ))}
       </div>

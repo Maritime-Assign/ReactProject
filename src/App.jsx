@@ -9,6 +9,7 @@ import AddJob from './pages/AddJob'
 import FSboard from './pages/FSboard'
 import UsersAndRoles from './pages/UsersAndRoles'
 import EditJob from './pages/EditJob'
+import EditUser from './pages/EditUser'
 
 const App = () => {
     return (
@@ -30,6 +31,7 @@ const App = () => {
                     <Route path='/addjob' element={<AddJob />} />
                     <Route path='/users-roles' element={<UsersAndRoles />} />
                     <Route path='/editjob' element={<EditJob />} />
+                    <Route path='/edituser' element={<EditUser />} />
                 </Routes>
             </div>
         </div>
