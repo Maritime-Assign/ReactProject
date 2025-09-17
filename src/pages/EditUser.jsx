@@ -1,46 +1,59 @@
-import { Link, useLocation} from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { useFormStatus} from 'react-dom'
+import { useFormStatus } from 'react-dom'
 
 const EditUser = () => {
-    //Enables the use of a pending state to represent a form being processed
-    const {processing} = useFormStatus(); 
-    
     //Convert the data of a user and make it editable
-    const {state} = useLocation();
-    const fullName = state.name.split(' ');
+    const { state } = useLocation()
+    const navigate = useNavigate()
+
+    if (!state) {
+        navigate('/users-roles') // fall back if no state is passed
+        return null
+    }
+
+    const fullName = state.name?.split(' ') || ['', '']
     const [user, setUser] = useState({
         fname: fullName[0],
         lname: fullName[1],
-        email: state.email,
-        role: state.role
-    });
+        email: state.email || '',
+        role: state.role || '',
+    })
+
+    //Enables the use of a pending state to represent a form being processed
+    const { processing } = useFormStatus()
 
     //Functions to handle edits of a user's info
     function updateFirstName(e) {
-        setUser({...user, fname: e.target.value});
+        setUser({ ...user, fname: e.target.value })
     }
 
     function updateLastName(e) {
-        setUser({...user, lname: e.target.value});
+        setUser({ ...user, lname: e.target.value })
     }
-    
+
     function updateEmail(e) {
-        setUser({...user, email: e.target.value});
+        setUser({ ...user, email: e.target.value })
     }
 
     function updateRole(e) {
-        setUser({...user, role: e.target.value})
+        setUser({ ...user, role: e.target.value })
     }
 
     //Does nothing for now; Implement Supabase functionality when user data format is finalized
     function submitEdits(e) {
         //Show a message to represent that the edits were submitted; REMOVE WHEN ACTUAL IMPLEMENTATION IS DONE
-        e.preventDefault();
-        alert('Updated first name is ' + user.fname 
-            + '\nUpdated last name is ' + user.lname 
-            + '\nUpdated email is ' + user.email 
-            + '\nUpdated last name is ' + user.role);
+        e.preventDefault()
+        alert(
+            'Updated first name is ' +
+                user.fname +
+                '\nUpdated last name is ' +
+                user.lname +
+                '\nUpdated email is ' +
+                user.email +
+                '\nUpdated role is ' +
+                user.role
+        )
     }
 
     return (
@@ -56,11 +69,12 @@ const EditUser = () => {
                         <span className='text-xl text-[#242762] text-semibold'>
                             First Name
                         </span>
-                        <div className='flex content-center py-3 gap-3'> 
-                            <input type = 'text'
+                        <div className='flex content-center py-3 gap-3'>
+                            <input
+                                type='text'
                                 placeholder='Enter name here'
-                                value= {user.fname}
-                                onChange= {updateFirstName}
+                                value={user.fname}
+                                onChange={updateFirstName}
                                 className='w-[300px] h-[48px] text-center bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                             />
                         </div>
@@ -69,11 +83,12 @@ const EditUser = () => {
                         <span className='text-xl text-[#242762] text-semibold'>
                             Last Name
                         </span>
-                        <div className='flex content-center py-3 gap-3'> 
-                            <input type = 'text'
+                        <div className='flex content-center py-3 gap-3'>
+                            <input
+                                type='text'
                                 placeholder='Enter name here'
-                                value= {user.lname}
-                                onChange= {updateLastName}
+                                value={user.lname}
+                                onChange={updateLastName}
                                 className='w-[300px] h-[48px] text-center bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                             />
                         </div>
@@ -84,13 +99,14 @@ const EditUser = () => {
                 <div className='grid grid-flex-rows p-4 gap-2'>
                     <div>
                         <span className='text-xl text-[#242762] text-semibold'>
-                            Email 
+                            Email
                         </span>
-                        <div className='flex content-center py-3'> 
-                            <input type = 'text'
+                        <div className='flex content-center py-3'>
+                            <input
+                                type='text'
                                 placeholder='Enter email here'
-                                value= {user.email}
-                                onChange= {updateEmail}
+                                value={user.email}
+                                onChange={updateEmail}
                                 className='w-[300px] h-[48px] text-center bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                             />
                         </div>
@@ -98,13 +114,13 @@ const EditUser = () => {
                     {/*User role selection section*/}
                     <div>
                         <span className='py-2 text-[#242762] text-xl text-semibold'>
-                                User Role
+                            User Role
                         </span>
-                        <label className='flex content-center gap-3 py-3'>    
-                            <select 
-                                className='border-1 bg-neutral-100' 
-                                name='newUserRole' 
-                                defaultValue= {user.role}
+                        <label className='flex content-center gap-3 py-3'>
+                            <select
+                                className='border-1 bg-neutral-100'
+                                name='newUserRole'
+                                defaultValue={user.role}
                                 onChange={updateRole}
                             >
                                 <option value='Admin'>Admin</option>
@@ -119,22 +135,21 @@ const EditUser = () => {
                 {/*Buttons to confirm or cancel the edits made to a user*/}
                 <div className='flex flex-row gap-4 p-4'>
                     <Link to='/users-roles'>
-                        <button className = 'px-4 h-12 bg-mebablue-light rounded-md text-white hover:bg-mebablue-hover'>
-                                Cancel Changes
+                        <button className='px-4 h-12 bg-mebablue-light rounded-md text-white hover:bg-mebablue-hover'>
+                            Cancel Changes
                         </button>
                     </Link>
-                    <button 
-                        className = 'px-4 h-12 bg-mebablue-light rounded-md text-white hover:bg-mebablue-hover'
+                    <button
+                        className='px-4 h-12 bg-mebablue-light rounded-md text-white hover:bg-mebablue-hover'
                         type='submit'
-                        disable= {processing}
+                        disabled={processing}
                     >
-                            {/*The submit button label changes based on the status of the form submission*/}
-                            {processing? 'Submitting' : 'Submit Changes'}
+                        {/*The submit button label changes based on the status of the form submission*/}
+                        {processing ? 'Submitting' : 'Submit Changes'}
                     </button>
                 </div>
             </form>
-            
         </div>
-    );
-};
-export default EditUser;
+    )
+}
+export default EditUser
