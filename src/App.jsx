@@ -15,6 +15,7 @@ import EditJob from './pages/EditJob'
 import ViewHistory from './components/ViewHistory'
 import AddUser from './pages/AddUser'
 import SetPassword from './pages/SetPassword'
+import EditUser from './pages/EditUser'
 
 const App = () => {
     return (
@@ -42,6 +43,8 @@ const App = () => {
                     <Route path ='/dashboard/user' element={<DashboardUser />} />
                     <Route path ='/dashboard/viewer' element={<DashboardViewer />} />
                     <Route path='/history' element={<ViewHistory />} />
+                    <Route path='/edituser' element={<EditUser />} />
+
                 </Routes>
             </div>
         </div>

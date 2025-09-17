@@ -27,6 +27,7 @@ font-family: 'Monteserrat', sans-serif;
   
   .search-box {
     margin-bottom: 20px;
+    width: 300px;
     text-align: center;
   }
   
@@ -49,7 +50,7 @@ font-family: 'Monteserrat', sans-serif;
   
   .grid-header, .grid-row {
     display: grid;
-    grid-template-columns: 80px 200px 300px 1fr;
+    grid-template-columns: 80px 200px 300px 520px 1fr;
     align-items: center;
     padding: 10px;
   }
@@ -89,4 +90,15 @@ font-family: 'Monteserrat', sans-serif;
     background-color: inherit
   }
 
-  
+  .add-button {
+    width: 20px;
+    margin-bottom: 20px;
+    color: #003b5c;
+    cursor: pointer;
+  }
+
+  .remove-button {
+    width: 20px;
+    color: #003b5c;
+    cursor: pointer;
+  }
