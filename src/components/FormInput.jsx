@@ -135,7 +135,15 @@ const FormInput = ({
                         : 'text-lg font-medium text-mebablue-dark mb-1 font-mont'
                 }
             >
-                {errors && touched ? label + ' Required*' : label}
+                {errors && touched ? (
+                    <span className='text-lg font-medium text-red-500 mb-1 font-mont'>
+                        {label} {errors}*
+                    </span>
+                ) : (
+                    <span className='text-lg font-medium text-mebablue-dark mb-1 font-mont'>
+                        {label}
+                    </span>
+                )}
             </span>
             {renderInput()}
         </div>

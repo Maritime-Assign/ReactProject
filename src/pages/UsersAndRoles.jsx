@@ -1,34 +1,49 @@
 // npm install @faker-js/faker
 // needed to generate fake testing data
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useContext } from 'react';
 import { faker } from '@faker-js/faker';
 import './UsersAndRoles.css';
 import { FaEdit, FaUserPlus, FaUserMinus } from 'react-icons/fa';
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom';
+import supabase from '../supabaseClient';
+import ImageDropdown from '../components/ImageDropdown/ImageDropdown'
+  
+const getAllUsers = async () => {
+  const { data, error } = await supabase.from("Users").select("*");
 
-// generate 25 fake users based user tiers
-const generateFakeUsers = () => {
-  const roles = ['Admin', 'Editor', 'Viewer', 'MEBA Member'];
-  return Array.from({ length: 25 }, (_, i) => ({
-    id: i + 1,
-    name: faker.person.fullName(),
-    role: faker.helpers.arrayElement(roles),
-    email: faker.internet.email(),
-  }));
+  if (error) {
+    console.log("Error fetching users:", error);
+    return [];
+  }
+
+  return data;
 };
 
 // define functionality
 const UsersAndRoles = () => {
   const [searchWord, setSearchWord] = useState('');
-  //populate with generateFakeUsers
-  const [users, setUsers] = useState(generateFakeUsers());
-  //remove case sensitivity
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchWord.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchWord.toLowerCase())
-  );
+  const [users, setUsers] = useState([]);
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const supabaseUsers = await getAllUsers();
+      console.log("Fetched users:", supabaseUsers);
+      setUsers(supabaseUsers);
+    }
+
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = users.filter((user) =>
+    String(user.first_name || "")
+      .toLowerCase()
+      .includes(searchWord.toLowerCase()) ||
+    String(user.role_id || "")
+      .toLowerCase()
+      .includes(searchWord.toLowerCase())
+  );
 
   // good ole div block
   // structure of page below
@@ -67,26 +82,23 @@ const UsersAndRoles = () => {
         {filteredUsers.map((user) => (
           <div className="grid-row" key={user.id}>
             <div className="grid-cell">
+              <ImageDropdown 
+                userId={user.id} 
+                currentRole={user.role_id}
+                onRoleChange={(newRole) => {
+                  console.log(`User ${user.id} changed role to: ${newRole}`);
+                }}
+              />
+            </div>
+            <div className="grid-cell">{user.first_name}</div>
+            <div className="grid-cell">{user.email}</div>
 
-              {/*Button that links to the edit user page*/}
+           {/*Button that links to the edit user page*/}
               <Link to={'/edituser'} state={user}>
                 <button className="edit-button" title="Edit Role">
                   <FaEdit />
                 </button>
               </Link>
-            </div>
-            <div className="grid-cell">{user.role}</div>
-            <div className="grid-cell">{user.name}</div>
-            <div className="grid-cell">{user.email}</div>
-
-            {/*Button that deletes a user; NOT IMPLEMENTED WITH SUPABASE YET*/}
-            <button 
-              className="remove-button" 
-              title="Remove User" 
-              onClick={() => {setUsers(users.filter(a => a.id !== user.id))}}
-            >
-              <FaUserMinus />
-            </button>
           </div>
         ))}
       </div>

@@ -10,7 +10,7 @@
 }
 
 .textBase {
-    @apply border rounded-md p-3 border-neutral-300 border w-sm mt-0 text-left focus:border-1 focus:border-mebagold focus:outline-none;
+    @apply border rounded-md p-3 border-neutral-300 w-sm mt-0 text-left focus:border-1 focus:border-mebagold focus:outline-none;
 }
 
 .textError {
@@ -18,7 +18,7 @@
 }
 
 .multi {
-    @apply border border-neutral-300 border w-sm mt-0 text-left rounded-md p-3 focus:outline-none focus:border-mebagold;
+    @apply border-neutral-300 border w-sm mt-0 text-left rounded-md p-3 focus:outline-none focus:border-mebagold;
 }
 
 .selectBase {
