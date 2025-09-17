@@ -1,48 +1,77 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import styles from './Login.module.css'
 import showPasswordIcon from '../assets/show_password_icon.svg'
-import {Link, useNavigate } from 'react-router-dom'
-import { UserAuth } from "../context/AuthContext";
+import { Link, useNavigate } from 'react-router-dom'
+import { UserAuth } from '../context/AuthContext'
+import supabase from '../supabaseClient'
 
 const Login = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null)
+    const [loading, setLoading] = useState(false)
 
-    const { signInUser, user } = UserAuth();
-    const navigate = useNavigate();
+    const { signInUser, user } = UserAuth()
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (user) {
-          navigate('/dashboard');
+            navigate('/dashboard')
         }
-      }, [user, navigate]);
-    
-    const handleLogIn = async (e) => {
-        e.preventDefault();
-        setLoading(true)
-        const { session, error } = await signInUser(email, password); // Use your signIn function
-    
-        if (error) {
-          setError(error); // Set the error message if sign-in fails
-          setLoading(false);
-    
-          // Set a timeout to clear the error message after a specific duration (e.g., 3 seconds)
-          setTimeout(() => {
-            setError("");
-          }, 3000); // 3000 milliseconds = 3 seconds
-        } else {
-          // Redirect or perform any necessary actions after successful sign-in
-          navigate("/dashboard");
-        }
-    
-        if (session) {
-          closeModal();
-          setError(""); // Reset the error when there's a session
-        }
-      };
+    }, [user, navigate])
+
+    const handleLogIn = useCallback(
+        async (e) => {
+            e.preventDefault()
+            if (loading) return
+            setLoading(true)
+            setError(null)
+
+            try {
+                const result = await signInUser(email, password)
+
+                if (!result.success) {
+                    setError(result.error || 'Login failed')
+                    setLoading(false)
+                    return
+                }
+
+                const loggedInUser = result.data.user
+                if (loggedInUser) {
+                    const { error: insertError } = await supabase
+                        .from('login_events')
+                        .insert([
+                            {
+                                user_id: loggedInUser.id,
+                                timestamp: new Date().toISOString(), // matches table column
+                                email: loggedInUser.email,
+                            },
+                        ])
+
+                    if (insertError) {
+                        console.error(
+                            'Failed to log event:',
+                            insertError.message
+                        )
+                    } else {
+                        console.log(
+                            'Login event inserted for user:',
+                            loggedInUser.id
+                        )
+                    }
+                }
+
+                navigate('/dashboard')
+            } catch (err) {
+                console.error(err)
+                setError('Unexpected error logging in')
+            } finally {
+                setLoading(false)
+            }
+        },
+        [email, password, loading, signInUser, navigate]
+    ) // dependencies for useCallback
 
     const toggleShowPassword = () => {
         setShowPassword(!showPassword)
@@ -70,7 +99,7 @@ const Login = () => {
                     <div className='w-100 h-12 flex flex-row border border-neutral-300 rounded-md items-center focus-within:border-mebagold'>
                         <input
                             type={showPassword ? 'text' : 'password'}
-                            placeholder=' Enter your password'
+                            placeholder='   Enter your password'
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -85,14 +114,14 @@ const Login = () => {
                         />
                     </div>
                 </div>
-                <div className=''>
-                    <button className='bg-mebablue-light rounded-md px-4 py-2 w-100'>
-                        <Link to='/recovery'>
+                <div className='pt-4'>
+                    <Link to='/recovery'>
+                        <button className='bg-mebablue-light rounded-md px-4 py-2 w-100 cursor-pointer'>
                             <span className='text-lg font-mont text-white'>
                                 Forgot Password?
                             </span>
-                        </Link>
-                    </button>
+                        </button>
+                    </Link>
                 </div>
 
                 <div className='py-2'>
