@@ -24,7 +24,7 @@ export const AuthContextProvider = ({ children }) => {
             // If no error, return success
             console.log('Sign-in success:', data)
             return { success: true, data } // Return the user data
-        } catch (error) {
+        } catch (err) {
             // Handle unexpected issues
             console.error('Unexpected error during sign-in:', err.message)
             return {
@@ -65,32 +65,37 @@ export const AuthContextProvider = ({ children }) => {
     useEffect(() => {
         // On mount, check initial session
         supabase.auth.getSession().then(async ({ data: { session } }) => {
-            setSession(session)
             if (session?.user) {
+                setSession(session)
                 const userRole = await fetchUserRole(session.user.id)
                 setRole(userRole)
+            } else {
+                // No session found: clear state explicitly
+                setSession(null)
+                setRole(null)
             }
         })
 
         // listen for login/logout and session changes
         const { data: listener } = supabase.auth.onAuthStateChange(
             async (_event, session) => {
-                setSession(session)
                 if (session?.user) {
+                    setSession(session)
                     const userRole = await fetchUserRole(session.user.id)
                     setRole(userRole)
                 } else {
+                    setSession(null)
                     setRole(null)
                 }
             }
         )
-        // cleanup subscripion on unmount
+        // cleanup subscritpion on unmount
         return () => listener.subscription.unsubscribe()
     }, [])
 
     return (
         <AuthContext.Provider
-            value={{ signInUser, session, user: session?.user, signOut }}
+            value={{ user: session?.user, role, signInUser, signOut }}
         >
             {children}
         </AuthContext.Provider>
