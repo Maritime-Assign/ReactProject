@@ -43,17 +43,6 @@ export const AuthContextProvider = ({ children }) => {
         setRole(null)
     }
 
-    useEffect(() => {
-        // On mount, check initial session
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-            setSession(session)
-            if (session?.user) {
-                const userRole = await fetchUserRole(session.user.id)
-                setRole(userRole)
-            }
-        })
-    }, [])
-
     const fetchUserRole = async (userId) => {
         try {
             const { data, error } = await supabase
@@ -72,6 +61,32 @@ export const AuthContextProvider = ({ children }) => {
             return null
         }
     }
+
+    useEffect(() => {
+        // On mount, check initial session
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
+            setSession(session)
+            if (session?.user) {
+                const userRole = await fetchUserRole(session.user.id)
+                setRole(userRole)
+            }
+        })
+
+        // listen for login/logout and session changes
+        const { data: listener } = supabase.auth.onAuthStateChange(
+            async (_event, session) => {
+                setSession(session)
+                if (session?.user) {
+                    const userRole = await fetchUserRole(session.user.id)
+                    setRole(userRole)
+                } else {
+                    setRole(null)
+                }
+            }
+        )
+        // cleanup subscripion on unmount
+        return () => listener.subscription.unsubscribe()
+    }, [])
 
     return (
         <AuthContext.Provider
