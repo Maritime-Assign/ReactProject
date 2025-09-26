@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import OptionBar from './components/OptionBar'
 import Dashboard from './pages/Dashboard'
 import DashboardManager from './pages/DashboardManager'
@@ -20,7 +21,15 @@ import LoadingSpinner from './components/LoadingSpinner'
 import { UserAuth } from './context/AuthContext'
 
 const App = () => {
-    const { loadingSession } = UserAuth()
+    const { loadingSession, user } = UserAuth()
+    const navigate = useNavigate()
+
+    // Redirect to login if user logs out
+    useEffect(() => {
+        if (!loadingSession && !user) {
+            navigate('/login')
+        }
+    }, [user, loadingSession, navigate])
 
     // Block rendering until AuthProvider finishes fetching session & role
     if (loadingSession) return <LoadingSpinner />

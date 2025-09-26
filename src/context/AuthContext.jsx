@@ -10,38 +10,38 @@ export const AuthContextProvider = ({ children }) => {
 
     // Sign in
     const signInUser = async (email, password) => {
-        try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email.toLowerCase(),
-                password: password,
-            })
-
-            // Handle Supabase error explicitly
-            if (error) {
-                console.error('Sign-in error:', error.message) // Log the error for debugging
-                return { success: false, error: error.message } // Return the error
-            }
-
-            // If no error, return success
-            console.log('Sign-in success:', data)
-            return { success: true, data } // Return the user data
-        } catch (err) {
-            // Handle unexpected issues
-            console.error('Unexpected error during sign-in:', err.message)
-            return {
-                success: false,
-                error: 'An unexpected error occurred. Please try again.',
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        })
+        if (!error) {
+            setSession(data.session)
+            if (data.user) {
+                const userRole = await fetchUserRole(data.user.id)
+                setRole(userRole)
+                console.log(
+                    'Session/user/role after login:',
+                    data.session,
+                    data.user,
+                    userRole
+                )
             }
         }
+        return { success: !error, data, error }
     }
 
     // Sign out
-    async function signOut() {
-        const { error } = await supabase.auth.signOut()
-        if (error) {
-            console.error('Error signing out:', error)
+    const signOut = async () => {
+        try {
+            await supabase.auth.signOut()
+        } catch (err) {
+            console.error('Error signing out:', err)
+        } finally {
+            // Clear context state
+            setSession(null)
+            setRole(null)
+            // Any other state your provider exposes, e.g., loading flags
         }
-        setRole(null)
     }
 
     const fetchUserRole = async (userId) => {
@@ -50,7 +50,7 @@ export const AuthContextProvider = ({ children }) => {
                 .from('Users')
                 .select('role')
                 .eq('UUID', userId)
-                .single()
+                .maybeSingle()
 
             if (error) {
                 console.error('Supabase api error fetching role:', error)
@@ -68,37 +68,61 @@ export const AuthContextProvider = ({ children }) => {
             const {
                 data: { session },
             } = await supabase.auth.getSession()
+
             if (session?.user) {
                 setSession(session)
                 const userRole = await fetchUserRole(session.user.id)
                 setRole(userRole)
-                // debug log for user role
-                console.log('Fetched user role on mount:', userRole)
+
+                // Debug log
+                console.log('Auth on mount:', {
+                    session,
+                    user: session.user,
+                    role: userRole,
+                })
             } else {
                 setSession(null)
                 setRole(null)
+
+                console.log('Auth on mount: no session', {
+                    session: null,
+                    user: null,
+                    role: null,
+                })
             }
+
             setLoadingSession(false)
         }
 
         initializeSession()
 
-        // Listen for login/logout and session changes
         const { data: listener } = supabase.auth.onAuthStateChange(
             async (_event, session) => {
                 if (session?.user) {
                     setSession(session)
                     const userRole = await fetchUserRole(session.user.id)
                     setRole(userRole)
+
+                    console.log('Auth state change:', {
+                        session,
+                        user: session.user,
+                        role: userRole,
+                    })
                 } else {
                     setSession(null)
                     setRole(null)
+
+                    console.log('Auth state change: no session', {
+                        session: null,
+                        user: null,
+                        role: null,
+                    })
                 }
+
                 setLoadingSession(false)
             }
         )
 
-        // Cleanup subscription on unmount
         return () => listener.subscription.unsubscribe()
     }, [])
 
