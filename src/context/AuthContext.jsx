@@ -1,65 +1,110 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../supabaseClient";
+import { createContext, useContext, useEffect, useState } from 'react'
+import { supabase } from '../supabaseClient'
 
-const AuthContext = createContext();
+const AuthContext = createContext()
 
 export const AuthContextProvider = ({ children }) => {
-  const [session, setSession] = useState(undefined);
+    const [session, setSession] = useState(undefined)
+    const [role, setRole] = useState(null)
 
-  // Sign in
-  const signInUser = async (email, password) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.toLowerCase(),
-        password: password,
-      });
+    // Sign in
+    const signInUser = async (email, password) => {
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email.toLowerCase(),
+                password: password,
+            })
 
-      // Handle Supabase error explicitly
-      if (error) {
-        console.error("Sign-in error:", error.message); // Log the error for debugging
-        return { success: false, error: error.message }; // Return the error
-      }
+            // Handle Supabase error explicitly
+            if (error) {
+                console.error('Sign-in error:', error.message) // Log the error for debugging
+                return { success: false, error: error.message } // Return the error
+            }
 
-      // If no error, return success
-      console.log("Sign-in success:", data);
-      return { success: true, data }; // Return the user data
-    } catch (error) {
-      // Handle unexpected issues
-      console.error("Unexpected error during sign-in:", err.message);
-      return {
-        success: false,
-        error: "An unexpected error occurred. Please try again.",
-      };
+            // If no error, return success
+            console.log('Sign-in success:', data)
+            return { success: true, data } // Return the user data
+        } catch (err) {
+            // Handle unexpected issues
+            console.error('Unexpected error during sign-in:', err.message)
+            return {
+                success: false,
+                error: 'An unexpected error occurred. Please try again.',
+            }
+        }
     }
-  };
 
-  useEffect(() => { //listens for auth changes
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-  }, []);
-
-  // Sign out
-  async function signOut() {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error signing out:", error);
+    // Sign out
+    async function signOut() {
+        const { error } = await supabase.auth.signOut()
+        if (error) {
+            console.error('Error signing out:', error)
+        }
+        setRole(null)
     }
-  }
 
-  return (
-    <AuthContext.Provider
-      value={{signInUser, session, user: session?.user, signOut }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
+    const fetchUserRole = async (userId) => {
+        try {
+            const { data, error } = await supabase
+                .from('Users')
+                .select('role')
+                .eq('UUID', userId)
+                .single()
+
+            if (error) {
+                console.error('Supabase api error fetching role:', error)
+                return null
+            }
+            return data.role
+        } catch (err) {
+            console.error('Unexpected JS error fetching role:', err)
+            return null
+        }
+    }
+
+    useEffect(() => {
+        // On mount, check initial session
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
+            if (session?.user) {
+                setSession(session)
+                const userRole = await fetchUserRole(session.user.id)
+                setRole(userRole)
+
+                // Debug log
+                console.log('Fetched user role on mount:', userRole)
+            } else {
+                // No session found: clear state explicitly
+                setSession(null)
+                setRole(null)
+            }
+        })
+
+        // listen for login/logout and session changes
+        const { data: listener } = supabase.auth.onAuthStateChange(
+            async (_event, session) => {
+                if (session?.user) {
+                    setSession(session)
+                    const userRole = await fetchUserRole(session.user.id)
+                    setRole(userRole)
+                } else {
+                    setSession(null)
+                    setRole(null)
+                }
+            }
+        )
+        // cleanup subscritpion on unmount
+        return () => listener.subscription.unsubscribe()
+    }, [])
+
+    return (
+        <AuthContext.Provider
+            value={{ user: session?.user, role, signInUser, signOut }}
+        >
+            {children}
+        </AuthContext.Provider>
+    )
+}
 
 export const UserAuth = () => {
-  return useContext(AuthContext);
-};
+    return useContext(AuthContext)
+}
