@@ -46,9 +46,9 @@ export const AuthContextProvider = ({ children }) => {
     const fetchUserRole = async (userId) => {
         try {
             const { data, error } = await supabase
-                .from('public.users')
+                .from('Users')
                 .select('role')
-                .eq('id', userId)
+                .eq('UUID', userId)
                 .single()
 
             if (error) {
@@ -69,6 +69,9 @@ export const AuthContextProvider = ({ children }) => {
                 setSession(session)
                 const userRole = await fetchUserRole(session.user.id)
                 setRole(userRole)
+
+                // Debug log
+                console.log('Fetched user role on mount:', userRole)
             } else {
                 // No session found: clear state explicitly
                 setSession(null)
