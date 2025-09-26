@@ -4,8 +4,9 @@ import { supabase } from '../supabaseClient'
 const AuthContext = createContext()
 
 export const AuthContextProvider = ({ children }) => {
-    const [session, setSession] = useState(undefined)
-    const [role, setRole] = useState(null)
+    const [session, setSession] = useState(undefined) // state to hold session value
+    const [role, setRole] = useState(null) // state to hold role
+    const [loadingSession, setLoadingSession] = useState(true) // capture loading state
 
     // Sign in
     const signInUser = async (email, password) => {
@@ -63,23 +64,26 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        // On mount, check initial session
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
+        const initializeSession = async () => {
+            const {
+                data: { session },
+            } = await supabase.auth.getSession()
             if (session?.user) {
                 setSession(session)
                 const userRole = await fetchUserRole(session.user.id)
                 setRole(userRole)
-
-                // Debug log
+                // debug log for user role
                 console.log('Fetched user role on mount:', userRole)
             } else {
-                // No session found: clear state explicitly
                 setSession(null)
                 setRole(null)
             }
-        })
+            setLoadingSession(false)
+        }
 
-        // listen for login/logout and session changes
+        initializeSession()
+
+        // Listen for login/logout and session changes
         const { data: listener } = supabase.auth.onAuthStateChange(
             async (_event, session) => {
                 if (session?.user) {
@@ -90,15 +94,23 @@ export const AuthContextProvider = ({ children }) => {
                     setSession(null)
                     setRole(null)
                 }
+                setLoadingSession(false)
             }
         )
-        // cleanup subscritpion on unmount
+
+        // Cleanup subscription on unmount
         return () => listener.subscription.unsubscribe()
     }, [])
 
     return (
         <AuthContext.Provider
-            value={{ user: session?.user, role, signInUser, signOut }}
+            value={{
+                user: session?.user,
+                role,
+                signInUser,
+                signOut,
+                loadingSession,
+            }}
         >
             {children}
         </AuthContext.Provider>
