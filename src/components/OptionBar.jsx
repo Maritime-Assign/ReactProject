@@ -64,7 +64,7 @@ function navItems(role) {
 // contains the core 3 components
 const OptionBar = () => {
     const { user, signOut, role, loadingSession} = UserAuth()
-    const navigate = useNavigate()
+    //const navigate = useNavigate()
     const isLoggedIn = !!user
     const handleLogout = async () => {
         if (!user) return
