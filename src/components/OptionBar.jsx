@@ -19,6 +19,7 @@ import './OptionBar.css'
 import { Link, useNavigate } from 'react-router-dom'
 // import user auth context to manage login state
 import { UserAuth } from '../context/AuthContext'
+import LoadingSpinner from './LoadingSpinner'
 
 // array for center nav options
 const nav_Items = [
@@ -48,18 +49,21 @@ const nav_Items = [
 
 // contains the core 3 components
 const OptionBar = () => {
-    const { user, signOut, role } = UserAuth() // Get user, signout, role from auth
-    const navigate = useNavigate() // Get navigate function
-    const isLoggedIn = !!user // Determine login status from user object
+    const { user, signOut, loadingSession } = UserAuth()
+    const navigate = useNavigate()
+    const isLoggedIn = !!user
 
     const handleLogout = async () => {
+        if (!user) return
         try {
             await signOut()
-            navigate('/login')
+            // Navigation handled by effect elsewhere; no immediate navigate
         } catch (err) {
-            console.error('Error signing out: ', err)
+            console.error('Error signing out:', err)
         }
     }
+
+    if (loadingSession) return <LoadingSpinner />
 
     return (
         <nav className='navbar'>
@@ -67,7 +71,7 @@ const OptionBar = () => {
             {isLoggedIn && <NavBar items={nav_Items} />}
             <SessionManager
                 isLoggedIn={isLoggedIn}
-                handleLogout={handleLogout} // Pass the new handleLogout function
+                handleLogout={handleLogout}
             />
         </nav>
     )

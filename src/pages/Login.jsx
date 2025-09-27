@@ -12,15 +12,18 @@ const Login = () => {
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(false)
 
-    const { signInUser, user, role } = UserAuth()
+    const { signInUser, user, role, loadingSession } = UserAuth()
     const navigate = useNavigate()
 
     // Redirect automatically if a user is already logged in
     useEffect(() => {
-        if (user) {
+        if (!loadingSession && user) {
             navigate('/dashboard')
         }
-    }, [user, navigate])
+        if (!loadingSession && !user) {
+            navigate('/login')
+        }
+    }, [user, role, loadingSession, navigate])
 
     const handleLogIn = useCallback(
         async (e) => {
@@ -57,8 +60,6 @@ const Login = () => {
                         )
                     }
                 }
-                // Navigation handled by effect or immediately
-                navigate('/dashboard')
             } catch (err) {
                 console.error(err)
                 setError('Unexpected error logging in')

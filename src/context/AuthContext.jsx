@@ -4,43 +4,44 @@ import { supabase } from '../supabaseClient'
 const AuthContext = createContext()
 
 export const AuthContextProvider = ({ children }) => {
-    const [session, setSession] = useState(undefined)
-    const [role, setRole] = useState(null)
+    const [session, setSession] = useState(undefined) // state to hold session value
+    const [role, setRole] = useState(null) // state to hold role
+    const [loadingSession, setLoadingSession] = useState(true) // capture loading state
 
     // Sign in
     const signInUser = async (email, password) => {
-        try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email.toLowerCase(),
-                password: password,
-            })
-
-            // Handle Supabase error explicitly
-            if (error) {
-                console.error('Sign-in error:', error.message) // Log the error for debugging
-                return { success: false, error: error.message } // Return the error
-            }
-
-            // If no error, return success
-            console.log('Sign-in success:', data)
-            return { success: true, data } // Return the user data
-        } catch (err) {
-            // Handle unexpected issues
-            console.error('Unexpected error during sign-in:', err.message)
-            return {
-                success: false,
-                error: 'An unexpected error occurred. Please try again.',
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        })
+        if (!error) {
+            setSession(data.session)
+            if (data.user) {
+                const userRole = await fetchUserRole(data.user.id)
+                setRole(userRole)
+                console.log(
+                    'Session/user/role after login:',
+                    data.session,
+                    data.user,
+                    userRole
+                )
             }
         }
+        return { success: !error, data, error }
     }
 
     // Sign out
-    async function signOut() {
-        const { error } = await supabase.auth.signOut()
-        if (error) {
-            console.error('Error signing out:', error)
+    const signOut = async () => {
+        try {
+            await supabase.auth.signOut()
+        } catch (err) {
+            console.error('Error signing out:', err)
+        } finally {
+            // Clear context state
+            setSession(null)
+            setRole(null)
+            // Any other state your provider exposes, e.g., loading flags
         }
-        setRole(null)
     }
 
     const fetchUserRole = async (userId) => {
@@ -49,7 +50,7 @@ export const AuthContextProvider = ({ children }) => {
                 .from('Users')
                 .select('role')
                 .eq('UUID', userId)
-                .single()
+                .maybeSingle()
 
             if (error) {
                 console.error('Supabase api error fetching role:', error)
@@ -62,43 +63,60 @@ export const AuthContextProvider = ({ children }) => {
         }
     }
 
+    const [sessionInitialized, setSessionInitialized] = useState(false)
+
     useEffect(() => {
-        // On mount, check initial session
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-            if (session?.user) {
-                setSession(session)
-                const userRole = await fetchUserRole(session.user.id)
-                setRole(userRole)
+        const initializeSession = async () => {
+            try {
+                const {
+                    data: { session },
+                } = await supabase.auth.getSession()
+                setSession(session ?? null)
 
-                // Debug log
-                console.log('Fetched user role on mount:', userRole)
-            } else {
-                // No session found: clear state explicitly
-                setSession(null)
-                setRole(null)
-            }
-        })
-
-        // listen for login/logout and session changes
-        const { data: listener } = supabase.auth.onAuthStateChange(
-            async (_event, session) => {
                 if (session?.user) {
-                    setSession(session)
                     const userRole = await fetchUserRole(session.user.id)
                     setRole(userRole)
                 } else {
-                    setSession(null)
+                    setRole(null)
+                }
+            } catch (err) {
+                console.error('Error fetching session on mount:', err)
+                setSession(null)
+                setRole(null)
+            } finally {
+                setLoadingSession(false)
+                setSessionInitialized(true)
+            }
+        }
+
+        initializeSession()
+
+        const { data: listener } = supabase.auth.onAuthStateChange(
+            async (_event, session) => {
+                if (!sessionInitialized) return // ignore events until initial fetch
+                setSession(session ?? null)
+
+                if (session?.user) {
+                    const userRole = await fetchUserRole(session.user.id)
+                    setRole(userRole)
+                } else {
                     setRole(null)
                 }
             }
         )
-        // cleanup subscritpion on unmount
+
         return () => listener.subscription.unsubscribe()
-    }, [])
+    }, [sessionInitialized])
 
     return (
         <AuthContext.Provider
-            value={{ user: session?.user, role, signInUser, signOut }}
+            value={{
+                user: session?.user,
+                role,
+                signInUser,
+                signOut,
+                loadingSession,
+            }}
         >
             {children}
         </AuthContext.Provider>
