@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import OptionBar from './components/OptionBar'
 import Dashboard from './pages/Dashboard'
@@ -19,10 +19,12 @@ import SetPassword from './pages/SetPassword'
 import EditUser from './pages/EditUser'
 import LoadingSpinner from './components/LoadingSpinner'
 import { UserAuth } from './context/AuthContext'
+import usePermission from './components/PermissionsTable' 
 
 const App = () => {
-    const { loadingSession, user } = UserAuth()
+    const { loadingSession, user, role } = UserAuth()
     const navigate = useNavigate()
+    const location = useLocation()
 
     // Redirect to login if user logs out
     useEffect(() => {
@@ -30,6 +32,15 @@ const App = () => {
             navigate('/login')
         }
     }, [user, loadingSession, navigate])
+
+    var grantedPermission = usePermission(role, location.pathname);
+
+    // Redirect to fsb if user tries to view an unavailable page
+    useEffect(() => {
+        if (!loadingSession && !grantedPermission && user) {
+            navigate('/fsb')
+        }
+    }, [grantedPermission, loadingSession, user, navigate])
 
     // Block rendering until AuthProvider finishes fetching session & role
     if (loadingSession) return <LoadingSpinner />
