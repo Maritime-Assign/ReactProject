@@ -30,6 +30,8 @@ const App = () => {
                         element={<Navigate to='/login' replace />}
                     />
                     <Route path='/dashboard' element={<Dashboard />} />
+                    <Route path='/dashboardManager' element={<DashboardManager />} />
+                    <Route path='/dashboardViewer' element={<DashboardViewer />} />
                     <Route path='/login' element={<Login />} />
                     <Route path='/recovery' element={<PasswordRecovery />} />
                     <Route path='/board' element={<ViewBoard />} />
