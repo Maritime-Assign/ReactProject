@@ -65,7 +65,14 @@ function navItems(role) {
 const OptionBar = () => {
     const { user, signOut, role, loadingSession} = UserAuth()
     //const navigate = useNavigate()
+    var notViewer = true;
+    
+    if (role == 'minor'){
+        notViewer = false;
+    }
+   
     const isLoggedIn = !!user
+
     const handleLogout = async () => {
         if (!user) return
         try {
@@ -81,7 +88,7 @@ const OptionBar = () => {
     return (
         <nav className='navbar'>
             <Logo />
-            {isLoggedIn && <NavBar items={navItems(role)} />}
+            {isLoggedIn && notViewer && <NavBar items={navItems(role)} />}
             <SessionManager
                 isLoggedIn={isLoggedIn}
                 handleLogout={handleLogout}
