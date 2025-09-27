@@ -63,68 +63,50 @@ export const AuthContextProvider = ({ children }) => {
         }
     }
 
+    const [sessionInitialized, setSessionInitialized] = useState(false)
+
     useEffect(() => {
         const initializeSession = async () => {
-            const {
-                data: { session },
-            } = await supabase.auth.getSession()
+            try {
+                const {
+                    data: { session },
+                } = await supabase.auth.getSession()
+                setSession(session ?? null)
 
-            if (session?.user) {
-                setSession(session)
-                const userRole = await fetchUserRole(session.user.id)
-                setRole(userRole)
-
-                // Debug log
-                console.log('Auth on mount:', {
-                    session,
-                    user: session.user,
-                    role: userRole,
-                })
-            } else {
+                if (session?.user) {
+                    const userRole = await fetchUserRole(session.user.id)
+                    setRole(userRole)
+                } else {
+                    setRole(null)
+                }
+            } catch (err) {
+                console.error('Error fetching session on mount:', err)
                 setSession(null)
                 setRole(null)
-
-                console.log('Auth on mount: no session', {
-                    session: null,
-                    user: null,
-                    role: null,
-                })
+            } finally {
+                setLoadingSession(false)
+                setSessionInitialized(true)
             }
-
-            setLoadingSession(false)
         }
 
         initializeSession()
 
         const { data: listener } = supabase.auth.onAuthStateChange(
             async (_event, session) => {
+                if (!sessionInitialized) return // ignore events until initial fetch
+                setSession(session ?? null)
+
                 if (session?.user) {
-                    setSession(session)
                     const userRole = await fetchUserRole(session.user.id)
                     setRole(userRole)
-
-                    console.log('Auth state change:', {
-                        session,
-                        user: session.user,
-                        role: userRole,
-                    })
                 } else {
-                    setSession(null)
                     setRole(null)
-
-                    console.log('Auth state change: no session', {
-                        session: null,
-                        user: null,
-                        role: null,
-                    })
                 }
-
-                setLoadingSession(false)
             }
         )
 
         return () => listener.subscription.unsubscribe()
-    }, [])
+    }, [sessionInitialized])
 
     return (
         <AuthContext.Provider
