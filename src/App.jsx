@@ -8,9 +8,8 @@ import {
 import { useEffect } from 'react'
 import OptionBar from './components/OptionBar'
 import Dashboard from './pages/Dashboard'
-import DashboardManager from './pages/DashboardManager'
-import DashboardUser from './pages/DashboardUser'
-import DashboardViewer from './pages/DashboardViewer'
+import DashboardDispatch from './pages/DashboardDispatch'
+import DashboardDisplay from './pages/DashboardDisplay'
 import ViewBoard from './pages/ViewBoard'
 import PasswordRecovery from './pages/PasswordRecovery'
 import Login from './pages/Login'
@@ -81,13 +80,12 @@ const App = () => {
                     <Route path='/add-user' element={<AddUser />} />
                     <Route path='/set-password' element={<SetPassword />} />
                     <Route
-                        path='/dashboard/manager'
-                        element={<DashboardManager />}
+                        path='/dashboard/dispatch'
+                        element={<DashboardDispatch />}
                     />
-                    <Route path='/dashboard/user' element={<DashboardUser />} />
                     <Route
-                        path='/dashboard/viewer'
-                        element={<DashboardViewer />}
+                        path='/dashboard/display'
+                        element={<DashboardDisplay />}
                     />
                     <Route path='/history' element={<ViewHistory />} />
                     <Route path='/edituser' element={<EditUser />} />
