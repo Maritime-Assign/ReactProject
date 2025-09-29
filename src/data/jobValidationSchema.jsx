@@ -13,7 +13,7 @@ const jobValidationSchema = yup.object().shape({
     location: yup.string().required('Required'),
     company: yup.string().required('Required'),
     crewRelieved: yup.string().required('Required'),
-    notes: yup.string(),
+    notes: yup.string().required('Required'),
 })
 
 export default jobValidationSchema
