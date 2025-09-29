@@ -11,24 +11,69 @@ import { useFormik } from 'formik'
 import jobValidationSchema from '../data/jobValidationSchema'
 import { useNavigate } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
+import { UserAuth } from '../context/AuthContext'
+import { addJob } from '../utils/jobHistoryOptimized'
 
 // Arrays for options for the various dropdowns
 const statusOptions = ['Open', 'Filled']
 const billetOptions = ['1 A/E', '2M', '3M']
 const typeOptions = ['Relief', 'Permanent']
 
-// Submission function
-const onSubmit = async (values, actions) => {
-    console.log(values) // logs all values being submitted
-    //console.log(actions) // displays available formik actions
-    await new Promise((resolve) => setTimeout(resolve, 3000)) // simulating a database post promise
+// Submission function - this will be passed the user as a parameter
+const createOnSubmit = (user) => async (values, actions) => {
+    try {
+        console.log('Submitting job with values:', values)
+        
+        if (!user) {
+            actions.setStatus({ error: 'You must be logged in to add a job.' })
+            return
+        }
 
-    actions.resetForm() // reset/clear the form
+        // Prepare job data - convert form values to match database schema
+        // Explicitly define only the fields we want to send (excluding auto-generated fields)
+        const jobData = {
+            branch1: values.branch1 || null,
+            branch2: values.branch2 || null,
+            dateCalled: values.dateCalled || null,
+            shipName: values.shipName || null,
+            joinDate: values.joinDate || null,
+            billet: values.billet || null,
+            type: values.type || null,
+            days: values.days || null,
+            location: values.location || null,
+            company: values.company || null,
+            crewRelieved: values.crewRelieved || null,
+            notes: values.notes || null,
+            open: values.status === 'Open' // Convert status to boolean - table uses 'open' not 'status'
+        }
+
+        // Debug: Log the exact data being sent
+        console.log('Sending job data:', JSON.stringify(jobData, null, 2))
+
+        // Add the job (history logging handled automatically by database triggers)
+        const result = await addJob(jobData)
+        
+        if (result.success) {
+            console.log('Job added successfully:', result.data)
+            actions.setStatus({ success: 'Job added successfully!' })
+            actions.resetForm() // reset/clear the form
+            
+            // Note: Navigation will happen when user manually navigates
+            // Auto-navigation removed to prevent errors
+        } else {
+            console.error('Failed to add job:', result.error)
+            actions.setStatus({ error: 'Failed to add job. Please try again.' })
+        }
+    } catch (error) {
+        console.error('Error submitting job:', error)
+        actions.setStatus({ error: 'An error occurred while adding the job.' })
+    }
 }
 
 // Main AddJob Page component
 const AddJob = () => {
     const navigate = useNavigate() // react router function to navigate back
+    const { user } = UserAuth() // Get current user
 
     // destructured formik initialization
     const {
@@ -39,6 +84,7 @@ const AddJob = () => {
         handleSubmit,
         isSubmitting,
         touched,
+        status,
     } = useFormik({
         initialValues: {
             status: '',
@@ -56,7 +102,7 @@ const AddJob = () => {
             notes: '',
         },
         validationSchema: jobValidationSchema, // bring in Schema from jobValidationSchema.jsx in data dir
-        onSubmit,
+        onSubmit: createOnSubmit(user),
         validateOnChange: true,
         validateOnBlur: false,
     })
@@ -309,16 +355,28 @@ const AddJob = () => {
                             touched={touched.notes}
                         />
                     </div>
+                    {/* Status Messages */}
+                    {status && (
+                        <div className={`mt-4 p-3 rounded-md text-center ${
+                            status.error
+                                ? 'bg-red-100 border border-red-400 text-red-700'
+                                : 'bg-green-100 border border-green-400 text-green-700'
+                        }`}>
+                            {status.error || status.success}
+                        </div>
+                    )}
+
                     {/* Submit button */}
                     <div className='flex flex-row space-x-4 mt-4 justify-center'>
                         <button
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || !user}
                             type='submit'
                             className={
-                                isSubmitting
+                                isSubmitting || !user
                                     ? styles.submitSubmitting
                                     : styles.submitBase
                             }
+                            title={!user ? 'You must be logged in to add a job' : ''}
                         >
                             {isSubmitting ? 'Adding Job...' : 'Submit'}
                         </button>
