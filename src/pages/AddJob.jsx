@@ -11,6 +11,7 @@ import { useFormik } from 'formik'
 import jobValidationSchema from '../data/jobValidationSchema'
 import { useNavigate } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
+import supabase from '../supabaseClient'
 
 // Arrays for options for the various dropdowns
 const statusOptions = ['Open', 'Filled']
@@ -19,11 +20,46 @@ const typeOptions = ['Relief', 'Permanent']
 
 // Submission function
 const onSubmit = async (values, actions) => {
-    console.log(values) // logs all values being submitted
-    //console.log(actions) // displays available formik actions
-    await new Promise((resolve) => setTimeout(resolve, 3000)) // simulating a database post promise
+    try {
+        const isOpen = values.status === 'Open'
 
-    actions.resetForm() // reset/clear the form
+        const { data, error } = await supabase
+            .from('Jobs')
+            .insert([
+                {
+                    branch1: values.branch1,
+                    branch2: values.branch2,
+                    open: isOpen,
+                    FillDate: null,
+                    dateCalled: values.dateCalled,
+                    shipName: values.shipName,
+                    joinDate: values.joinDate,
+                    billet: values.billet,
+                    type: values.type,
+                    days: values.days,
+                    location: values.location,
+                    company: values.company,
+                    crewRelieved: values.crewRelieved,
+                    notes: values.notes,
+                    claimedBy: null,
+                    claimed_at: null,
+                },
+            ])
+        
+        if(error) {
+            console.error('Error inserting job:', error)
+            alert('Failed to add job: ' + error.message)
+        } else {
+            console.log('Job added successfully:', data)
+            alert('Job added successfully!')
+            actions.resetForm()
+        }
+    } catch (err) {
+        console.error('Unexpected error:', err)
+        alert('Unexpected error adding job')
+    } finally {
+        actions.setSubmitting(false)
+    }
 }
 
 // Main AddJob Page component
