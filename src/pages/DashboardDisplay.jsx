@@ -11,16 +11,16 @@ import {
 /*
 The viewer dashboard will only access to the dashboard button which allow dashboard viewing.
 */
-const DashboardViewer = () => {
+const DashboardDisplay = () => {
     const dashButton =
-        'flex flex-col items-center p-5 rounded-md w-3xs bg-mebablue-dark hover:bg-mebablue-light transition-colors duration-300 ease-in-out cursor-pointer'
+        'group w-120 h-102 flex flex-col items-center justify-center gap-2 rounded-md bg-mebablue-dark hover:bg-mebablue-light transition-colors duration-300 ease-in-out overflow-hidden cursor-pointer';
 
     return (
-        <div className='w-full h-[calc(100vh-80px)] flex items-center justify-center overflow-y-hidden mx-auto'>
+        <div className='w-400 h-[calc(100vh-80px)] flex items-center justify-center overflow-y-hidden mx-auto'>
             <div className='w-fit flex flex-col gap-4 p-12 shadow-[0_0_10px_rgba(0,0,0,0.1)] rounded-md'>
                 <div className='w-full text-center'>
                     <span className='text-3xl font-medium font-mont text-mebablue-dark'>
-                        User Dashboard
+                        Display Dashboard
                     </span>
                 </div>
                 <div className='w-full h-[5px] rounded-full bg-mebablue-dark mb-2'></div>
@@ -39,4 +39,4 @@ const DashboardViewer = () => {
     )
 }
 
-export default DashboardViewer
+export default DashboardDisplay
