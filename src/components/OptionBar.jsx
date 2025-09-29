@@ -21,26 +21,14 @@ import { Link, useNavigate } from 'react-router-dom'
 import { UserAuth } from '../context/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 
-//const { role } = UserAuth()
-
-function getHomeRoute(role) {
-  if (!role) return '/dashboardViewer' // fallback
-  switch (role.toLowerCase().trim()) {
-    case 'admin': return '/dashboard'
-    case 'major': return '/dashboardManager'
-    case 'minor': return '/dashboardViewer'
-    default: return '/dashboardViewer'
-  }
-}
-
 
 // array for center nav options
-function navItems(role) {
+
     const nav_Items = [
     {
         text: 'Home', // name
         icon: <HomeIcon className='navBarIcon' />, // icon and css assignment
-        to: getHomeRoute(role), // on click go to dash
+        to: '/dashboard', // on click go to dash
     },
     {
         text: 'Job Board',
@@ -48,7 +36,7 @@ function navItems(role) {
         to: '/fsb', // on click go to job board
     },
     
-]; return nav_Items }
+]
 
 /*structure of option bar:
         optionBar
@@ -64,12 +52,6 @@ function navItems(role) {
 // contains the core 3 components
 const OptionBar = () => {
     const { user, signOut, role, loadingSession} = UserAuth()
-    //const navigate = useNavigate()
-    var notViewer = true;
-    
-    if (role == 'minor'){
-        notViewer = false;
-    }
    
     const isLoggedIn = !!user
 
@@ -88,7 +70,7 @@ const OptionBar = () => {
     return (
         <nav className='navbar'>
             <Logo />
-            {isLoggedIn && notViewer && <NavBar items={navItems(role)} />}
+            {isLoggedIn && <NavBar items={nav_Items} />}
             <SessionManager
                 isLoggedIn={isLoggedIn}
                 handleLogout={handleLogout}
