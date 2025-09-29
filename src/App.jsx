@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import OptionBar from './components/OptionBar'
 import Dashboard from './pages/Dashboard'
 import DashboardManager from './pages/DashboardManager'
@@ -16,10 +17,25 @@ import ViewHistory from './components/ViewHistory'
 import AddUser from './pages/AddUser'
 import SetPassword from './pages/SetPassword'
 import EditUser from './pages/EditUser'
+import LoadingSpinner from './components/LoadingSpinner'
+import { UserAuth } from './context/AuthContext'
 import UserProfile from './pages/UserProfile'
 import EditProfile from './pages/EditProfile'
 
 const App = () => {
+    const { loadingSession, user } = UserAuth()
+    const navigate = useNavigate()
+
+    // Redirect to login if user logs out
+    useEffect(() => {
+        if (!loadingSession && !user) {
+            navigate('/login')
+        }
+    }, [user, loadingSession, navigate])
+
+    // Block rendering until AuthProvider finishes fetching session & role
+    if (loadingSession) return <LoadingSpinner />
+
     return (
         <div className='flex flex-col min-h-screen'>
             <div className='w-full h-fit'>
@@ -41,14 +57,19 @@ const App = () => {
                     <Route path='/editjob' element={<EditJob />} />
                     <Route path='/add-user' element={<AddUser />} />
                     <Route path='/set-password' element={<SetPassword />} />
-                    <Route path ='/dashboard/manager' element={<DashboardManager />} />
-                    <Route path ='/dashboard/user' element={<DashboardUser />} />
-                    <Route path ='/dashboard/viewer' element={<DashboardViewer />} />
+                    <Route
+                        path='/dashboard/manager'
+                        element={<DashboardManager />}
+                    />
+                    <Route path='/dashboard/user' element={<DashboardUser />} />
+                    <Route
+                        path='/dashboard/viewer'
+                        element={<DashboardViewer />}
+                    />
                     <Route path='/history' element={<ViewHistory />} />
                     <Route path='/edituser' element={<EditUser />} />
                     <Route path='/userprofile' element={<UserProfile />} />
                     <Route path='/editprofile' element={<EditProfile />} />
-
                 </Routes>
             </div>
         </div>

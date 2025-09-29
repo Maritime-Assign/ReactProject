@@ -18,10 +18,8 @@ import './OptionBar.css'
 // import link to nav to internal pages
 import { Link, useNavigate } from 'react-router-dom'
 // import user auth context to manage login state
-import { UserAuth } from "../context/AuthContext";
-
-// import supabase from '../supabaseClient' // for auth when implemented
-import supabase from '../supabaseClient'
+import { UserAuth } from '../context/AuthContext'
+import LoadingSpinner from './LoadingSpinner'
 
 // array for center nav options
 const nav_Items = [
@@ -49,55 +47,23 @@ const nav_Items = [
     Button#1 Button#2
 */
 
-//This function is to toggle dashboard on and off depending on log-in status
-const CheckLogStatus = () => {
-  const [user, setUser] = useState(null)
-
-  useEffect(() => {
-    let mounted = true
-
-    // initial session check
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return
-      setUser(data.session?.user ?? null)
-    }).catch((err) => {
-      console.error('getSession error', err)
-    })
-
-    // subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return
-      setUser(session?.user ?? null)
-    })
-
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
-  }, [])
-
-  if (user) {
-    
-    return <NavBar items={nav_Items} />
-  } else {
-    //no one is logged in
-  }
-}
-
 // contains the core 3 components
 const OptionBar = () => {
-    const { user, signOut } = UserAuth(); // Get user and signOut from context
-    const navigate = useNavigate(); // Get navigate function
-    const isLoggedIn = !!user; // Determine login status from user object
+    const { user, signOut, loadingSession } = UserAuth()
+    const navigate = useNavigate()
+    const isLoggedIn = !!user
 
     const handleLogout = async () => {
+        if (!user) return
         try {
-            await signOut();
-            navigate('/login');
-        } catch (error) {
-            console.error("Error signing out: ", error);
+            await signOut()
+            // Navigation handled by effect elsewhere; no immediate navigate
+        } catch (err) {
+            console.error('Error signing out:', err)
         }
-    };
+    }
+
+    if (loadingSession) return <LoadingSpinner />
 
     return (
         <nav className='navbar'>
@@ -105,11 +71,11 @@ const OptionBar = () => {
             {isLoggedIn && <NavBar items={nav_Items} />}
             <SessionManager
                 isLoggedIn={isLoggedIn}
-                handleLogout={handleLogout} // Pass the new handleLogout function
+                handleLogout={handleLogout}
             />
         </nav>
-    );
-};
+    )
+}
 
 // logo component renders a container div with an image element
 // both the container and the image have their own CSS linked with className

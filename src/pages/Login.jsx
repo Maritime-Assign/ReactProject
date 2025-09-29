@@ -12,14 +12,18 @@ const Login = () => {
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(false)
 
-    const { signInUser, user } = UserAuth()
+    const { signInUser, user, role, loadingSession } = UserAuth()
     const navigate = useNavigate()
 
+    // Redirect automatically if a user is already logged in
     useEffect(() => {
-        if (user) {
+        if (!loadingSession && user) {
             navigate('/dashboard')
         }
-    }, [user, navigate])
+        if (!loadingSession && !user) {
+            navigate('/login')
+        }
+    }, [user, role, loadingSession, navigate])
 
     const handleLogIn = useCallback(
         async (e) => {
@@ -33,10 +37,10 @@ const Login = () => {
 
                 if (!result.success) {
                     setError(result.error || 'Login failed')
-                    setLoading(false)
                     return
                 }
 
+                // login event logging
                 const loggedInUser = result.data.user
                 if (loggedInUser) {
                     const { error: insertError } = await supabase
@@ -54,15 +58,8 @@ const Login = () => {
                             'Failed to log event:',
                             insertError.message
                         )
-                    } else {
-                        console.log(
-                            'Login event inserted for user:',
-                            loggedInUser.id
-                        )
                     }
                 }
-
-                navigate('/dashboard')
             } catch (err) {
                 console.error(err)
                 setError('Unexpected error logging in')
