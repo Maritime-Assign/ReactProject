@@ -16,6 +16,8 @@ import ViewHistory from './components/ViewHistory'
 import AddUser from './pages/AddUser'
 import SetPassword from './pages/SetPassword'
 import EditUser from './pages/EditUser'
+import UserProfile from './pages/UserProfile'
+import EditProfile from './pages/EditProfile'
 
 const App = () => {
     return (
@@ -44,6 +46,8 @@ const App = () => {
                     <Route path ='/dashboard/viewer' element={<DashboardViewer />} />
                     <Route path='/history' element={<ViewHistory />} />
                     <Route path='/edituser' element={<EditUser />} />
+                    <Route path='/userprofile' element={<UserProfile />} />
+                    <Route path='/editprofile' element={<EditProfile />} />
 
                 </Routes>
             </div>

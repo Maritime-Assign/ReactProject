@@ -143,28 +143,40 @@ const NavButton = ({ item }) => (
 // session manager component deals with the authentication login/logout ui
 // isLoggedIn determines the current authentication state
 const SessionManager = ({ isLoggedIn, handleLogout }) => (
-    <div className='sessionContainer'>
-        <Avatar
-            alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
-            src={isLoggedIn ? tempAccountPic : ''}
-            className='userAvatar'
-        />
+    <>
         {isLoggedIn ? (
-            <Link to='/login' className='navLink'>
-                <Button onClick={handleLogout} className='navButton'>
-                    <LogoutIcon className='navBarIcon' />
-                    <span className='navButtonText'>Logout</span>
-                </Button>
-            </Link>
+            <div className='sessionContainer'>
+                <Link to='/userprofile'>
+                    <Avatar
+                        alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
+                        src={isLoggedIn ? tempAccountPic : ''}
+                        className='userAvatar'
+                        title='user settings'
+                    />
+                </Link>
+                <Link to='/login' className='navLink'>
+                    <Button onClick={handleLogout} className='navButton'>
+                        <LogoutIcon className='navBarIcon' />
+                        <span className='navButtonText'>Logout</span>
+                    </Button>
+                </Link>
+            </div>
         ) : (
-            <Link to='/login' className='navLink'>
-                <Button className='navButton'>
-                    <LoginIcon className='navBarIcon' />
-                    <span className='navButtonText'>Login</span>
-                </Button>
-            </Link>
+            <div className='sessionContainer'>
+                <Avatar
+                    alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
+                    src={isLoggedIn ? tempAccountPic : ''}
+                    className='userAvatar'
+                />
+                <Link to='/login' className='navLink'>
+                    <Button className='navButton'>
+                        <LoginIcon className='navBarIcon' />
+                        <span className='navButtonText'>Login</span>
+                    </Button>
+                </Link>
+            </div>
         )}
-    </div>
+    </>
 );
 
 export default OptionBar
