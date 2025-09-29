@@ -21,10 +21,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { UserAuth } from '../context/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 
-
 // array for center nav options
 
-    const nav_Items = [
+const nav_Items = [
     {
         text: 'Home', // name
         icon: <HomeIcon className='navBarIcon' />, // icon and css assignment
@@ -35,7 +34,6 @@ import LoadingSpinner from './LoadingSpinner'
         icon: <WorkIcon className='navBarIcon' />,
         to: '/fsb', // on click go to job board
     },
-    
 ]
 
 /*structure of option bar:
@@ -51,8 +49,8 @@ import LoadingSpinner from './LoadingSpinner'
 
 // contains the core 3 components
 const OptionBar = () => {
-    const { user, signOut, role, loadingSession} = UserAuth()
-   
+    const { user, signOut, role, loadingSession } = UserAuth()
+
     const isLoggedIn = !!user
 
     const handleLogout = async () => {
@@ -111,24 +109,36 @@ const NavButton = ({ item }) => (
 // session manager component deals with the authentication login/logout ui
 // isLoggedIn determines the current authentication state
 const SessionManager = ({ isLoggedIn, handleLogout }) => (
-    <div className='sessionContainer'>
-        <Avatar
-            alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
-            src={isLoggedIn ? tempAccountPic : ''}
-            className='userAvatar'
-        />
+    <div>
         {isLoggedIn ? (
-            <Button onClick={handleLogout} className='navButton'>
-                <LogoutIcon className='navBarIcon' />
-                <span className='navButtonText'>Logout</span>
-            </Button>
-        ) : (
-            <Link to='/login' className='navLink'>
-                <Button className='navButton'>
-                    <LoginIcon className='navBarIcon' />
-                    <span className='navButtonText'>Login</span>
+            <div className='sessionContainer'>
+                <Link to='/userprofile'>
+                    <Avatar
+                        alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
+                        src={isLoggedIn ? tempAccountPic : ''}
+                        className='userAvatar'
+                        title='user settings'
+                    />
+                </Link>
+                <Button onClick={handleLogout} className='navButton'>
+                    <LogoutIcon className='navBarIcon' />
+                    <span className='navButtonText'>Logout</span>
                 </Button>
-            </Link>
+            </div>
+        ) : (
+            <div className='sessionContainer'>
+                <Avatar
+                    alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
+                    src={isLoggedIn ? tempAccountPic : ''}
+                    className='userAvatar'
+                />
+                <Link to='/login' className='navLink'>
+                    <Button className='navButton'>
+                        <LoginIcon className='navBarIcon' />
+                        <span className='navButtonText'>Login</span>
+                    </Button>
+                </Link>
+            </div>
         )}
     </div>
 )
