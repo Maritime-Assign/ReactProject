@@ -1,3 +1,30 @@
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import OptionBar from './components/OptionBar'
+import Dashboard from './pages/Dashboard'
+import DashboardDispatch from './pages/DashboardDispatch'
+import DashboardDisplay from './pages/DashboardDisplay'
+import ViewBoard from './pages/ViewBoard'
+import PasswordRecovery from './pages/PasswordRecovery'
+import Login from './pages/Login'
+import './App.css'
+import AddJob from './pages/AddJob'
+import FSboard from './pages/FSboard'
+import UsersAndRoles from './pages/UsersAndRoles'
+import EditJob from './pages/EditJob'
+import ViewHistory from './components/ViewHistory'
+import AddUser from './pages/AddUser'
+import SetPassword from './pages/SetPassword'
+import EditUser from './pages/EditUser'
+import LoadingSpinner from './components/LoadingSpinner'
+import { UserAuth } from './context/AuthContext'
+import usePermission from './components/PermissionsTable'
+import UserProfile from './pages/UserProfile'
+import EditProfile from './pages/EditProfile'
+
+import { getRoleTiles } from './utils/tilePermissions';
+import { fetchUserRole } from './utils/userHelpers';
+
 import {
     Routes,
     Route,
