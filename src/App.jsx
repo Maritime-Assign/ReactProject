@@ -1,4 +1,10 @@
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import {
+    Routes,
+    Route,
+    Navigate,
+    useNavigate,
+    useLocation,
+} from 'react-router-dom'
 import { useEffect } from 'react'
 import OptionBar from './components/OptionBar'
 import Dashboard from './pages/Dashboard'
@@ -19,7 +25,7 @@ import SetPassword from './pages/SetPassword'
 import EditUser from './pages/EditUser'
 import LoadingSpinner from './components/LoadingSpinner'
 import { UserAuth } from './context/AuthContext'
-import usePermission from './components/PermissionsTable' 
+import usePermission from './components/PermissionsTable'
 
 const App = () => {
     const { loadingSession, user, role } = UserAuth()
@@ -33,7 +39,7 @@ const App = () => {
         }
     }, [user, loadingSession, navigate])
 
-    var grantedPermission = usePermission(role, location.pathname);
+    const grantedPermission = usePermission(role, location.pathname)
 
     // Redirect to fsb if user tries to view an unavailable page
     useEffect(() => {
@@ -57,8 +63,14 @@ const App = () => {
                         element={<Navigate to='/login' replace />}
                     />
                     <Route path='/dashboard' element={<Dashboard />} />
-                    <Route path='/dashboardManager' element={<DashboardManager />} />
-                    <Route path='/dashboardViewer' element={<DashboardViewer />} />
+                    <Route
+                        path='/dashboardManager'
+                        element={<DashboardManager />}
+                    />
+                    <Route
+                        path='/dashboardViewer'
+                        element={<DashboardViewer />}
+                    />
                     <Route path='/login' element={<Login />} />
                     <Route path='/recovery' element={<PasswordRecovery />} />
                     <Route path='/board' element={<ViewBoard />} />
