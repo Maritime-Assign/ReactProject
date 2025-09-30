@@ -37,6 +37,7 @@ const Login = () => {
 
                 if (!result.success) {
                     setError(result.error || 'Login failed')
+                    setLoading(false)
                     return
                 }
 
@@ -62,7 +63,7 @@ const Login = () => {
                 }
             } catch (err) {
                 console.error(err)
-                setError('Unexpected error logging in')
+                setError(err.message || String(err))
             } finally {
                 setLoading(false)
             }
@@ -130,7 +131,11 @@ const Login = () => {
                     </button>
                 </div>
                 {error && (
-                    <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>
+                    <p style={{ color: 'red', textAlign: 'center' }}>
+                        {typeof error === 'string'
+                            ? error
+                            : error.message || String(error)}
+                    </p>
                 )}
                 {loading && <p style={{ textAlign: 'center' }}>Signing in…</p>}
             </div>
