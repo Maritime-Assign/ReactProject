@@ -15,16 +15,6 @@ const Login = () => {
     const { signInUser, user, role, loadingSession } = UserAuth()
     const navigate = useNavigate()
 
-    // Redirect automatically if a user is already logged in
-    useEffect(() => {
-        if (!loadingSession && user) {
-            navigate('/dashboard')
-        }
-        if (!loadingSession && !user) {
-            navigate('/login')
-        }
-    }, [user, role, loadingSession, navigate])
-
     const handleLogIn = useCallback(
         async (e) => {
             e.preventDefault()
