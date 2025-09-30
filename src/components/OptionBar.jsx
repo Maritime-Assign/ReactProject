@@ -110,6 +110,7 @@ const NavButton = ({ item }) => (
 // isLoggedIn determines the current authentication state
 const SessionManager = ({ isLoggedIn, handleLogout }) => (
     <div>
+
         {isLoggedIn ? (
             <div className='sessionContainer'>
                 <Link to='/userprofile'>
@@ -140,7 +141,7 @@ const SessionManager = ({ isLoggedIn, handleLogout }) => (
                 </Link>
             </div>
         )}
-    </div>
-)
+    </>
+);
 
 export default OptionBar
