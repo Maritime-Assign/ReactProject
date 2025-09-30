@@ -69,6 +69,29 @@ const EditUser = () => {
         console.log(user);
     }
 
+    /*
+    async function testPost(append) {
+        const updatedUser = {
+            first_name: 'Unit' + String(append),
+        }
+
+        const { data, error } = await supabase
+            .from('Users')
+            .update(updatedUser)
+            .eq('UUID', '5d87ebd2-896e-46f0-adf0-738b315f172f')
+            .select()
+        
+        if (error) {
+            console.log('Failed to update test user');
+        }
+        else {
+            console.log('Test user updated successfully');
+        }
+    }
+
+    testPost(Math.random());
+    */
+
     return (
         <div className='flex justify-center flex-col py-4 mb-4 w-[1280px] m-auto'>
             <span className='p-4 text-2xl text-[#242762] font-medium'>
