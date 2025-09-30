@@ -35,12 +35,12 @@ const App = () => {
 
     // Redirect to login if user logs out
     useEffect(() => {
-        const publicRoutes = ['/login', '/password-recovery', '/set-password'];
+        const publicRoutes = ['/login', '/password-recovery', '/set-password']
 
-
-        if (!loadingSession 
-            && !user
-            && !publicRoutes.includes(window.location.pathname)
+        if (
+            !loadingSession &&
+            !user &&
+            !publicRoutes.includes(window.location.pathname)
         ) {
             navigate('/login')
         }
@@ -70,14 +70,6 @@ const App = () => {
                         element={<Navigate to='/login' replace />}
                     />
                     <Route path='/dashboard' element={<Dashboard />} />
-                    <Route
-                        path='/dashboardManager'
-                        element={<DashboardManager />}
-                    />
-                    <Route
-                        path='/dashboardViewer'
-                        element={<DashboardViewer />}
-                    />
                     <Route path='/login' element={<Login />} />
                     <Route path='/recovery' element={<PasswordRecovery />} />
                     <Route path='/board' element={<ViewBoard />} />
@@ -87,7 +79,10 @@ const App = () => {
                     <Route path='/editjob' element={<EditJob />} />
                     <Route path='/add-user' element={<AddUser />} />
                     <Route path='/set-password' element={<SetPassword />} />
-                    <Route path='/password-recovery' element={<PasswordRecovery />} />
+                    <Route
+                        path='/password-recovery'
+                        element={<PasswordRecovery />}
+                    />
                     <Route
                         path='/dashboard/dispatch'
                         element={<DashboardDispatch />}
