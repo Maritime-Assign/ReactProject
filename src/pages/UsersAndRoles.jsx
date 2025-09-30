@@ -40,7 +40,7 @@ const UsersAndRoles = () => {
     String(user.first_name || "")
       .toLowerCase()
       .includes(searchWord.toLowerCase()) ||
-    String(user.role_id || "")
+    String(user.role || "")
       .toLowerCase()
       .includes(searchWord.toLowerCase())
   );
@@ -80,25 +80,17 @@ const UsersAndRoles = () => {
           <div className="grid-cell">Email</div>
         </div>
         {filteredUsers.map((user) => (
-          <div className="grid-row" key={user.id}>
-            <div className="grid-cell">
-              <ImageDropdown 
-                userId={user.id} 
-                currentRole={user.role_id}
-                onRoleChange={(newRole) => {
-                  console.log(`User ${user.id} changed role to: ${newRole}`);
-                }}
-              />
-            </div>
+          <div className="grid-row" key={user.UUID}>
+           {/*Button that links to the edit user page*/}
+            <Link to={'/edituser'} state={user}>
+              <button className="edit-button" title="Edit Role"
+                      onClick={() => console.log("Navigating to EditUser with state:", user)}>
+                <FaEdit />
+              </button>
+            </Link>
+            <div className="grid-cell">{user.role}</div>
             <div className="grid-cell">{user.first_name}</div>
             <div className="grid-cell">{user.email}</div>
-
-           {/*Button that links to the edit user page*/}
-              <Link to={'/edituser'} state={user}>
-                <button className="edit-button" title="Edit Role">
-                  <FaEdit />
-                </button>
-              </Link>
           </div>
         ))}
       </div>

@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useFormStatus } from 'react-dom'
+import { supabase } from '../supabaseClient'
 
 const EditUser = () => {
     //Convert the data of a user and make it editable
@@ -12,10 +13,9 @@ const EditUser = () => {
         return null
     }
 
-    const fullName = state.name?.split(' ') || ['', '']
     const [user, setUser] = useState({
-        fname: fullName[0],
-        lname: fullName[1],
+        fname: state.first_name,
+        lname: state.last_name,
         email: state.email || '',
         role: state.role || '',
     })
@@ -41,19 +41,31 @@ const EditUser = () => {
     }
 
     //Does nothing for now; Implement Supabase functionality when user data format is finalized
-    function submitEdits(e) {
+    async function submitEdits(e) {
         //Show a message to represent that the edits were submitted; REMOVE WHEN ACTUAL IMPLEMENTATION IS DONE
         e.preventDefault()
-        alert(
-            'Updated first name is ' +
-                user.fname +
-                '\nUpdated last name is ' +
-                user.lname +
-                '\nUpdated email is ' +
-                user.email +
-                '\nUpdated role is ' +
-                user.role
-        )
+
+        const updatedUser = {
+            first_name: user.fname,
+            last_name: user.lname,
+            email: user.email,
+            role: user.role
+        }
+
+        const { data, error } = await supabase
+            .from('Users')
+            .update(updatedUser)
+            .eq('UUID', state.UUID)
+            .select()
+
+        if (error) {
+            alert('Failed to update user')
+            console.log(state.UUID);
+            console.log(user);
+        }
+        else {
+            alert('User updated successfully')
+        }
     }
 
     return (
