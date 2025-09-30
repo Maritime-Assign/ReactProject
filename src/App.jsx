@@ -1,4 +1,10 @@
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import {
+    Routes,
+    Route,
+    Navigate,
+    useNavigate,
+    useLocation,
+} from 'react-router-dom'
 import { useEffect } from 'react'
 import OptionBar from './components/OptionBar'
 import Dashboard from './pages/Dashboard'
@@ -18,12 +24,14 @@ import SetPassword from './pages/SetPassword'
 import EditUser from './pages/EditUser'
 import LoadingSpinner from './components/LoadingSpinner'
 import { UserAuth } from './context/AuthContext'
+import usePermission from './components/PermissionsTable'
 import UserProfile from './pages/UserProfile'
 import EditProfile from './pages/EditProfile'
 
 const App = () => {
-    const { loadingSession, user } = UserAuth()
+    const { loadingSession, user, role } = UserAuth()
     const navigate = useNavigate()
+    const location = useLocation()
 
     // Redirect to login if user logs out
     useEffect(() => {
@@ -37,6 +45,15 @@ const App = () => {
             navigate('/login')
         }
     }, [user, loadingSession, navigate])
+
+    const grantedPermission = usePermission(role, location.pathname)
+
+    // Redirect to fsb if user tries to view an unavailable page
+    useEffect(() => {
+        if (!loadingSession && !grantedPermission && user) {
+            navigate('/fsb')
+        }
+    }, [grantedPermission, loadingSession, user, navigate])
 
     // Block rendering until AuthProvider finishes fetching session & role
     if (loadingSession) return <LoadingSpinner />
@@ -53,6 +70,14 @@ const App = () => {
                         element={<Navigate to='/login' replace />}
                     />
                     <Route path='/dashboard' element={<Dashboard />} />
+                    <Route
+                        path='/dashboardManager'
+                        element={<DashboardManager />}
+                    />
+                    <Route
+                        path='/dashboardViewer'
+                        element={<DashboardViewer />}
+                    />
                     <Route path='/login' element={<Login />} />
                     <Route path='/recovery' element={<PasswordRecovery />} />
                     <Route path='/board' element={<ViewBoard />} />
