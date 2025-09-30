@@ -113,7 +113,7 @@ const Login = () => {
                     </div>
                 </div>
                 <div className='pt-4'>
-                    <Link to='/recovery'>
+                    <Link to='/password-recovery'>
                         <button className='bg-mebablue-light rounded-md px-4 py-2 w-100 cursor-pointer'>
                             <span className='text-lg font-mont text-white'>
                                 Forgot Password?

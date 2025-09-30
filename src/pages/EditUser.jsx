@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useFormStatus } from 'react-dom'
+import { supabase } from '../supabaseClient'
 
 const EditUser = () => {
     //Convert the data of a user and make it editable
@@ -12,10 +13,9 @@ const EditUser = () => {
         return null
     }
 
-    const fullName = state.name?.split(' ') || ['', '']
     const [user, setUser] = useState({
-        fname: fullName[0],
-        lname: fullName[1],
+        fname: state.first_name,
+        lname: state.last_name,
         email: state.email || '',
         role: state.role || '',
     })
@@ -41,20 +41,56 @@ const EditUser = () => {
     }
 
     //Does nothing for now; Implement Supabase functionality when user data format is finalized
-    function submitEdits(e) {
+    async function submitEdits(e) {
         //Show a message to represent that the edits were submitted; REMOVE WHEN ACTUAL IMPLEMENTATION IS DONE
         e.preventDefault()
-        alert(
-            'Updated first name is ' +
-                user.fname +
-                '\nUpdated last name is ' +
-                user.lname +
-                '\nUpdated email is ' +
-                user.email +
-                '\nUpdated role is ' +
-                user.role
-        )
+
+        const updatedUser = {
+            first_name: user.fname,
+            last_name: user.lname,
+            email: user.email,
+            role: user.role
+        }
+
+        const { data, error } = await supabase
+            .from('Users')
+            .update(updatedUser)
+            .eq('UUID', state.UUID)
+            .select()
+
+        if (error) {
+            alert('Failed to update user')
+        }
+        else {
+            alert('User updated successfully')
+        }
+            
+        console.log(state.UUID);
+        console.log(user);
     }
+
+    /*
+    async function testPost(append) {
+        const updatedUser = {
+            first_name: 'Unit' + String(append),
+        }
+
+        const { data, error } = await supabase
+            .from('Users')
+            .update(updatedUser)
+            .eq('UUID', '5d87ebd2-896e-46f0-adf0-738b315f172f')
+            .select()
+        
+        if (error) {
+            console.log('Failed to update test user');
+        }
+        else {
+            console.log('Test user updated successfully');
+        }
+    }
+
+    testPost(Math.random());
+    */
 
     return (
         <div className='flex justify-center flex-col py-4 mb-4 w-[1280px] m-auto'>
@@ -123,10 +159,10 @@ const EditUser = () => {
                                 defaultValue={user.role}
                                 onChange={updateRole}
                             >
-                                <option value='Admin'>Admin</option>
-                                <option value='Editor'>Editor</option>
-                                <option value='MEBA Member'>MEBA Member</option>
-                                <option value='Viewer'>Viewer</option>
+                                <option value='admin'>Admin</option>
+                                <option value='major'>Major</option>
+                                <option value='minor'>Minor</option>
+                                <option value='display'>Display</option>
                             </select>
                         </label>
                     </div>
