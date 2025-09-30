@@ -64,7 +64,7 @@ const App = () => {
     }, [user])
 
     // Compute permissions for current path
-    const grantedPermission = usePermission(userRole, location.pathname)
+    var grantedPermission = usePermission(role, location.pathname)
 
     // Redirect to FSboard if logged-in user has no permission
     useEffect(() => {
@@ -72,6 +72,22 @@ const App = () => {
             navigate('/fsb')
         }
     }, [loadingSession, user, grantedPermission, navigate])
+
+useEffect(() => {
+        if (!loadingSession && user && userRole) {
+            const currentPath = location.pathname
+            if (currentPath === '/login' || currentPath === '/') {
+                if (userRole === 'admin') {
+                    navigate('/dashboard/admin', { replace: true })
+                } else if (userRole === 'minor') {
+                    navigate('/dashboard/dispatch', { replace: true })
+                } else {
+                    navigate('/dashboard/display', { replace: true })
+                }
+            }
+        }
+    }, [loadingSession, user, userRole, location.pathname, navigate])
+
     console.log({ user, userRole, loadingSession })
     // Block render until session or role fetch is complete
     if (loadingSession || (user && userRole === null)) return <LoadingSpinner />
