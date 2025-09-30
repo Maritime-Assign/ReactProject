@@ -2,9 +2,8 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import OptionBar from './components/OptionBar'
 import Dashboard from './pages/Dashboard'
-import DashboardManager from './pages/DashboardManager'
-import DashboardUser from './pages/DashboardUser'
-import DashboardViewer from './pages/DashboardViewer'
+import DashboardDispatch from './pages/DashboardDispatch'
+import DashboardDisplay from './pages/DashboardDisplay'
 import ViewBoard from './pages/ViewBoard'
 import PasswordRecovery from './pages/PasswordRecovery'
 import Login from './pages/Login'
@@ -19,6 +18,8 @@ import SetPassword from './pages/SetPassword'
 import EditUser from './pages/EditUser'
 import LoadingSpinner from './components/LoadingSpinner'
 import { UserAuth } from './context/AuthContext'
+import UserProfile from './pages/UserProfile'
+import EditProfile from './pages/EditProfile'
 
 const App = () => {
     const { loadingSession, user } = UserAuth()
@@ -63,16 +64,17 @@ const App = () => {
                     <Route path='/set-password' element={<SetPassword />} />
                     <Route path='/password-recovery' element={<PasswordRecovery />} />
                     <Route
-                        path='/dashboard/manager'
-                        element={<DashboardManager />}
+                        path='/dashboard/dispatch'
+                        element={<DashboardDispatch />}
                     />
-                    <Route path='/dashboard/user' element={<DashboardUser />} />
                     <Route
-                        path='/dashboard/viewer'
-                        element={<DashboardViewer />}
+                        path='/dashboard/display'
+                        element={<DashboardDisplay />}
                     />
                     <Route path='/history' element={<ViewHistory />} />
                     <Route path='/edituser' element={<EditUser />} />
+                    <Route path='/userprofile' element={<UserProfile />} />
+                    <Route path='/editprofile' element={<EditProfile />} />
                 </Routes>
             </div>
         </div>

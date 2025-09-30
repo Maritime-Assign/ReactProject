@@ -55,7 +55,7 @@ const FSboard = () => {
                     branch1={job.branch1}
                     branch2={job.branch2}
                     open={job.open}
-                    fillDate={job.fillDate}
+                    fillDate={job.FillDate}
                     dateCalled={job.dateCalled}
                     shipName={job.shipName}
                     joinDate={job.joinDate}

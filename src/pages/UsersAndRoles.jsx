@@ -9,32 +9,36 @@ import { FaEdit, FaUserPlus, FaUserMinus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import supabase from '../supabaseClient';
 import ImageDropdown from '../components/ImageDropdown/ImageDropdown'
+import { IoArrowBack } from "react-icons/io5";
+import { useNavigate } from 'react-router-dom'
   
 const getAllUsers = async () => {
-  const { data, error } = await supabase.from("Users").select("*");
+    const { data, error } = await supabase.from("Users").select("*");
 
-  if (error) {
-    console.log("Error fetching users:", error);
-    return [];
-  }
+    if (error) {
+        console.log("Error fetching users:", error);
+        return [];
+    }
 
-  return data;
+    return data;
 };
 
 // define functionality
 const UsersAndRoles = () => {
-  const [searchWord, setSearchWord] = useState('');
-  const [users, setUsers] = useState([]);
+    const [searchWord, setSearchWord] = useState('');
+    const [users, setUsers] = useState([]);
+    const navigate = useNavigate()
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const supabaseUsers = await getAllUsers();
-      console.log("Fetched users:", supabaseUsers);
-      setUsers(supabaseUsers);
-    }
+    useEffect(() => {
+        const fetchUsers = async () => {
+            const supabaseUsers = await getAllUsers();
+            console.log("Fetched users:", supabaseUsers);
+            setUsers(supabaseUsers);
+        }
 
-    fetchUsers();
-  }, []);
+        fetchUsers();
+    }, []);
+
 
   const filteredUsers = users.filter((user) =>
     String(user.first_name || "")
@@ -96,6 +100,7 @@ const UsersAndRoles = () => {
       </div>
     </div>
   );
+
 };
 
 export default UsersAndRoles;
