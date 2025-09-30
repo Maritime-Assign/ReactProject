@@ -60,12 +60,13 @@ const EditUser = () => {
 
         if (error) {
             alert('Failed to update user')
-            console.log(state.UUID);
-            console.log(user);
         }
         else {
             alert('User updated successfully')
         }
+            
+        console.log(state.UUID);
+        console.log(user);
     }
 
     return (
@@ -135,10 +136,10 @@ const EditUser = () => {
                                 defaultValue={user.role}
                                 onChange={updateRole}
                             >
-                                <option value='Admin'>Admin</option>
-                                <option value='Editor'>Editor</option>
-                                <option value='MEBA Member'>MEBA Member</option>
-                                <option value='Viewer'>Viewer</option>
+                                <option value='admin'>Admin</option>
+                                <option value='major'>Major</option>
+                                <option value='minor'>Minor</option>
+                                <option value='display'>Display</option>
                             </select>
                         </label>
                     </div>
