@@ -18,6 +18,8 @@ import SetPassword from './pages/SetPassword'
 import EditUser from './pages/EditUser'
 import LoadingSpinner from './components/LoadingSpinner'
 import { UserAuth } from './context/AuthContext'
+import UserProfile from './pages/UserProfile'
+import EditProfile from './pages/EditProfile'
 
 import { getRoleTiles } from './utils/tilePermissions';
 import { fetchUserRole } from './utils/userHelpers';
@@ -108,6 +110,12 @@ const App = () => {
                         path="/dashboard/display"
                         element={<DashboardDisplay allowedTiles={allowedTiles} />}
                     />
+
+                    <Route path='/history' element={<ViewHistory />} />
+                    <Route path='/edituser' element={<EditUser />} />
+                    <Route path='/userprofile' element={<UserProfile />} />
+                    <Route path='/editprofile' element={<EditProfile />} />
+
                 </Routes>
             </div>
         </div>
