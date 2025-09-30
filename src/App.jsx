@@ -18,6 +18,8 @@ import SetPassword from './pages/SetPassword'
 import EditUser from './pages/EditUser'
 import LoadingSpinner from './components/LoadingSpinner'
 import { UserAuth } from './context/AuthContext'
+import UserProfile from './pages/UserProfile'
+import EditProfile from './pages/EditProfile'
 
 const App = () => {
     const { loadingSession, user } = UserAuth()
@@ -64,6 +66,8 @@ const App = () => {
                     />
                     <Route path='/history' element={<ViewHistory />} />
                     <Route path='/edituser' element={<EditUser />} />
+                    <Route path='/userprofile' element={<UserProfile />} />
+                    <Route path='/editprofile' element={<EditProfile />} />
                 </Routes>
             </div>
         </div>
