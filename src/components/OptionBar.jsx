@@ -22,6 +22,7 @@ import { UserAuth } from '../context/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 
 // array for center nav options
+
 const nav_Items = [
     {
         text: 'Home', // name
@@ -33,7 +34,6 @@ const nav_Items = [
         icon: <WorkIcon className='navBarIcon' />,
         to: '/fsb', // on click go to job board
     },
-    /*add more here*/
 ]
 
 /*structure of option bar:
@@ -49,8 +49,8 @@ const nav_Items = [
 
 // contains the core 3 components
 const OptionBar = () => {
-    const { user, signOut, loadingSession } = UserAuth()
-    const navigate = useNavigate()
+    const { user, signOut, role, loadingSession } = UserAuth()
+
     const isLoggedIn = !!user
 
     const handleLogout = async () => {
@@ -109,7 +109,8 @@ const NavButton = ({ item }) => (
 // session manager component deals with the authentication login/logout ui
 // isLoggedIn determines the current authentication state
 const SessionManager = ({ isLoggedIn, handleLogout }) => (
-    <>
+    <div>
+
         {isLoggedIn ? (
             <div className='sessionContainer'>
                 <Link to='/userprofile'>
@@ -120,12 +121,10 @@ const SessionManager = ({ isLoggedIn, handleLogout }) => (
                         title='user settings'
                     />
                 </Link>
-                <Link to='/login' className='navLink'>
-                    <Button onClick={handleLogout} className='navButton'>
-                        <LogoutIcon className='navBarIcon' />
-                        <span className='navButtonText'>Logout</span>
-                    </Button>
-                </Link>
+                <Button onClick={handleLogout} className='navButton'>
+                    <LogoutIcon className='navBarIcon' />
+                    <span className='navButtonText'>Logout</span>
+                </Button>
             </div>
         ) : (
             <div className='sessionContainer'>
