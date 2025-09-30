@@ -27,7 +27,13 @@ const App = () => {
 
     // Redirect to login if user logs out
     useEffect(() => {
-        if (!loadingSession && !user) {
+        const publicRoutes = ['/login', '/password-recovery', '/set-password'];
+
+
+        if (!loadingSession 
+            && !user
+            && !publicRoutes.includes(window.location.pathname)
+        ) {
             navigate('/login')
         }
     }, [user, loadingSession, navigate])
@@ -56,6 +62,7 @@ const App = () => {
                     <Route path='/editjob' element={<EditJob />} />
                     <Route path='/add-user' element={<AddUser />} />
                     <Route path='/set-password' element={<SetPassword />} />
+                    <Route path='/password-recovery' element={<PasswordRecovery />} />
                     <Route
                         path='/dashboard/dispatch'
                         element={<DashboardDispatch />}
