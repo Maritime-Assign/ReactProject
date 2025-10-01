@@ -8,7 +8,16 @@ export default defineConfig({
   server: {
     host: true, // or '0.0.0.0'
     watch: {
-        usePolling: true,
-    }
+      usePolling: true,
+    },
+  },
+  test: {
+    // Test react components
+    environment: 'jsdom',
+    // enable jest "describe it"
+    globals: true,
+    // Add setup file that runs before each test
+    setupFiles: './src/setupTests.js',
+    include: ['src/**/*.test.{js,jsx,ts,tsx}'],
   },
 })

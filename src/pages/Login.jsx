@@ -15,16 +15,6 @@ const Login = () => {
     const { signInUser, user, role, loadingSession } = UserAuth()
     const navigate = useNavigate()
 
-    // Redirect automatically if a user is already logged in
-    useEffect(() => {
-        if (!loadingSession && user) {
-            navigate('/dashboard')
-        }
-        if (!loadingSession && !user) {
-            navigate('/login')
-        }
-    }, [user, role, loadingSession, navigate])
-
     const handleLogIn = useCallback(
         async (e) => {
             e.preventDefault()
@@ -37,6 +27,7 @@ const Login = () => {
 
                 if (!result.success) {
                     setError(result.error || 'Login failed')
+                    setLoading(false)
                     return
                 }
 
@@ -62,7 +53,7 @@ const Login = () => {
                 }
             } catch (err) {
                 console.error(err)
-                setError('Unexpected error logging in')
+                setError(err.message || String(err))
             } finally {
                 setLoading(false)
             }
@@ -130,7 +121,11 @@ const Login = () => {
                     </button>
                 </div>
                 {error && (
-                    <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>
+                    <p style={{ color: 'red', textAlign: 'center' }}>
+                        {typeof error === 'string'
+                            ? error
+                            : error.message || String(error)}
+                    </p>
                 )}
                 {loading && <p style={{ textAlign: 'center' }}>Signing in…</p>}
             </div>
