@@ -27,6 +27,7 @@ const EditJob = () => {
         crewRelieved: jobData?.crewRelieved || ''
     });
 
+    const [status, setStatus] = useState(formData.open)
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState(''); // 'success' or 'error'
     const [window, setWindow] = useState(false);
@@ -126,7 +127,7 @@ const EditJob = () => {
                 </span>
             </div>
             {/* Tile Content container*/}
-            <div className='flex flex-col w-full h-full px-2 mx-auto'>  
+            <div className='flex flex-col w-full h-full px-2 mx-auto'>
                 {/* Row 1: Ship Name, Branches, Status 3 Col Grid*/}
                 <div className='grid grid-cols-3 gap-2 py-2 font-semibold text-white'>
                     <input
@@ -237,8 +238,8 @@ const EditJob = () => {
 
             {/* Exit and Save Button, Exit redirect to Job board, Save result in a status message */}
             <div className="flex justify-center gap-4 p-4">
-                <Link to='/board'> 
-                {/* Exit button is linked directly to the job board */}
+                <Link to='/board'>
+                    {/* Exit button is linked directly to the job board */}
                     <button className='bg-red-500 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 hover:bg-red-600'>
                         Exit
                     </button>

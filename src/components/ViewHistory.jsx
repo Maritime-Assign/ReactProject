@@ -234,7 +234,7 @@ ${log.new_state}`
             {/* Header */}
             <div className='flex py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center mb-4'>
                 <button
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => navigate(-1)}
                     className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
                 >
                     <IoArrowBack className='w-6 h-6' />

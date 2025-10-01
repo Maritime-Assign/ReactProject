@@ -21,36 +21,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { UserAuth } from '../context/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 
-// array for center nav options
-const nav_Items = [
-    {
-        text: 'Home', // name
-        icon: <HomeIcon className='navBarIcon' />, // icon and css assignment
-        to: '/dashboard', // on click go to dash
-    },
-    {
-        text: 'Job Board',
-        icon: <WorkIcon className='navBarIcon' />,
-        to: '/fsb', // on click go to job board
-    },
-    /*add more here*/
-]
-
-/*structure of option bar:
-        optionBar
-            |
-          / | \
-        /   |   \
-    lOGO NAVBAR LOGIN/OUT
-            |
-          /   \
-    Button#1 Button#2
-*/
-
 // contains the core 3 components
 const OptionBar = () => {
-    const { user, signOut, loadingSession } = UserAuth()
-    const navigate = useNavigate()
+    const { user, role, loadingSession, signOut } = UserAuth()
     const isLoggedIn = !!user
 
     const handleLogout = async () => {
@@ -64,6 +37,27 @@ const OptionBar = () => {
     }
 
     if (loadingSession) return <LoadingSpinner />
+
+    // Dynamically set dashboard path based on role
+    const dashboardPath =
+        role === 'admin'
+            ? '/dashboard/admin'
+            : role === 'minor'
+            ? '/dashboard/dispatch'
+            : '/dashboard/display'
+
+    const nav_Items = [
+        {
+            text: 'Home',
+            icon: <HomeIcon className='navBarIcon' />,
+            to: dashboardPath,
+        },
+        {
+            text: 'Job Board',
+            icon: <WorkIcon className='navBarIcon' />,
+            to: '/fsb',
+        },
+    ]
 
     return (
         <nav className='navbar'>
@@ -109,24 +103,36 @@ const NavButton = ({ item }) => (
 // session manager component deals with the authentication login/logout ui
 // isLoggedIn determines the current authentication state
 const SessionManager = ({ isLoggedIn, handleLogout }) => (
-    <div className='sessionContainer'>
-        <Avatar
-            alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
-            src={isLoggedIn ? tempAccountPic : ''}
-            className='userAvatar'
-        />
+    <div>
         {isLoggedIn ? (
-            <Button onClick={handleLogout} className='navButton'>
-                <LogoutIcon className='navBarIcon' />
-                <span className='navButtonText'>Logout</span>
-            </Button>
-        ) : (
-            <Link to='/login' className='navLink'>
-                <Button className='navButton'>
-                    <LoginIcon className='navBarIcon' />
-                    <span className='navButtonText'>Login</span>
+            <div className='sessionContainer'>
+                <Link to='/userprofile'>
+                    <Avatar
+                        alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
+                        src={isLoggedIn ? tempAccountPic : ''}
+                        className='userAvatar'
+                        title='user settings'
+                    />
+                </Link>
+                <Button onClick={handleLogout} className='navButton'>
+                    <LogoutIcon className='navBarIcon' />
+                    <span className='navButtonText'>Logout</span>
                 </Button>
-            </Link>
+            </div>
+        ) : (
+            <div className='sessionContainer'>
+                <Avatar
+                    alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
+                    src={isLoggedIn ? tempAccountPic : ''}
+                    className='userAvatar'
+                />
+                <Link to='/login' className='navLink'>
+                    <Button className='navButton'>
+                        <LoginIcon className='navBarIcon' />
+                        <span className='navButtonText'>Login</span>
+                    </Button>
+                </Link>
+            </div>
         )}
     </div>
 )
