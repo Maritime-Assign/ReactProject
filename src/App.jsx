@@ -67,13 +67,17 @@ const App = () => {
     var grantedPermission = usePermission(role, location.pathname)
 
     // Redirect to FSboard if logged-in user has no permission
+    // FIX: wait for the user's role to load before checking permissions and redirecting. 
+    // This prevents jumping to /fsb before the app knows the correct dashboard to show.
     useEffect(() => {
-        if (!loadingSession && !grantedPermission && user) {
-            navigate('/fsb')
+    // Wait until userRole is fetched
+    if (!loadingSession && user && userRole !== null && !grantedPermission) {
+            navigate('/fsb', { replace: true })
         }
-    }, [loadingSession, user, grantedPermission, navigate])
+    }, [loadingSession, user, userRole, grantedPermission, navigate])
 
-useEffect(() => {
+
+    useEffect(() => {
         if (!loadingSession && user && userRole) {
             const currentPath = location.pathname
             if (currentPath === '/login' || currentPath === '/') {
