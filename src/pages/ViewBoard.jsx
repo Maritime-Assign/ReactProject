@@ -24,129 +24,43 @@ function ViewBoard() {
         loadJobs()
     }, [])
 
-    return (
-        <>
-            <div className='w-full pt-4 flex flex-col max-w-[1280px] mx-auto'>
-                <div className='flex py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center'>
-                    <button
-                        onClick={() => navigate(-1)} // navigate back one page
-                        className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark'
-                    >
-                        <svg
-                            className='w-6 h-6 hover:w-6.5 hover:h-6.5 transition-all ease-in-out text-center items-center justify-center drop-shadow-md'
-                            width='20'
-                            height='20'
-                            viewBox='0 0 24 24'
-                            fill='currentColor'
-                        >                            
-                            <IoArrowBack />
-                        </svg>
-                    </button>
+    // Update handler
+    const handleJobUpdate = (updatedJob) => {
+        setJobs((prevJobs) =>
+            prevJobs.map((job) =>
+                job.id === updatedJob.id ? updatedJob : job
+            )
+        )
+    }
 
-                    <div className='flex justify-center py-4 bg-mebablue-dark rounded-md w-full shadow-xl'>
-                        <span className='text-white text-2xl font-medium font-mont'>
-                            Manage Jobs
-                        </span>
+    return (
+        <div className='w-full pt-4 flex flex-col max-w-[1280px] mx-auto'>
+            {/* header, filter... */}
+            <Filter setView={setView} setFilterOpen={setFilterOpen} />
+            <div className='w-full'>
+                {view === 'tile' ? (
+                    <div className='grid md:grid-cols-2 grid-cols-1 justify-start place-items-center gap-4'>
+                        {(filterOpen ? jobs.filter((j) => j.open) : jobs).map((job) => (
+                            <Tile
+                                key={job.id}
+                                job={job}
+                                onJobUpdate={handleJobUpdate} // 🔑 pass handler
+                            />
+                        ))}
                     </div>
-                </div>
-                <Filter setView={setView} setFilterOpen={setFilterOpen} />
-                <div className='w-full'>
-                    {view === 'tile' ? (
-                        <div className='grid md:grid-cols-2 grid-cols-1 justify-start place-items-center gap-4'>
-                            {!filterOpen
-                                ? jobs.map((job) => (
-                                      <Tile
-                                          key={job.id}
-                                          id={job.id}
-                                          branch1={job.branch1}
-                                          branch2={job.branch2}
-                                          open={job.open}
-                                          fillDate={job.FillDate}
-                                          dateCalled={job.dateCalled}
-                                          shipName={job.shipName}
-                                          joinDate={job.joinDate}
-                                          billet={job.billet}
-                                          type={job.type}
-                                          days={job.days}
-                                          location={job.location}
-                                          crewRelieved={job.crewRelieved}
-                                          notes={job.notes}
-                                          company={job.company}
-                                      />
-                                  ))
-                                : jobs
-                                      .filter((job) => job.open)
-                                      .map((job) => (
-                                          <Tile
-                                              key={job.id}
-                                              id={job.id}
-                                              branch1={job.branch1}
-                                              branch2={job.branch2}
-                                              open={job.open}
-                                              fillDate={job.FillDate}
-                                              dateCalled={job.dateCalled}
-                                              shipName={job.shipName}
-                                              joinDate={job.joinDate}
-                                              billet={job.billet}
-                                              type={job.type}
-                                              days={job.days}
-                                              location={job.location}
-                                              crewRelieved={job.crewRelieved}
-                                              notes={job.notes}
-                                              company={job.company}
-                                          />
-                                      ))}
-                        </div>
-                    ) : (
-                        <div className='space-y-4'>
-                            {!filterOpen
-                                ? jobs.map((job) => (
-                                      <Tile
-                                          key={job.id}
-                                          id={job.id}
-                                          branch1={job.branch1}
-                                          branch2={job.branch2}
-                                          open={job.open}
-                                          fillDate={job.FillDate}
-                                          dateCalled={job.dateCalled}
-                                          shipName={job.shipName}
-                                          joinDate={job.joinDate}
-                                          billet={job.billet}
-                                          type={job.type}
-                                          days={job.days}
-                                          location={job.location}
-                                          crewRelieved={job.crewRelieved}
-                                          notes={job.notes}
-                                          company={job.company}
-                                      />
-                                  ))
-                                : jobs
-                                      .filter((job) => job.open)
-                                      .map((job) => (
-                                          <Tile
-                                              key={job.id}
-                                              id={job.id}
-                                              branch1={job.branch1}
-                                              branch2={job.branch2}
-                                              open={job.open}
-                                              fillDate={job.FillDate}
-                                              dateCalled={job.dateCalled}
-                                              shipName={job.shipName}
-                                              joinDate={job.joinDate}
-                                              billet={job.billet}
-                                              type={job.type}
-                                              days={job.days}
-                                              location={job.location}
-                                              crewRelieved={job.crewRelieved}
-                                              notes={job.notes}
-                                              company={job.company}
-                                          />
-                                      ))}
-                        </div>
-                    )}
-                </div>
+                ) : (
+                    <div className='space-y-4'>
+                        {(filterOpen ? jobs.filter((j) => j.open) : jobs).map((job) => (
+                            <Tile
+                                key={job.id}
+                                job={job}
+                                onJobUpdate={handleJobUpdate} // 🔑 pass handler
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
-        </>
+        </div>
     )
 }
 

@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
 import supabase from '../supabaseClient'
 
-// Arrays for options for the various dropdowns
+// Arrays for options for the various dropdowns 
 const statusOptions = ['Open', 'Filled']
 const billetOptions = ['1 A/E', '2M', '3M']
 const typeOptions = ['Relief', 'Permanent']
