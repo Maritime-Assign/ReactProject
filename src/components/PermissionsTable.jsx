@@ -6,8 +6,8 @@ import React, { useEffect, useMemo, useState } from 'react'
 
 const permissions = {
   admin: ['*'], // admin can access everything
-  major: ['/dashboardManager', '/fsb', '/board', '/addjob', '/history'],
-  minor: ['/fsb'],
+  minor: ['/dashboard/dispatch', '/fsb', '/board', '/addjob', '/history'],
+  display: ['/fsb'],
   guest: ['/login'], // fallback for unauthenticated users
 }
 
