@@ -93,8 +93,8 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
             </div>
 
             {/* Job Data Grid */}            
-            <div className={`col-span-1 ${cellStyle} ${rowClass}`}><span>{props.branch1}</span></div>
-            <div className={`col-span-1 ${cellStyle} ${rowClass}`}><span>{props.branch2}</span></div>
+            <div className={`col-span-1 ${cellStyle} ${rowClass}`}><span>{props.region}</span></div>
+            <div className={`col-span-1 ${cellStyle} ${rowClass}`}><span>{props.hall}</span></div>
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}><span>{props.dateCalled}</span></div>
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}><span>{props.shipName}</span></div>
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}><span>{props.joinDate}</span></div>

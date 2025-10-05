@@ -13,8 +13,8 @@ const EditJob = () => {
     // Form state for all editable fields
     const [formData, setFormData] = useState({
         shipName: jobData?.shipName || '',
-        branch1: jobData?.branch1 || '',
-        branch2: jobData?.branch2 || '',
+        region: jobData?.region || '',
+        hall: jobData?.hall || '',
         open: jobData?.open || false,
         notes: jobData?.notes || '',
         location: jobData?.location || '',
@@ -38,8 +38,8 @@ const EditJob = () => {
         if (jobData) {
             setFormData({
                 shipName: jobData.shipName || '',
-                branch1: jobData.branch1 || '',
-                branch2: jobData.branch2 || '',
+                region: jobData.region || '',
+                hall: jobData.hall || '',
                 open: jobData.open || false,
                 notes: jobData.notes || '',
                 location: jobData.location || '',
@@ -128,7 +128,7 @@ const EditJob = () => {
             </div>
             {/* Tile Content container*/}
             <div className='flex flex-col w-full h-full px-2 mx-auto'>
-                {/* Row 1: Ship Name, Branches, Status 3 Col Grid*/}
+                {/* Row 1: Ship Name, regions, Halls, Status 3 Col Grid*/}
                 <div className='grid grid-cols-3 gap-2 py-2 font-semibold text-white'>
                     <input
                         type="text"
@@ -140,16 +140,16 @@ const EditJob = () => {
                     <div className='grid grid-cols-2 gap-1'>
                         <input
                             type="text"
-                            value={formData.branch1}
-                            onChange={(e) => handleInputChange('branch1', e.target.value)}
-                            placeholder="Branch 1"
+                            value={formData.region}
+                            onChange={(e) => handleInputChange('region', e.target.value)}
+                            placeholder="Region"
                             className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white placeholder-gray-300 text-sm'
                         />
                         <input
                             type="text"
-                            value={formData.branch2}
-                            onChange={(e) => handleInputChange('branch2', e.target.value)}
-                            placeholder="Branch 2"
+                            value={formData.hall}
+                            onChange={(e) => handleInputChange('hall', e.target.value)}
+                            placeholder="Hall"
                             className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white placeholder-gray-300 text-sm'
                         />
                     </div>

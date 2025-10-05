@@ -32,8 +32,8 @@ const createOnSubmit = (user) => async (values, actions) => {
         // Prepare job data - convert form values to match database schema
         // Explicitly define only the fields we want to send (excluding auto-generated fields)
         const jobData = {
-            branch1: values.branch1 || null,
-            branch2: values.branch2 || null,
+            region: values.region || null,
+            hall: values.hall || null,
             dateCalled: values.dateCalled || null,
             shipName: values.shipName || null,
             joinDate: values.joinDate || null,
@@ -88,8 +88,8 @@ const AddJob = () => {
     } = useFormik({
         initialValues: {
             status: '',
-            branch1: '',
-            branch2: '',
+            region: '',
+            hall: '',
             dateCalled: '',
             shipName: '',
             joinDate: '',
@@ -158,37 +158,37 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='select'
-                                label='Branch 1'
-                                name='branch1'
-                                value={values.branch1}
-                                placeholder='Select Branch'
+                                label='Region'
+                                name='region'
+                                value={values.region}
+                                placeholder='Select Region'
                                 options={branchNames}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 className={
-                                    errors.branch1 && touched.branch1
+                                    errors.region && touched.region
                                         ? 'selectError'
                                         : 'selectBase'
                                 }
-                                errors={errors.branch1}
-                                touched={touched.branch1}
+                                errors={errors.region}
+                                touched={touched.region}
                             />
                             <FormInput
                                 type='select'
-                                label='Branch 2'
-                                name='branch2'
-                                value={values.branch2}
-                                placeholder='Select Branch'
+                                label='Hall'
+                                name='hall'
+                                value={values.hall}
+                                placeholder='Select Hall'
                                 options={branchNames}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 className={
-                                    errors.branch2 && touched.branch2
+                                    errors.hall && touched.hall
                                         ? 'selectError'
                                         : 'selectBase'
                                 }
-                                errors={errors.branch2}
-                                touched={touched.branch2}
+                                errors={errors.hall}
+                                touched={touched.hall}
                             />
                             <FormInput
                                 type='date'
