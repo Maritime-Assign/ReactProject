@@ -96,7 +96,7 @@ const UsersAndRoles = () => {
                 <div className="grid-header">
                     <div className="grid-cell"></div>
                     <div className="grid-cell">Role
-                        <span className="info-icon" title="Roles: Admin, Editor, Viewer, MEBA Member">
+                        <span className="info-icon" title="Roles: Admin, Dispatch, Display">
                             🔍
                         </span>
                     </div>

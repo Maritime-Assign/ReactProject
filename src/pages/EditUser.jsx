@@ -160,8 +160,7 @@ const EditUser = () => {
                                 onChange={updateRole}
                             >
                                 <option value='admin'>Admin</option>
-                                <option value='major'>Major</option>
-                                <option value='minor'>Minor</option>
+                                <option value='dispatch'>Dispatch</option>
                                 <option value='display'>Display</option>
                             </select>
                         </label>
