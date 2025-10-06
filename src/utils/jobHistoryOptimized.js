@@ -11,7 +11,6 @@ export async function addJob(jobData) {
         const cleanJobData = { ...jobData }
         delete cleanJobData.id
         delete cleanJobData.created_at
-        delete cleanJobData.updated_at
         delete cleanJobData.FillDate
         delete cleanJobData.claimedBy
         delete cleanJobData.claimed_at

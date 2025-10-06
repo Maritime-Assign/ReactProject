@@ -45,7 +45,6 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                 FillDate: new Date().toISOString().split('T')[0],
                 claimedBy: user.id,
                 claimed_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
             }
 
             // Use updateJobWithHistory to handle both the update and history logging
