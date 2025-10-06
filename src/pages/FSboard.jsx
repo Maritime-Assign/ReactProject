@@ -52,8 +52,8 @@ const FSboard = () => {
                         getJobsArray().then(setJobs).finally(() => setLoading(false));
                     }} 
 
-                    branch1={job.branch1}
-                    branch2={job.branch2}
+                    region={job.region}
+                    hall={job.hall}
                     open={job.open}
                     fillDate={job.FillDate}
                     dateCalled={job.dateCalled}

@@ -42,7 +42,7 @@ const OptionBar = () => {
     const dashboardPath =
         role === 'admin'
             ? '/dashboard/admin'
-            : role === 'minor'
+            : role === 'dispatch'
             ? '/dashboard/dispatch'
             : '/dashboard/display'
 

@@ -3,8 +3,8 @@
 const jobData = [
     {
         id: 1,
-        branch1: 'OAK',
-        branch2: 'OAK',
+        region: 'OAK',
+        hall: 'OAK',
         open: true,
         FillDate: null,
         dateCalled: '9/3/2024',
@@ -20,8 +20,8 @@ const jobData = [
     },
     {
         id: 2,
-        branch1: 'OAK',
-        branch2: 'OAK',
+        region: 'OAK',
+        hall: 'OAK',
         open: false,
         FillDate: 'LA 2/4',
         dateCalled: '12/31/2024',
@@ -37,8 +37,8 @@ const jobData = [
     },
     {
         id: 3,
-        branch1: 'HOU',
-        branch2: 'HOU',
+        region: 'HOU',
+        hall: 'HOU',
         open: true,
         FillDate: null,
         dateCalled: '1/17/2025',
@@ -54,8 +54,8 @@ const jobData = [
     },
     {
         id: 4,
-        branch1: 'HOU',
-        branch2: 'TAMP',
+        region: 'HOU',
+        hall: 'TAMP',
         open: true,
         FillDate: null,
         dateCalled: '1/23/2025',
@@ -71,8 +71,8 @@ const jobData = [
     },
     {
         id: 5,
-        branch1: 'NY/NJ',
-        branch2: 'CHAR',
+        region: 'NY/NJ',
+        hall: 'CHAR',
         open: true,
         FillDate: null,
         dateCalled: '1/24/2025',
@@ -88,8 +88,8 @@ const jobData = [
     },
     {
         id: 6,
-        branch1: 'OAK',
-        branch2: 'OAK',
+        region: 'OAK',
+        hall: 'OAK',
         open: true,
         FillDate: null,
         dateCalled: '1/31/2025',
@@ -105,8 +105,8 @@ const jobData = [
     },
     {
         id: 7,
-        branch1: 'OAK',
-        branch2: 'SEA',
+        region: 'OAK',
+        hall: 'SEA',
         open: false,
         FillDate: 'CHS',
         dateCalled: '2/4/2025',
@@ -122,8 +122,8 @@ const jobData = [
     },
     {
         id: 8,
-        branch1: 'OAK',
-        branch2: 'SEA',
+        region: 'OAK',
+        hall: 'SEA',
         open: false,
         FillDate: '2/4',
         dateCalled: '2/4/2025',

@@ -7,10 +7,10 @@ const FSBheader = () => {
                 <span>Status</span>
             </div>
             <div className={`col-span-1 ${cellStyle}`}>
-                <span>Branch 1</span>
+                <span>Region</span>
             </div>
             <div className={`col-span-1 ${cellStyle}`}>
-                <span>Branch 2</span>
+                <span>Hall</span>
             </div>
 
             <div className={`col-span-2 ${cellStyle}`}>

@@ -180,8 +180,8 @@ const Tile = ({ job, onJobUpdate }) => {
                             )}
 
                             <select
-                                name="branch1"
-                                value={formData.branch1}
+                                name="region"
+                                value={formData.region}
                                 onChange={handleChange}
                                 className="bg-mebablue-light px-2 py-1 rounded-md text-center"
                             >
@@ -204,8 +204,8 @@ const Tile = ({ job, onJobUpdate }) => {
 
                             </select>
                             <select
-                                name="branch2"
-                                value={formData.branch2}
+                                name="hall"
+                                value={formData.hall}
                                 onChange={handleChange}
                                 className="bg-mebablue-light px-2 py-1 rounded-md text-center"
                             >
@@ -250,10 +250,10 @@ const Tile = ({ job, onJobUpdate }) => {
                                 {job.shipName}
                             </span>
                             <span className="bg-mebablue-light px-2 py-1 rounded-md text-center">
-                                {job.branch1}
+                                {job.region}
                             </span>
                             <span className="bg-mebablue-light px-2 py-1 rounded-md text-center">
-                                {job.branch2}
+                                {job.hall}
                             </span>
                             <span
                                 className={`${statusColor} px-2 py-1 rounded-md text-white text-center`}

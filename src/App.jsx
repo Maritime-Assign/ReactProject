@@ -83,7 +83,7 @@ const App = () => {
             if (currentPath === '/login' || currentPath === '/') {
                 if (userRole === 'admin') {
                     navigate('/dashboard/admin', { replace: true })
-                } else if (userRole === 'minor') {
+                } else if (userRole === 'dispatch') {
                     navigate('/dashboard/dispatch', { replace: true })
                 } else {
                     navigate('/dashboard/display', { replace: true })

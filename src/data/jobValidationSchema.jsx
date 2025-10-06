@@ -2,8 +2,8 @@ import * as yup from 'yup'
 
 const jobValidationSchema = yup.object().shape({
     status: yup.string().required('Required'),
-    branch1: yup.string().required('Required'),
-    branch2: yup.string().required('Required'),
+    region: yup.string().required('Required'),
+    hall: yup.string().required('Required'),
     dateCalled: yup.string().required('Required'),
     shipName: yup.string()
         .required('Required')

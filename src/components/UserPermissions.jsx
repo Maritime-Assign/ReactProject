@@ -68,11 +68,10 @@ export default function UserPermissions() {
             </div>
             {/* form containing all checkbox inputs */}
             <form className='grid grid-cols-3 m-3 pb-10'>
-                <ButtonInput User='User1' LabelText='Union Leader' LastDiv={false} /> 
-                <ButtonInput User='User2' LabelText='Administrative Member' LastDiv={false} /> 
-                <ButtonInput User='User3' LabelText='Union Member' LastDiv={false} /> 
-                <ButtonInput User='User4' LabelText='Viewer' LastDiv={false} /> 
-                <ButtonInput User='User5' LabelText='...' LastDiv={true} /> 
+                <ButtonInput User='User1' LabelText='Administrative Member' LastDiv={false} /> 
+                <ButtonInput User='User2' LabelText='Dispatch' LastDiv={false} /> 
+                <ButtonInput User='User3' LabelText='Display' LastDiv={false} /> 
+                <ButtonInput User='User4' LabelText='...' LastDiv={true} /> 
             </form>
         </div>
     );

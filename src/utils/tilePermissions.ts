@@ -1,14 +1,14 @@
 // Three defined roles: admin / dispatch / viewer
-// on supabase admin = admin, dispatch = minor, viewer = display
+// on supabase admin = admin, dispatch = dispatch, viewer = display
 
-type UserRole = 'admin' | 'minor' | 'display';
+type UserRole = 'admin' | 'dispatch' | 'display';
 
 // define which tiles will show per role
 const roleTiles: Record<UserRole, string[]> = {
     // all permissions for admin
     admin: ['manageJobs', 'addJobListing', 'viewJobBoard', 'viewChanges', 'manageUsers', 'addUser'],
     // Dispatch only has job management
-    minor: ['manageJobs', 'addJobListing', 'viewChanges', 'viewJobBoard'],
+    dispatch: ['manageJobs', 'addJobListing', 'viewChanges', 'viewJobBoard'],
     // Viewer can only view the job board
     display: ['viewJobBoard'],
 };
