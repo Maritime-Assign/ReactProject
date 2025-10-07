@@ -9,7 +9,8 @@ export const AuthContextProvider = ({ children }) => {
     const [loadingSession, setLoadingSession] = useState(true) // capture loading state
 
     // Sign in
-    const signInUser = async (email, password) => {
+    const signInUser = async (username, password) => {
+        const email = `${username}@maritimeassign.local`
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,

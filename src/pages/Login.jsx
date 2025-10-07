@@ -6,10 +6,11 @@ import { UserAuth } from '../context/AuthContext'
 import supabase from '../supabaseClient'
 
 const Login = () => {
-    const [email, setEmail] = useState('')
+    const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
-    const [error, setError] = useState(null)
+    const [usernameError, setUsernameError] = useState(null)
+    const [passwordError, setPasswordError] = useState(null)
     const [loading, setLoading] = useState(false)
 
     const { signInUser, user, role, loadingSession } = UserAuth()
@@ -20,45 +21,69 @@ const Login = () => {
             e.preventDefault()
             if (loading) return
             setLoading(true)
-            setError(null)
+            setUsernameError(null)
+            setPasswordError(null)
 
             try {
-                const result = await signInUser(email, password)
+                const { data: userRecord, error: fetchError } = await supabase
+                    .from('Users')
+                    .select('UUID')
+                    .eq('username', username)
+                    .single()
+
+                if (!userRecord) {
+                    setUsernameError('Username Not Found')
+                    setLoading(false)
+                    return
+                }
+
+                const result = await signInUser(username, password)
 
                 if (!result.success) {
-                    setError(result.error || 'Login failed')
+                    setPasswordError('Invalid Password')
                     setLoading(false)
                     return
                 }
 
                 // login event logging
                 const loggedInUser = result.data.user
+
                 if (loggedInUser) {
+                    // Fetch username from Users table
+                    const { data: userRecord, error: fetchError } =
+                        await supabase
+                            .from('Users')
+                            .select('username')
+                            .eq('auth_id', loggedInUser.id)
+                            .single()
+
+                    const username = userRecord?.username
+
                     const { error: insertError } = await supabase
                         .from('login_events')
                         .insert([
                             {
                                 user_id: loggedInUser.id,
-                                timestamp: new Date().toISOString(), // matches table column
+                                timestamp: new Date().toISOString(),
                                 email: loggedInUser.email,
+                                username: username,
                             },
                         ])
 
-                    if (insertError) {
+                    if (insertError)
                         console.error(
                             'Failed to log event:',
                             insertError.message
                         )
-                    }
                 }
             } catch (err) {
                 console.error(err)
-                setError(err.message || String(err))
+                setPasswordError('Login Failed') // fallback for unexpected error
             } finally {
                 setLoading(false)
             }
         },
-        [email, password, loading, signInUser, navigate]
+        [username, password, loading, signInUser, navigate]
     ) // dependencies for useCallback
 
     const toggleShowPassword = () => {
@@ -73,24 +98,42 @@ const Login = () => {
                 </div>
                 <div className={styles.underline}></div>
                 <div className='flex flex-col gap-4 mt-4'>
-                    <div className='flex border border-neutral-300 rounded-md h-12 w-100 focus-within:border-mebagold'>
+                    <div
+                        className={`flex border border-neutral-300 rounded-md h-12 w-100 focus-within:border-mebagold ${
+                            usernameError
+                                ? 'border-red-500'
+                                : 'border-neutral-300'
+                        }`}
+                    >
                         <input
-                            type='email'
-                            placeholder=' Enter your email'
+                            type='username'
+                            placeholder=' Enter username'
                             required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={username}
+                            onChange={(e) => {
+                                setUsername(e.target.value)
+                                if (usernameError) setUsernameError(null)
+                            }}
                             className={styles.input}
                             autoComplete='off'
                         />
                     </div>
-                    <div className='w-100 h-12 flex flex-row border border-neutral-300 rounded-md items-center focus-within:border-mebagold'>
+                    <div
+                        className={`w-100 h-12 flex flex-row border border-neutral-300 rounded-md items-center focus-within:border-mebagold ${
+                            passwordError
+                                ? 'border-red-500'
+                                : 'border-neutral-300'
+                        }`}
+                    >
                         <input
                             type={showPassword ? 'text' : 'password'}
-                            placeholder='   Enter your password'
+                            placeholder='      Enter password'
                             required
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => {
+                                setPassword(e.target.value)
+                                if (passwordError) setPasswordError(null)
+                            }}
                             className={styles.input}
                             autoComplete='off'
                         />
@@ -102,7 +145,8 @@ const Login = () => {
                         />
                     </div>
                 </div>
-                <div className='pt-4'>
+                {/*  Temporarily hide forgot password button, no longer works with usernames  */}
+                {/* <div className='pt-4'>
                     <Link to='/password-recovery'>
                         <button className='bg-mebablue-light rounded-md px-4 py-2 w-100 cursor-pointer'>
                             <span className='text-lg font-mont text-white'>
@@ -110,9 +154,9 @@ const Login = () => {
                             </span>
                         </button>
                     </Link>
-                </div>
+                </div> */}
 
-                <div className='py-2'>
+                <div className='pt-4'>
                     <button
                         className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont'
                         onClick={handleLogIn}
@@ -120,14 +164,16 @@ const Login = () => {
                         Login
                     </button>
                 </div>
-                {error && (
-                    <p style={{ color: 'red', textAlign: 'center' }}>
-                        {typeof error === 'string'
-                            ? error
-                            : error.message || String(error)}
+                {(usernameError || passwordError) && (
+                    <p className='text-red-400 text-lg font-mont font-medium pt-2'>
+                        {usernameError || passwordError}
                     </p>
                 )}
-                {loading && <p style={{ textAlign: 'center' }}>Signing in…</p>}
+                {loading && (
+                    <p className='font-mont text-lg font-medium pt-2 text-mebablue-dark'>
+                        Signing in…
+                    </p>
+                )}
             </div>
         </div>
     )
