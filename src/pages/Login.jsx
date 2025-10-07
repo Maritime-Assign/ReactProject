@@ -20,9 +20,20 @@ const Login = () => {
         async (e) => {
             e.preventDefault()
             if (loading) return
-            setLoading(true)
             setUsernameError(null)
             setPasswordError(null)
+
+            if (!username || username.trim() === '') {
+                setUsernameError('Username Required')
+                return
+            }
+
+            if (!password || password.trim() === '') {
+                setPasswordError('Password Required')
+                return
+            }
+
+            setLoading(true)
 
             try {
                 const { data: userRecord, error: fetchError } = await supabase
@@ -158,7 +169,7 @@ const Login = () => {
 
                 <div className='pt-4'>
                     <button
-                        className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont'
+                        className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont hover:bg-mebablue-light'
                         onClick={handleLogIn}
                     >
                         Login
