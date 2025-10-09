@@ -10,7 +10,6 @@ import { useFormik } from 'formik'
 import { useNavigate } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
 import * as yup from 'yup'
-import supabaseAdmin from '../api/supabaseAdmin'
 import supabase from '../supabaseClient'
 
 // Array for role options in the dropdown
@@ -29,11 +28,12 @@ const userValidationSchema = yup.object().shape({
         .required('Required')
         .min(2, 'Must be greater than 2 characters')
         .max(50, 'Must be shorter than 50 characters'),
-    email: yup
+    username: yup
         .string()
         .required('Required')
-        .email('Invalid')
-        .matches(/\.[a-zA-Z]{2,}$/, 'Invalid'),
+        .matches(/^[a-zA-Z0-9_-]+$/, 'Invalid Username')
+        .min(2, 'Must be greater than 2 characters')
+        .max(30, 'Must be less than 30 characters'),
     role: yup
         .string()
         .oneOf(['Display', 'Dispatch', 'Admin'], 'Invalid role')
@@ -57,11 +57,10 @@ const onSubmit = async (values, actions) => {
     try {
         // this function uses supabase admin service role key to invite user by email to create a password for their new account
         // this needs to be moved to a server to hide supabase keys in production app
-        const { data, error } =
-            await supabaseAdmin.auth.admin.inviteUserByEmail(values.email, {
-                data: metadataToSend,
-                redirectTo: 'http://localhost:5173/set-password', // change redirect link when official site URL is created
-            })
+        const { data, error } = await supabase.auth.signUp({
+            email: 'example@email.com',
+            password: 'example-password',
+        })
 
         console.log('Full Supabase response:', { data, error })
 
@@ -92,7 +91,7 @@ const AddUser = () => {
         touched,
     } = useFormik({
         initialValues: {
-            email: '',
+            username: '',
             role: 'display',
             fName: '',
             lName: '',
@@ -168,19 +167,19 @@ const AddUser = () => {
                         />
                         <FormInput
                             type='text'
-                            label='Email'
-                            name='email'
-                            value={values.email}
-                            placeholder='Enter Email'
+                            label='Username'
+                            name='username'
+                            value={values.username}
+                            placeholder='Enter Username'
                             onChange={handleChange}
                             onBlur={handleBlur}
                             className={
-                                errors.email && touched.email
+                                errors.username && touched.username
                                     ? 'textError'
                                     : 'textBase'
                             }
-                            errors={errors.email}
-                            touched={touched.email}
+                            errors={errors.username}
+                            touched={touched.username}
                         />
                         <FormInput
                             type='select'
