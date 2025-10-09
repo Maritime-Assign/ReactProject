@@ -117,7 +117,7 @@ const Login = () => {
                         }`}
                     >
                         <input
-                            type='username'
+                            type='text'
                             placeholder=' Enter username'
                             required
                             value={username}
