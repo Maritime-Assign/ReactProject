@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import styles from './Login.module.css'
 import showPasswordIcon from '../assets/show_password_icon.svg'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { UserAuth } from '../context/AuthContext'
 import supabase from '../supabaseClient'
 
@@ -13,68 +13,44 @@ const Login = () => {
     const [passwordError, setPasswordError] = useState(null)
     const [loading, setLoading] = useState(false)
 
-    const { signInUser, user, role, loadingSession } = UserAuth()
+    const { signInUser } = UserAuth()
     const navigate = useNavigate()
 
     const handleLogIn = useCallback(
         async (e) => {
             e.preventDefault()
             if (loading) return
+
             setUsernameError(null)
             setPasswordError(null)
 
-            if (!username || username.trim() === '') {
-                setUsernameError('Username Required')
-                return
-            }
-
-            if (!password || password.trim() === '') {
-                setPasswordError('Password Required')
-                return
-            }
+            if (!username.trim()) return setUsernameError('Username Required')
+            if (!password.trim()) return setPasswordError('Password Required')
 
             setLoading(true)
 
             try {
+                // Verify user exists
                 const { data: userRecord, error: fetchError } = await supabase
                     .from('Users')
                     .select('UUID')
                     .eq('username', username)
                     .single()
 
-                if (fetchError) {
-                    setUsernameError('Database error: ' + fetchError.message)
-                    setLoading(false)
-                    return
-                }
-                if (!userRecord) {
+                if (fetchError || !userRecord) {
                     setUsernameError('Username Not Found')
-                    setLoading(false)
                     return
                 }
 
                 const result = await signInUser(username, password)
-
                 if (!result.success) {
                     setPasswordError('Invalid Password')
-                    setLoading(false)
                     return
                 }
 
-                // login event logging
                 const loggedInUser = result.data.user
-
                 if (loggedInUser) {
-                    // Fetch username from Users table
-                    const { data: userRecord, error: fetchError } =
-                        await supabase
-                            .from('Users')
-                            .select('username')
-                            .eq('auth_id', loggedInUser.id)
-                            .single()
-
-                    const username = userRecord?.username
-
+                    // Log login event, use existing username state
                     const { error: insertError } = await supabase
                         .from('login_events')
                         .insert([
@@ -82,7 +58,7 @@ const Login = () => {
                                 user_id: loggedInUser.id,
                                 timestamp: new Date().toISOString(),
                                 email: loggedInUser.email,
-                                username: username,
+                                username, // already in state
                             },
                         ])
 
@@ -94,13 +70,13 @@ const Login = () => {
                 }
             } catch (err) {
                 console.error(err)
-                setPasswordError('Login Failed') // fallback for unexpected error
+                setPasswordError('Login Failed')
             } finally {
                 setLoading(false)
             }
         },
-        [username, password, loading, signInUser, navigate]
-    ) // dependencies for useCallback
+        [username, password, loading, signInUser]
+    )
 
     const toggleShowPassword = () => {
         setShowPassword(!showPassword)
