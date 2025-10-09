@@ -42,6 +42,11 @@ const Login = () => {
                     .eq('username', username)
                     .single()
 
+                if (fetchError) {
+                    setUsernameError('Database error: ' + fetchError.message)
+                    setLoading(false)
+                    return
+                }
                 if (!userRecord) {
                     setUsernameError('Username Not Found')
                     setLoading(false)
