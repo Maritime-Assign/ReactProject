@@ -86,7 +86,8 @@ const onSubmit = async (values, actions) => {
                     data: {
                         first_name: values.fName,
                         last_name: values.lName,
-                        role: values.role,
+                        role: values.role.toLowerCase(),
+                        username: values.username,
                     },
                 },
             })
