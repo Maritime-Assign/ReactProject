@@ -21,19 +21,30 @@ const userValidationSchema = yup.object().shape({
     fName: yup
         .string()
         .required('Required')
-        .min(2, 'Must be greater than 2 characters')
-        .max(50, 'Must be shorter than 50 characters'),
+        .min(2, 'First Name must be at least 2 character')
+        .max(50, 'First Name must be 50 characters or less'),
     lName: yup
         .string()
         .required('Required')
-        .min(2, 'Must be greater than 2 characters')
-        .max(50, 'Must be shorter than 50 characters'),
+        .min(2, 'Last Name must be at least 2 character')
+        .max(50, 'Last Name must be 50 characters or less'),
     username: yup
         .string()
         .required('Required')
         .matches(/^[a-zA-Z0-9_-]+$/, 'Invalid Username')
-        .min(2, 'Must be greater than 2 characters')
-        .max(30, 'Must be less than 30 characters'),
+        .min(3, 'Username must be at least 3 characters')
+        .max(30, 'Username must be 30 characters or less'),
+    password: yup
+        .string()
+        .required('Required')
+        .min(8, 'Password must be at least 8 characters')
+        .max(50, 'Password must be 50 characters or less')
+        .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
+        .matches(/\d/, 'Password must contain at least one number')
+        .matches(
+            /[@$!%*?&]/,
+            'Password must contain at least one special character'
+        ),
     role: yup
         .string()
         .oneOf(['Display', 'Dispatch', 'Admin'], 'Invalid role')
@@ -43,36 +54,56 @@ const userValidationSchema = yup.object().shape({
 // Submission function to invite user to supabase with email
 
 const onSubmit = async (values, actions) => {
-    // metadata sent to supabase to get name and role
-    const metadataToSend = {
-        role: values.role,
-        first_name: values.fName,
-        last_name: values.lName,
-    }
-
-    // debug logs
-    console.log('Values from form:', values)
-    console.log('Metadata being sent:', metadataToSend)
+    // Clear previous status
+    actions.setStatus({ submitError: null })
 
     try {
-        // this function uses supabase admin service role key to invite user by email to create a password for their new account
-        // this needs to be moved to a server to hide supabase keys in production app
-        const { data, error } = await supabase.auth.signUp({
-            email: 'example@email.com',
-            password: 'example-password',
-        })
+        // Check if username already exists in public Users table
+        const { data: existingUser, error: fetchError } = await supabase
+            .from('Users')
+            .select('UUID')
+            .eq('username', values.username)
+            .maybeSingle()
 
-        console.log('Full Supabase response:', { data, error })
-
-        if (error) {
-            console.error('Error inviting user:', error)
+        if (fetchError) {
+            // Some unexpected DB error
+            console.error('Error checking username:', fetchError)
+            actions.setStatus({ submitError: 'Error checking username' })
             return
         }
 
-        console.log('User invite success')
+        if (existingUser) {
+            actions.setFieldError('username', 'Username Already Exists')
+            return
+        }
+
+        // Sign up user in Supabase Auth with metadata
+        const { data: authData, error: signUpError } =
+            await supabase.auth.signUp({
+                email: `${values.username}@maritimeassign.local`,
+                password: values.password,
+                options: {
+                    data: {
+                        first_name: values.fName,
+                        last_name: values.lName,
+                        role: values.role,
+                    },
+                },
+            })
+
+        if (signUpError) {
+            console.error('Supabase signUp error:', signUpError)
+            actions.setStatus({ submitError: signUpError.message })
+            return
+        }
+
+        console.log('User Sign Up Success:', authData)
         actions.resetForm()
     } catch (error) {
-        console.error('Error submitting form:', error)
+        console.error('Unexpected error submitting form:', error)
+        actions.setStatus({ submitError: 'Unexpected error occurred' })
+    } finally {
+        actions.setSubmitting(false)
     }
 }
 
@@ -88,17 +119,20 @@ const AddUser = () => {
         handleChange,
         handleSubmit,
         isSubmitting,
+        submitCount,
+        setFieldError,
         touched,
     } = useFormik({
         initialValues: {
             username: '',
-            role: 'display',
+            password: '',
+            role: '',
             fName: '',
             lName: '',
         },
         validationSchema: userValidationSchema, // schema used to validate entries using Formik
         onSubmit,
-        validateOnChange: true,
+        validateOnChange: false,
         validateOnBlur: false,
     })
 
@@ -148,6 +182,8 @@ const AddUser = () => {
                             }
                             errors={errors.fName}
                             touched={touched.fName}
+                            submitCount={submitCount}
+                            setFieldError={setFieldError}
                         />
                         <FormInput
                             type='text'
@@ -164,6 +200,8 @@ const AddUser = () => {
                             }
                             errors={errors.lName}
                             touched={touched.lName}
+                            submitCount={submitCount}
+                            setFieldError={setFieldError}
                         />
                         <FormInput
                             type='text'
@@ -180,13 +218,33 @@ const AddUser = () => {
                             }
                             errors={errors.username}
                             touched={touched.username}
+                            submitCount={submitCount}
+                            setFieldError={setFieldError}
+                        />
+                        <FormInput
+                            type='text'
+                            label='Password'
+                            name='password'
+                            value={values.password}
+                            placeholder='Enter Password'
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            className={
+                                errors.password && touched.password
+                                    ? 'textError'
+                                    : 'textBase'
+                            }
+                            errors={errors.password}
+                            touched={touched.password}
+                            submitCount={submitCount}
+                            setFieldError={setFieldError}
                         />
                         <FormInput
                             type='select'
                             label='Role'
                             name='role'
                             value={values.role}
-                            placeholder='Select Role for New User'
+                            placeholder='Select Role'
                             options={roleOptions}
                             onChange={handleChange}
                             onBlur={handleBlur}
@@ -197,6 +255,8 @@ const AddUser = () => {
                             }
                             errors={errors.role}
                             touched={touched.role}
+                            submitCount={submitCount}
+                            setFieldError={setFieldError}
                         />
                     </div>
                     {/* Submit button */}

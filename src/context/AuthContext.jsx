@@ -64,21 +64,15 @@ export const AuthContextProvider = ({ children }) => {
         }
     }
 
-    const [sessionInitialized, setSessionInitialized] = useState(false)
-
     useEffect(() => {
         const initializeSession = async () => {
             try {
-                const {
-                    data: { session },
-                } = await supabase.auth.getSession()
-                setSession(session ?? null)
-
-                if (session?.user) {
-                    const userRole = await fetchUserRole(session.user.id)
+                const { data } = await supabase.auth.getSession()
+                const currentSession = data?.session ?? null
+                setSession(currentSession)
+                if (currentSession?.user) {
+                    const userRole = await fetchUserRole(currentSession.user.id)
                     setRole(userRole)
-                } else {
-                    setRole(null)
                 }
             } catch (err) {
                 console.error('Error fetching session on mount:', err)
@@ -86,28 +80,10 @@ export const AuthContextProvider = ({ children }) => {
                 setRole(null)
             } finally {
                 setLoadingSession(false)
-                setSessionInitialized(true)
             }
         }
-
         initializeSession()
-
-        const { data: listener } = supabase.auth.onAuthStateChange(
-            async (_event, session) => {
-                if (!sessionInitialized) return // ignore events until initial fetch
-                setSession(session ?? null)
-
-                if (session?.user) {
-                    const userRole = await fetchUserRole(session.user.id)
-                    setRole(userRole)
-                } else {
-                    setRole(null)
-                }
-            }
-        )
-
-        return () => listener.subscription.unsubscribe()
-    }, [sessionInitialized])
+    }, [])
 
     return (
         <AuthContext.Provider

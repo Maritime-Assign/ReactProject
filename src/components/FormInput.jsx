@@ -33,43 +33,54 @@ const FormInput = ({
     className,
     errors,
     touched,
+    submitCount = 0,
+    setFieldError,
 }) => {
     const inputId = `input-${name}` // save an input id for later use if needed
 
     const appliedClass = styles[className]
+
+    const handleChange = (e) => {
+        onChange(e)
+
+        if (submitCount > 0 && errors && errors[name]) {
+            const val = e.target.value
+            if (val && val.trim() !== '') {
+                setFieldError(name, undefined)
+            }
+        }
+    }
 
     const renderInput = () => {
         // For dropdown select type
         if (type === 'select') {
             return (
                 <select
-                    id={inputId}
+                    id={inputId || name}
                     name={name}
-                    value={value}
-                    onChange={onChange}
+                    value={value || ''}
+                    onChange={handleChange}
                     onBlur={onBlur}
                     disabled={disabled}
                     className={appliedClass}
                 >
+                    {/* Placeholder option */}
                     <option value='' disabled>
                         {placeholder || 'Select an option'}
                     </option>
-                    {options.map((option) => (
-                        <option
-                            key={
-                                typeof option === 'object'
-                                    ? option.value
-                                    : option
-                            }
-                            value={
-                                typeof option === 'object'
-                                    ? option.value
-                                    : option
-                            }
-                        >
-                            {typeof option === 'object' ? option.label : option}
-                        </option>
-                    ))}
+
+                    {/* Actual options */}
+                    {options.map((option) => {
+                        const optValue =
+                            typeof option === 'object' ? option.value : option
+                        const optLabel =
+                            typeof option === 'object' ? option.label : option
+                        return (
+                            <option key={optValue} value={optValue}>
+                                {optLabel}
+                            </option>
+                        )
+                    })}
                 </select>
             )
         }
@@ -78,7 +89,7 @@ const FormInput = ({
             return (
                 <DatePicker
                     name={name}
-                    selected={value}
+                    selected={value ? new Date(value) : null}
                     onChange={(date) => {
                         onChange({
                             target: {
@@ -86,6 +97,8 @@ const FormInput = ({
                                 value: formatDateString(date),
                             },
                         })
+                        if (submitCount > 0 && errors)
+                            setFieldError(name, undefined)
                     }}
                     dateFormat='MM/dd/yyyy'
                     placeholderText={placeholder}
@@ -101,7 +114,7 @@ const FormInput = ({
                     id={inputId}
                     name={name}
                     value={value}
-                    onChange={onChange}
+                    onChange={handleChange}
                     rows={rows}
                     placeholder={placeholder}
                     disabled={disabled}
@@ -117,7 +130,7 @@ const FormInput = ({
                 id={inputId}
                 name={name}
                 value={value}
-                onChange={onChange}
+                onChange={handleChange}
                 placeholder={placeholder}
                 disabled={disabled}
                 className={appliedClass}
@@ -127,25 +140,24 @@ const FormInput = ({
 
     // final displayed component with error css applied if errors are passed in as props
     return (
-        <div className='flex flex-col mb-2 items-start justify-start'>
-            <span
-                className={
-                    errors && touched
-                        ? 'text-lg font-medium text-red-500 mb-1 font-mont'
-                        : 'text-lg font-medium text-mebablue-dark mb-1 font-mont'
-                }
-            >
-                {errors && touched ? (
-                    <span className='text-lg font-medium text-red-500 mb-1 font-mont'>
-                        {label} {errors}*
-                    </span>
-                ) : (
-                    <span className='text-lg font-medium text-mebablue-dark mb-1 font-mont'>
-                        {label}
+        <div className='flex flex-col items-center mb-4 w-full'>
+            {/* Input wrapper with fixed width */}
+            <div className='w-full max-w-sm flex flex-col'>
+                {/* Label */}
+                <span className='text-lg font-medium text-mebablue-dark mb-1 font-mont'>
+                    {label}
+                </span>
+
+                {/* Input */}
+                {renderInput()}
+
+                {/* Error */}
+                {errors && touched && (
+                    <span className='text-red-500 text-sm mt-1 block'>
+                        {errors}
                     </span>
                 )}
-            </span>
-            {renderInput()}
+            </div>
         </div>
     )
 }

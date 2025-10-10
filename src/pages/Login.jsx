@@ -24,12 +24,17 @@ const Login = () => {
             setUsernameError(null)
             setPasswordError(null)
 
-            if (!username.trim()) return setUsernameError('Username Required')
-            if (!password.trim()) return setPasswordError('Password Required')
-
             setLoading(true)
 
             try {
+                if (!username.trim()) {
+                    setUsernameError('Username Required')
+                    return
+                }
+                if (!password.trim()) {
+                    setPasswordError('Password Required')
+                    return
+                }
                 // Verify user exists
                 const { data: userRecord, error: fetchError } = await supabase
                     .from('Users')
@@ -58,7 +63,7 @@ const Login = () => {
                                 user_id: loggedInUser.id,
                                 timestamp: new Date().toISOString(),
                                 email: loggedInUser.email,
-                                username, // already in state
+                                username: username, // already in state
                             },
                         ])
 
