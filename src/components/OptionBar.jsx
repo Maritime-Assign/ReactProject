@@ -18,86 +18,46 @@ import './OptionBar.css'
 // import link to nav to internal pages
 import { Link, useNavigate } from 'react-router-dom'
 // import user auth context to manage login state
-import { UserAuth } from "../context/AuthContext";
-
-// import supabase from '../supabaseClient' // for auth when implemented
-import supabase from '../supabaseClient'
-
-// array for center nav options
-const nav_Items = [
-    {
-        text: 'Home', // name
-        icon: <HomeIcon className='navBarIcon' />, // icon and css assignment
-        to: '/dashboard', // on click go to dash
-    },
-    {
-        text: 'Job Board',
-        icon: <WorkIcon className='navBarIcon' />,
-        to: '/fsb', // on click go to job board
-    },
-    /*add more here*/
-]
-
-/*structure of option bar:
-        optionBar
-            |
-          / | \
-        /   |   \
-    lOGO NAVBAR LOGIN/OUT
-            |
-          /   \
-    Button#1 Button#2
-*/
-
-//This function is to toggle dashboard on and off depending on log-in status
-const CheckLogStatus = () => {
-  const [user, setUser] = useState(null)
-
-  useEffect(() => {
-    let mounted = true
-
-    // initial session check
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return
-      setUser(data.session?.user ?? null)
-    }).catch((err) => {
-      console.error('getSession error', err)
-    })
-
-    // subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return
-      setUser(session?.user ?? null)
-    })
-
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
-  }, [])
-
-  if (user) {
-    
-    return <NavBar items={nav_Items} />
-  } else {
-    //no one is logged in
-  }
-}
+import { UserAuth } from '../context/AuthContext'
+import LoadingSpinner from './LoadingSpinner'
 
 // contains the core 3 components
 const OptionBar = () => {
-    const { user, signOut } = UserAuth(); // Get user and signOut from context
-    const navigate = useNavigate(); // Get navigate function
-    const isLoggedIn = !!user; // Determine login status from user object
+    const { user, role, loadingSession, signOut } = UserAuth()
+    const isLoggedIn = !!user
 
     const handleLogout = async () => {
+        if (!user) return
         try {
-            await signOut();
-            navigate('/login');
-        } catch (error) {
-            console.error("Error signing out: ", error);
+            await signOut()
+            // Navigation handled by effect elsewhere; no immediate navigate
+        } catch (err) {
+            console.error('Error signing out:', err)
         }
-    };
+    }
+
+    if (loadingSession) return <LoadingSpinner />
+
+    // Dynamically set dashboard path based on role
+    const dashboardPath =
+        role === 'admin'
+            ? '/dashboard/admin'
+            : role === 'dispatch'
+            ? '/dashboard/dispatch'
+            : '/dashboard/display'
+
+    const nav_Items = [
+        {
+            text: 'Home',
+            icon: <HomeIcon className='navBarIcon' />,
+            to: dashboardPath,
+        },
+        {
+            text: 'Job Board',
+            icon: <WorkIcon className='navBarIcon' />,
+            to: '/fsb',
+        },
+    ]
 
     return (
         <nav className='navbar'>
@@ -105,11 +65,11 @@ const OptionBar = () => {
             {isLoggedIn && <NavBar items={nav_Items} />}
             <SessionManager
                 isLoggedIn={isLoggedIn}
-                handleLogout={handleLogout} // Pass the new handleLogout function
+                handleLogout={handleLogout}
             />
         </nav>
-    );
-};
+    )
+}
 
 // logo component renders a container div with an image element
 // both the container and the image have their own CSS linked with className
@@ -143,28 +103,38 @@ const NavButton = ({ item }) => (
 // session manager component deals with the authentication login/logout ui
 // isLoggedIn determines the current authentication state
 const SessionManager = ({ isLoggedIn, handleLogout }) => (
-    <div className='sessionContainer'>
-        <Avatar
-            alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
-            src={isLoggedIn ? tempAccountPic : ''}
-            className='userAvatar'
-        />
+    <div>
         {isLoggedIn ? (
-            <Link to='/login' className='navLink'>
+            <div className='sessionContainer'>
+                <Link to='/userprofile'>
+                    <Avatar
+                        alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
+                        src={isLoggedIn ? tempAccountPic : ''}
+                        className='userAvatar'
+                        title='user settings'
+                    />
+                </Link>
                 <Button onClick={handleLogout} className='navButton'>
                     <LogoutIcon className='navBarIcon' />
                     <span className='navButtonText'>Logout</span>
                 </Button>
-            </Link>
+            </div>
         ) : (
-            <Link to='/login' className='navLink'>
-                <Button className='navButton'>
-                    <LoginIcon className='navBarIcon' />
-                    <span className='navButtonText'>Login</span>
-                </Button>
-            </Link>
+            <div className='sessionContainer'>
+                <Avatar
+                    alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
+                    src={isLoggedIn ? tempAccountPic : ''}
+                    className='userAvatar'
+                />
+                <Link to='/login' className='navLink'>
+                    <Button className='navButton'>
+                        <LoginIcon className='navBarIcon' />
+                        <span className='navButtonText'>Login</span>
+                    </Button>
+                </Link>
+            </div>
         )}
     </div>
-);
+)
 
 export default OptionBar

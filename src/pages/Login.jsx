@@ -1,77 +1,82 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import styles from './Login.module.css'
 import showPasswordIcon from '../assets/show_password_icon.svg'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { UserAuth } from '../context/AuthContext'
 import supabase from '../supabaseClient'
 
 const Login = () => {
-    const [email, setEmail] = useState('')
+    const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
-    const [error, setError] = useState(null)
+    const [usernameError, setUsernameError] = useState(null)
+    const [passwordError, setPasswordError] = useState(null)
     const [loading, setLoading] = useState(false)
 
-    const { signInUser, user } = UserAuth()
+    const { signInUser } = UserAuth()
     const navigate = useNavigate()
-
-    useEffect(() => {
-        if (user) {
-            navigate('/dashboard')
-        }
-    }, [user, navigate])
 
     const handleLogIn = useCallback(
         async (e) => {
             e.preventDefault()
             if (loading) return
+
+            setUsernameError(null)
+            setPasswordError(null)
+
+            if (!username.trim()) return setUsernameError('Username Required')
+            if (!password.trim()) return setPasswordError('Password Required')
+
             setLoading(true)
-            setError(null)
 
             try {
-                const result = await signInUser(email, password)
+                // Verify user exists
+                const { data: userRecord, error: fetchError } = await supabase
+                    .from('Users')
+                    .select('UUID')
+                    .eq('username', username)
+                    .single()
 
+                if (fetchError || !userRecord) {
+                    setUsernameError('Username Not Found')
+                    return
+                }
+
+                const result = await signInUser(username, password)
                 if (!result.success) {
-                    setError(result.error || 'Login failed')
-                    setLoading(false)
+                    setPasswordError('Invalid Password')
                     return
                 }
 
                 const loggedInUser = result.data.user
                 if (loggedInUser) {
+                    // Log login event, use existing username state
                     const { error: insertError } = await supabase
                         .from('login_events')
                         .insert([
                             {
                                 user_id: loggedInUser.id,
-                                timestamp: new Date().toISOString(), // matches table column
+                                timestamp: new Date().toISOString(),
                                 email: loggedInUser.email,
+                                username, // already in state
                             },
                         ])
 
-                    if (insertError) {
+                    if (insertError)
                         console.error(
                             'Failed to log event:',
                             insertError.message
                         )
-                    } else {
-                        console.log(
-                            'Login event inserted for user:',
-                            loggedInUser.id
-                        )
-                    }
                 }
-
-                navigate('/dashboard')
             } catch (err) {
                 console.error(err)
-                setError('Unexpected error logging in')
+                setPasswordError('Login Failed')
             } finally {
                 setLoading(false)
             }
         },
-        [email, password, loading, signInUser, navigate]
-    ) // dependencies for useCallback
+        [username, password, loading, signInUser]
+    )
 
     const toggleShowPassword = () => {
         setShowPassword(!showPassword)
@@ -85,24 +90,42 @@ const Login = () => {
                 </div>
                 <div className={styles.underline}></div>
                 <div className='flex flex-col gap-4 mt-4'>
-                    <div className='flex border border-neutral-300 rounded-md h-12 w-100 focus-within:border-mebagold'>
+                    <div
+                        className={`flex border border-neutral-300 rounded-md h-12 w-100 focus-within:border-mebagold ${
+                            usernameError
+                                ? 'border-red-500'
+                                : 'border-neutral-300'
+                        }`}
+                    >
                         <input
-                            type='email'
-                            placeholder=' Enter your email'
+                            type='text'
+                            placeholder=' Enter username'
                             required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={username}
+                            onChange={(e) => {
+                                setUsername(e.target.value)
+                                if (usernameError) setUsernameError(null)
+                            }}
                             className={styles.input}
                             autoComplete='off'
                         />
                     </div>
-                    <div className='w-100 h-12 flex flex-row border border-neutral-300 rounded-md items-center focus-within:border-mebagold'>
+                    <div
+                        className={`w-100 h-12 flex flex-row border border-neutral-300 rounded-md items-center focus-within:border-mebagold ${
+                            passwordError
+                                ? 'border-red-500'
+                                : 'border-neutral-300'
+                        }`}
+                    >
                         <input
                             type={showPassword ? 'text' : 'password'}
-                            placeholder='   Enter your password'
+                            placeholder='      Enter password'
                             required
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => {
+                                setPassword(e.target.value)
+                                if (passwordError) setPasswordError(null)
+                            }}
                             className={styles.input}
                             autoComplete='off'
                         />
@@ -114,28 +137,35 @@ const Login = () => {
                         />
                     </div>
                 </div>
-                <div className='pt-4'>
-                    <Link to='/recovery'>
+                {/*  Temporarily hide forgot password button, no longer works with usernames  */}
+                {/* <div className='pt-4'>
+                    <Link to='/password-recovery'>
                         <button className='bg-mebablue-light rounded-md px-4 py-2 w-100 cursor-pointer'>
                             <span className='text-lg font-mont text-white'>
                                 Forgot Password?
                             </span>
                         </button>
                     </Link>
-                </div>
+                </div> */}
 
-                <div className='py-2'>
+                <div className='pt-4'>
                     <button
-                        className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont'
+                        className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont hover:bg-mebablue-light'
                         onClick={handleLogIn}
                     >
                         Login
                     </button>
                 </div>
-                {error && (
-                    <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>
+                {(usernameError || passwordError) && (
+                    <p className='text-red-400 text-lg font-mont font-medium pt-2'>
+                        {usernameError || passwordError}
+                    </p>
                 )}
-                {loading && <p style={{ textAlign: 'center' }}>Signing in…</p>}
+                {loading && (
+                    <p className='font-mont text-lg font-medium pt-2 text-mebablue-dark'>
+                        Signing in…
+                    </p>
+                )}
             </div>
         </div>
     )

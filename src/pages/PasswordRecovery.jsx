@@ -1,12 +1,29 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './Login.module.css'
+import supabase from '../supabaseClient'
 
 function PasswordRecovery() {
     const [text, setText] = useState('')
+
     const handleChange = (event) => {
         setText(event.target.value)
     }
+
+    const handlePasswordReset = async() => {
+        if (!text) {
+            return;
+        }
+
+        const { error } = await supabase.auth.resetPasswordForEmail(text, {
+            redirectTo: `${ window.location.origin }/set-password`,
+        })
+
+        if (error) {
+            console.error('Error sending password reset email:', error.message);
+        }
+    }
+
     return (
         <div className='flex w-full h-[calc(100vh-100px)] justify-center items-center'>
             <div className='w-fit flex flex-col items-center justify-center shadow-[0_0_10px_rgba(0,0,0,0.1)] p-12'>
@@ -36,7 +53,8 @@ function PasswordRecovery() {
                     </button>
                 </div>
                 <div className=''>
-                    <button className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont'>
+                    <button className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont'
+                            onClick={handlePasswordReset}>
                         Send Recovery Email
                     </button>
                 </div>

@@ -7,7 +7,7 @@ const ImageDropdown = ({ userId, currentRole, onRoleChange }) => {
   const selectRef = useRef(null);
   const containerRef = useRef(null);
 
-  const roles = ["Admin", "Editor", "Viewer", "MEBA Member"];
+  const roles = ["Admin", "Dispatch", "Display"];
 
   // Focus the dropdown immediately on open
   useEffect(() => {

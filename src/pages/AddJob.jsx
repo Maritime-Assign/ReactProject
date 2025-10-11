@@ -11,24 +11,69 @@ import { useFormik } from 'formik'
 import jobValidationSchema from '../data/jobValidationSchema'
 import { useNavigate } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
+import { UserAuth } from '../context/AuthContext'
+import { addJob } from '../utils/jobHistoryOptimized'
 
-// Arrays for options for the various dropdowns
+// Arrays for options for the various dropdowns 
 const statusOptions = ['Open', 'Filled']
 const billetOptions = ['1 A/E', '2M', '3M']
 const typeOptions = ['Relief', 'Permanent']
 
-// Submission function
-const onSubmit = async (values, actions) => {
-    console.log(values) // logs all values being submitted
-    //console.log(actions) // displays available formik actions
-    await new Promise((resolve) => setTimeout(resolve, 3000)) // simulating a database post promise
+// Submission function - this will be passed the user as a parameter
+const createOnSubmit = (user) => async (values, actions) => {
+    try {
+        console.log('Submitting job with values:', values)
+        
+        if (!user) {
+            actions.setStatus({ error: 'You must be logged in to add a job.' })
+            return
+        }
 
-    actions.resetForm() // reset/clear the form
+        // Prepare job data - convert form values to match database schema
+        // Explicitly define only the fields we want to send (excluding auto-generated fields)
+        const jobData = {
+            region: values.region || null,
+            hall: values.hall || null,
+            dateCalled: values.dateCalled || null,
+            shipName: values.shipName || null,
+            joinDate: values.joinDate || null,
+            billet: values.billet || null,
+            type: values.type || null,
+            days: values.days || null,
+            location: values.location || null,
+            company: values.company || null,
+            crewRelieved: values.crewRelieved || null,
+            notes: values.notes || null,
+            open: values.status === 'Open' // Convert status to boolean - table uses 'open' not 'status'
+        }
+
+        // Debug: Log the exact data being sent
+        console.log('Sending job data:', JSON.stringify(jobData, null, 2))
+
+        // Add the job (history logging handled automatically by database triggers)
+        const result = await addJob(jobData)
+        
+        if (result.success) {
+            console.log('Job added successfully:', result.data)
+            actions.setStatus({ success: 'Job added successfully!' })
+            actions.resetForm() // reset/clear the form
+            
+            // Note: Navigation will happen when user manually navigates
+            // Auto-navigation removed to prevent errors
+        } else {
+            console.error('Failed to add job:', result.error)
+            actions.setStatus({ error: 'Failed to add job. Please try again.' })
+        }
+    } catch (error) {
+        console.error('Error submitting job:', error)
+        actions.setStatus({ error: 'An error occurred while adding the job.' })
+    }
 }
 
 // Main AddJob Page component
 const AddJob = () => {
     const navigate = useNavigate() // react router function to navigate back
+    const { user } = UserAuth() // Get current user
 
     // destructured formik initialization
     const {
@@ -39,11 +84,12 @@ const AddJob = () => {
         handleSubmit,
         isSubmitting,
         touched,
+        status,
     } = useFormik({
         initialValues: {
             status: '',
-            branch1: '',
-            branch2: '',
+            region: '',
+            hall: '',
             dateCalled: '',
             shipName: '',
             joinDate: '',
@@ -56,7 +102,7 @@ const AddJob = () => {
             notes: '',
         },
         validationSchema: jobValidationSchema, // bring in Schema from jobValidationSchema.jsx in data dir
-        onSubmit,
+        onSubmit: createOnSubmit(user),
         validateOnChange: true,
         validateOnBlur: false,
     })
@@ -89,236 +135,254 @@ const AddJob = () => {
                 </div>
             </div>
             {/* Form */}
-            <div className='my-4 w-full font-mont'>
+            <div className='my-4 w-full font-mont bg-white rounded-lg shadow p-4'>
                 <form onSubmit={handleSubmit} autoComplete='off'>
-                    <div className='flex flex-col items-center'>
-                        <FormInput
-                            type='select'
-                            label='Status'
-                            name='status'
-                            value={values.status}
-                            placeholder='Select Status'
-                            options={statusOptions}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.status && touched.status
-                                    ? 'selectError'
-                                    : 'selectBase'
-                            }
-                            errors={errors.status}
-                            touched={touched.status}
-                        />
-                        <FormInput
-                            type='select'
-                            label='Branch 1'
-                            name='branch1'
-                            value={values.branch1}
-                            placeholder='Select Branch'
-                            options={branchNames}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.branch1 && touched.branch1
-                                    ? 'selectError'
-                                    : 'selectBase'
-                            }
-                            errors={errors.branch1}
-                            touched={touched.branch1}
-                        />
-                        <FormInput
-                            type='select'
-                            label='Branch 2'
-                            name='branch2'
-                            value={values.branch2}
-                            placeholder='Select Branch'
-                            options={branchNames}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.branch2 && touched.branch2
-                                    ? 'selectError'
-                                    : 'selectBase'
-                            }
-                            errors={errors.branch2}
-                            touched={touched.branch2}
-                        />
-                        <FormInput
-                            type='date'
-                            label='Date Called'
-                            name='dateCalled'
-                            value={values.dateCalled}
-                            required
-                            placeholder='Select a Date'
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.dateCalled && touched.dateCalled
-                                    ? 'datePickerError'
-                                    : 'datePickerBase'
-                            }
-                            errors={errors.dateCalled}
-                            touched={touched.dateCalled}
-                        />
-                        <FormInput
-                            type='text'
-                            label='Ship Name'
-                            name='shipName'
-                            value={values.shipName}
-                            placeholder='Enter Ship Name'
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.shipName && touched.shipName
-                                    ? 'textError'
-                                    : 'textBase'
-                            }
-                            errors={errors.shipName}
-                            touched={touched.shipName}
-                        />
-                        <FormInput
-                            type='date'
-                            label='Join Date'
-                            name='joinDate'
-                            value={values.joinDate}
-                            placeholder='Select a Date'
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.dateCalled && touched.dateCalled
-                                    ? 'datePickerError'
-                                    : 'datePickerBase'
-                            }
-                            errors={errors.dateCalled}
-                            touched={touched.dateCalled}
-                        />
-                        <FormInput
-                            type='select'
-                            label='Billet'
-                            name='billet'
-                            value={values.billet}
-                            placeholder='Select Billet'
-                            options={billetOptions}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.billet && touched.billet
-                                    ? 'selectError'
-                                    : 'selectBase'
-                            }
-                            errors={errors.billet}
-                            touched={touched.billet}
-                        />
-                        <FormInput
-                            type='select'
-                            label='Type'
-                            name='type'
-                            value={values.type}
-                            required
-                            placeholder='Select Type'
-                            options={typeOptions}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.type && touched.type
-                                    ? 'selectError'
-                                    : 'selectBase'
-                            }
-                            errors={errors.type}
-                            touched={touched.type}
-                        />
-                        <FormInput
-                            type='text'
-                            label='Days'
-                            name='days'
-                            value={values.days}
-                            required
-                            placeholder='Enter # of Days'
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.days && touched.days
-                                    ? 'textError'
-                                    : 'textBase'
-                            }
-                            errors={errors.days}
-                            touched={touched.days}
-                        />
-                        <FormInput
-                            type='text'
-                            label='Location'
-                            name='location'
-                            value={values.location}
-                            required
-                            placeholder='Enter Location'
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.location && touched.location
-                                    ? 'textError'
-                                    : 'textBase'
-                            }
-                            errors={errors.location}
-                            touched={touched.location}
-                        />
-                        <FormInput
-                            type='text'
-                            label='Company'
-                            name='company'
-                            value={values.company}
-                            required
-                            placeholder='Enter Company'
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.company && touched.company
-                                    ? 'textError'
-                                    : 'textBase'
-                            }
-                            errors={errors.company}
-                            touched={touched.company}
-                        />
-                        <FormInput
-                            type='text'
-                            label='Crew Relieved'
-                            name='crewRelieved'
-                            value={values.crewRelieved}
-                            required={false}
-                            placeholder='Enter Crew Relieved'
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.crewRelieved && touched.crewRelieved
-                                    ? 'textError'
-                                    : 'textBase'
-                            }
-                            errors={errors.crewRelieved}
-                            touched={touched.crewRelieved}
-                        />
-                        <FormInput
-                            multiline
-                            type='text'
-                            label='Notes'
-                            name='notes'
-                            value={values.notes}
-                            required={false}
-                            placeholder='Enter Notes/Requirements'
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            errors={errors.notes}
-                            touched={touched.notes}
-                        />
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className='flex flex-col items-center'>
+                            <FormInput
+                                type='select'
+                                label='Status'
+                                name='status'
+                                value={values.status}
+                                placeholder='Select Status'
+                                options={statusOptions}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.status && touched.status
+                                        ? 'selectError'
+                                        : 'selectBase'
+                                }
+                                errors={errors.status}
+                                touched={touched.status}
+                            />
+                            <FormInput
+                                type='select'
+                                label='Region'
+                                name='region'
+                                value={values.region}
+                                placeholder='Select Region'
+                                options={branchNames}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.region && touched.region
+                                        ? 'selectError'
+                                        : 'selectBase'
+                                }
+                                errors={errors.region}
+                                touched={touched.region}
+                            />
+                            <FormInput
+                                type='select'
+                                label='Hall'
+                                name='hall'
+                                value={values.hall}
+                                placeholder='Select Hall'
+                                options={branchNames}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.hall && touched.hall
+                                        ? 'selectError'
+                                        : 'selectBase'
+                                }
+                                errors={errors.hall}
+                                touched={touched.hall}
+                            />
+                            <FormInput
+                                type='date'
+                                label='Date Called'
+                                name='dateCalled'
+                                value={values.dateCalled}
+                                required
+                                placeholder='Select a Date'
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.dateCalled && touched.dateCalled
+                                        ? 'datePickerError'
+                                        : 'datePickerBase'
+                                }
+                                errors={errors.dateCalled}
+                                touched={touched.dateCalled}
+                            />
+                            <FormInput
+                                type='text'
+                                label='Ship Name'
+                                name='shipName'
+                                value={values.shipName}
+                                placeholder='Enter Ship Name'
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.shipName && touched.shipName
+                                        ? 'textError'
+                                        : 'textBase'
+                                }
+                                errors={errors.shipName}
+                                touched={touched.shipName}
+                            />
+                            <FormInput
+                                type='date'
+                                label='Join Date'
+                                name='joinDate'
+                                value={values.joinDate}
+                                placeholder='Select a Date'
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.dateCalled && touched.dateCalled
+                                        ? 'datePickerError'
+                                        : 'datePickerBase'
+                                }
+                                errors={errors.dateCalled}
+                                touched={touched.dateCalled}
+                            />
+                        </div>    
+                        <div className='flex flex-col items-center'>    
+                            <FormInput
+                                type='select'
+                                label='Billet'
+                                name='billet'
+                                value={values.billet}
+                                placeholder='Select Billet'
+                                options={billetOptions}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.billet && touched.billet
+                                        ? 'selectError'
+                                        : 'selectBase'
+                                }
+                                errors={errors.billet}
+                                touched={touched.billet}
+                            />
+                            <FormInput
+                                type='select'
+                                label='Type'
+                                name='type'
+                                value={values.type}
+                                required
+                                placeholder='Select Type'
+                                options={typeOptions}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.type && touched.type
+                                        ? 'selectError'
+                                        : 'selectBase'
+                                }
+                                errors={errors.type}
+                                touched={touched.type}
+                            />
+                            <FormInput
+                                type='text'
+                                label='Days'
+                                name='days'
+                                value={values.days}
+                                required
+                                placeholder='Enter # of Days'
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.days && touched.days
+                                        ? 'textError'
+                                        : 'textBase'
+                                }
+                                errors={errors.days}
+                                touched={touched.days}
+                            />
+                            <FormInput
+                                type='text'
+                                label='Location'
+                                name='location'
+                                value={values.location}
+                                required
+                                placeholder='Enter Location'
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.location && touched.location
+                                        ? 'textError'
+                                        : 'textBase'
+                                }
+                                errors={errors.location}
+                                touched={touched.location}
+                            />
+                            <FormInput
+                                type='text'
+                                label='Company'
+                                name='company'
+                                value={values.company}
+                                required
+                                placeholder='Enter Company'
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.company && touched.company
+                                        ? 'textError'
+                                        : 'textBase'
+                                }
+                                errors={errors.company}
+                                touched={touched.company}
+                            />
+                            <FormInput
+                                type='text'
+                                label='Crew Relieved'
+                                name='crewRelieved'
+                                value={values.crewRelieved}
+                                required={false}
+                                placeholder='Enter Crew Relieved'
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                className={
+                                    errors.crewRelieved && touched.crewRelieved
+                                        ? 'textError'
+                                        : 'textBase'
+                                }
+                                errors={errors.crewRelieved}
+                                touched={touched.crewRelieved}
+                            />
+                        </div>
+                        <div className='col-span-2 flex flex-col items-center'>
+                            <FormInput
+                                multiline
+                                type='text'
+                                label='Notes'
+                                name='notes'
+                                value={values.notes}
+                                required={false}
+                                placeholder='Enter Notes/Requirements'
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                errors={errors.notes}
+                                touched={touched.notes}
+                            />
+                        </div>
                     </div>
+                    {/* Status Messages */}
+                    {status && (
+                        <div className={`mt-4 p-3 rounded-md text-center ${
+                            status.error
+                                ? 'bg-red-100 border border-red-400 text-red-700'
+                                : 'bg-green-100 border border-green-400 text-green-700'
+                        }`}>
+                            {status.error || status.success}
+                        </div>
+                    )}
+
                     {/* Submit button */}
                     <div className='flex flex-row space-x-4 mt-4 justify-center'>
                         <button
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || !user}
                             type='submit'
                             className={
-                                isSubmitting
+                                isSubmitting || !user
                                     ? styles.submitSubmitting
                                     : styles.submitBase
                             }
+                            title={!user ? 'You must be logged in to add a job' : ''}
                         >
                             {isSubmitting ? 'Adding Job...' : 'Submit'}
                         </button>

@@ -13,10 +13,11 @@ import {
     RiPlayListAddLine,
 } from 'react-icons/ri'
 
-const Dashboard = () => {
+const Dashboard = ({ allowedTiles }) => {
     const dashButton =
-        'flex flex-col items-center p-5 rounded-md w-3xs bg-mebablue-dark hover:bg-mebablue-light transition-colors duration-300 ease-in-out cursor-pointer'
+        'group w-60 h-50 flex flex-col items-center justify-center gap-2 rounded-md bg-mebablue-dark hover:bg-mebablue-light transition-colors duration-300 ease-in-out cursor-pointer'
 
+    console.log('Allowed Tiles (admin):', allowedTiles)
     return (
         <div className='w-full h-[calc(100vh-80px)] flex items-center justify-center overflow-y-hidden mx-auto'>
             <div className='w-fit flex flex-col gap-4 p-12 shadow-[0_0_10px_rgba(0,0,0,0.1)] rounded-md'>
@@ -26,61 +27,74 @@ const Dashboard = () => {
                     </span>
                 </div>
                 <div className='w-full h-[5px] rounded-full bg-mebablue-dark mb-2'></div>
+
                 <div className='flex flex-row gap-4 font-mont text-white font-medium text-2xl justify-center items-center'>
-                    <div className={dashButton}>
-                        <span className='mb-1'>Manage Jobs</span>
-                        <Link to='/board'>
-                            <button className='cursor-pointer'>
-                                <RiListSettingsLine className='w-[100px] h-[100px]' />
-                            </button>
-                        </Link>
-                    </div>
-                    <div className={dashButton}>
-                        <span className='mb-1'>Add Job Listing</span>
-                        <Link to='/addjob'>
-                            <button className='cursor-pointer'>
-                                <RiPlayListAddLine className='w-[100px] h-[100px]' />
-                            </button>
-                        </Link>
-                    </div>
-                    <div className={dashButton}>
-                        <span className='mb-1'>View Job Board</span>
-                        <Link to='/fsb'>
-                            <button className='cursor-pointer'>
-                                <RiListView className='w-[100px] h-[100px]' />
-                            </button>
-                        </Link>
-                    </div>
+                    {allowedTiles.includes('manageJobs') && (
+                        <div className={dashButton}>
+                            <span className='mb-1'>Manage Jobs</span>
+                            <Link to='/board'>
+                                <button className='cursor-pointer'>
+                                    <RiListSettingsLine className='w-[100px] h-[100px]' />
+                                </button>
+                            </Link>
+                        </div>
+                    )}
+                    {allowedTiles.includes('addJobListing') && (
+                        <div className={dashButton}>
+                            <span className='mb-1'>Add Job Listing</span>
+                            <Link to='/addjob'>
+                                <button className='cursor-pointer'>
+                                    <RiPlayListAddLine className='w-[100px] h-[100px]' />
+                                </button>
+                            </Link>
+                        </div>
+                    )}
+                    {allowedTiles.includes('viewJobBoard') && (
+                        <div className={dashButton}>
+                            <span className='mb-1'>View Job Board</span>
+                            <Link to='/fsb'>
+                                <button className='cursor-pointer'>
+                                    <RiListView className='w-[100px] h-[100px]' />
+                                </button>
+                            </Link>
+                        </div>
+                    )}
                 </div>
+
                 <div className='flex flex-row gap-4 font-mont text-white font-medium text-2xl justify-center items-center'>
-                    <div className={dashButton}>
-                        <span className='mb-1'>View Changes</span>
-                        <Link to='/history'>
-                            <button className='cursor-pointer'>
-                                <AiOutlineHistory className='w-[100px] h-[100px]' />
-                            </button>
-                        </Link>
-                    </div>
-                    <div className={dashButton}>
-                        <span className='mb-1'>Manage Users</span>
-                        <Link to='/users-roles'>
-                            <button className='cursor-pointer'>
-                                <LiaUsersCogSolid className='w-[100px] h-[100px]' />
-                            </button>
-                        </Link>
-                    </div>
-                    <div className={dashButton}>
-                        <span className='mb-1'>Add New User</span>
-                        <Link to='/add-user'>
-                            <button className='cursor-pointer'>
-                                <LiaUserPlusSolid className='w-[100px] h-[100px]' />
-                            </button>
-                        </Link>
-                    </div>
+                    {allowedTiles.includes('viewChanges') && (
+                        <div className={dashButton}>
+                            <span className='mb-1'>View Changes</span>
+                            <Link to='/history'>
+                                <button className='cursor-pointer'>
+                                    <AiOutlineHistory className='w-[100px] h-[100px]' />
+                                </button>
+                            </Link>
+                        </div>
+                    )}
+                    {allowedTiles.includes('manageUsers') && (
+                        <div className={dashButton}>
+                            <span className='mb-1'>Manage Users</span>
+                            <Link to='/users-roles'>
+                                <button className='cursor-pointer'>
+                                    <LiaUsersCogSolid className='w-[100px] h-[100px]' />
+                                </button>
+                            </Link>
+                        </div>
+                    )}
+                    {allowedTiles.includes('addUser') && (
+                        <div className={dashButton}>
+                            <span className='mb-1'>Add User</span>
+                            <Link to='/add-user'>
+                                <button className='cursor-pointer'>
+                                    <LiaUserPlusSolid className='w-[100px] h-[100px]' />
+                                </button>
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     )
 }
-
 export default Dashboard

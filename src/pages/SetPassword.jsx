@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './Login.module.css'
 import showPasswordIcon from '../assets/show_password_icon.svg'
@@ -20,6 +20,16 @@ function SetPassword() {
     const toggleShowConfirm = () => {
         setShowConfirm(!showConfirm)
     }
+
+    useEffect(() => {
+        const url = new URL(window.location.href)
+        const access_token = url.searchParams.get('access_token')
+        if (access_token) {
+            supabase.auth.setSession({ access_token }).then(({ error }) => {
+                if (error) alert('Failed to set session: ' + error.message)
+            })
+        }
+    }, [])
 
     const handleSubmit = async (e) => {
         e.preventDefault()

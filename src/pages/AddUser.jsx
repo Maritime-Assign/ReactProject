@@ -15,7 +15,7 @@ import supabase from '../supabaseClient'
 
 // Array for role options in the dropdown
 // changed to match enum type for user roles
-const roleOptions = ['display', 'minor', 'major', 'admin']
+const roleOptions = ['Display', 'Dispatch', 'Admin']
 
 // Schema for validation
 const userValidationSchema = yup.object().shape({
@@ -36,7 +36,7 @@ const userValidationSchema = yup.object().shape({
         .matches(/\.[a-zA-Z]{2,}$/, 'Invalid'),
     role: yup
         .string()
-        .oneOf(['display', 'minor', 'major', 'admin'], 'Invalid role')
+        .oneOf(['Display', 'Dispatch', 'Admin'], 'Invalid role')
         .required('Required'),
 })
 
