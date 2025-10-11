@@ -105,7 +105,7 @@ const onSubmit = async (values, actions) => {
 
         // Restore admin session immediately
         if (adminSession) {
-            await supabase.auth.setSession(adminSession.access_token)
+            await supabase.auth.setSession(adminSession)
         }
 
         console.log('User Sign Up Success:', authData)
