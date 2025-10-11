@@ -19,7 +19,14 @@ export const AuthContextProvider = ({ children }) => {
             setSession(data.session)
             if (data.user) {
                 const userRole = await fetchUserRole(data.user.id)
-                setRole(userRole)
+                if (userRole) {
+                    setRole(userRole)
+                } else {
+                    // Role fetch failed → reset session and redirect
+                    setSession(null)
+                    setRole(null)
+                    navigate('/login', { replace: true })
+                }
                 console.log(
                     'Session/user/role after login:',
                     data.session,
@@ -46,6 +53,7 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     const fetchUserRole = async (userId) => {
+        if (!userId) return null
         try {
             const { data, error } = await supabase
                 .from('Users')
@@ -57,28 +65,28 @@ export const AuthContextProvider = ({ children }) => {
                 console.error('Supabase api error fetching role:', error)
                 return null
             }
-            return data.role
+            return data?.role ?? null
         } catch (err) {
             console.error('Unexpected JS error fetching role:', err)
             return null
         }
     }
 
-    const [sessionInitialized, setSessionInitialized] = useState(false)
-
     useEffect(() => {
         const initializeSession = async () => {
             try {
-                const {
-                    data: { session },
-                } = await supabase.auth.getSession()
-                setSession(session ?? null)
-
-                if (session?.user) {
-                    const userRole = await fetchUserRole(session.user.id)
-                    setRole(userRole)
-                } else {
-                    setRole(null)
+                const { data } = await supabase.auth.getSession()
+                const currentSession = data?.session ?? null
+                setSession(currentSession)
+                if (currentSession?.user) {
+                    const userRole = await fetchUserRole(currentSession.user.id)
+                    if (userRole) {
+                        setRole(userRole)
+                    } else {
+                        setSession(null)
+                        setRole(null)
+                        navigate('/login', { replace: true })
+                    }
                 }
             } catch (err) {
                 console.error('Error fetching session on mount:', err)
@@ -86,28 +94,10 @@ export const AuthContextProvider = ({ children }) => {
                 setRole(null)
             } finally {
                 setLoadingSession(false)
-                setSessionInitialized(true)
             }
         }
-
         initializeSession()
-
-        const { data: listener } = supabase.auth.onAuthStateChange(
-            async (_event, session) => {
-                if (!sessionInitialized) return // ignore events until initial fetch
-                setSession(session ?? null)
-
-                if (session?.user) {
-                    const userRole = await fetchUserRole(session.user.id)
-                    setRole(userRole)
-                } else {
-                    setRole(null)
-                }
-            }
-        )
-
-        return () => listener.subscription.unsubscribe()
-    }, [sessionInitialized])
+    }, [])
 
     return (
         <AuthContext.Provider

@@ -2,15 +2,15 @@
 @reference '../index.css';
 
 .datePickerBase {
-    @apply border border-neutral-300 ml-0 mt-0 w-sm p-3 rounded-md text-left focus:border-1 focus:border-mebagold focus:outline-none;
+    @apply border border-neutral-300 ml-0 mt-0 w-sm p-3 rounded-md text-left focus:border-1 focus:border-mebagold focus:outline-none cursor-pointer;
 }
 
 .datePickerError {
-    @apply border-red-500 ml-0 mt-0 w-sm text-left;
+    @apply border-red-500 ml-0 mt-0 w-sm text-left rounded-md p-3 border cursor-pointer;
 }
 
 .textBase {
-    @apply border rounded-md p-3 border-neutral-300 w-sm mt-0 text-left focus:border-1 focus:border-mebagold focus:outline-none;
+    @apply text-mebablue-dark border rounded-md p-3 border-neutral-300 w-sm mt-0 text-left focus:border-1 focus:border-mebagold focus:outline-none;
 }
 
 .textError {
@@ -18,11 +18,11 @@
 }
 
 .multi {
-    @apply border-neutral-300 border w-sm mt-0 text-left rounded-md p-3 focus:outline-none focus:border-mebagold;
+    @apply text-mebablue-dark border-neutral-300 border w-sm mt-0 text-left rounded-md p-3 focus:outline-none focus:border-mebagold;
 }
 
 .selectBase {
-    @apply w-sm p-3 rounded-md border-1 border-neutral-300 focus:border focus:border-mebagold focus:outline-none;
+    @apply text-mebablue-dark w-sm p-3 rounded-md border-1 border-neutral-300 focus:border focus:border-mebagold focus:outline-none;
 }
 
 .selectError {

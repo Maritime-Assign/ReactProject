@@ -34,7 +34,6 @@ const App = () => {
     const { loadingSession, user, role } = UserAuth()
     const navigate = useNavigate()
     const location = useLocation()
-
     const [userRole, setUserRole] = useState(null) // from role-based-dash
 
     // Redirect to login if user logs out
@@ -52,30 +51,47 @@ const App = () => {
     // Fetch user role from Supabase when user changes (role-based-dash)
     useEffect(() => {
         async function getRole() {
-            if (user && user.id) {
-                const role = await fetchUserRole(user.id)
-                console.log('Fetched user role:', role)
-                setUserRole(role)
-            } else {
+            if (!user?.id) {
                 setUserRole(null)
+                return
+            }
+
+            try {
+                const role = await fetchUserRole(user.id)
+                if (role) {
+                    setUserRole(role)
+                } else {
+                    // No role found → log out user
+                    setUserRole(null)
+                    navigate('/login', { replace: true })
+                }
+            } catch (err) {
+                console.error('Failed to fetch role:', err)
+                setUserRole(null)
+                navigate('/login', { replace: true })
             }
         }
+
         getRole()
-    }, [user])
+    }, [user, navigate])
 
     // Compute permissions for current path
     var grantedPermission = usePermission(role, location.pathname)
 
     // Redirect to FSboard if logged-in user has no permission
-    // FIX: wait for the user's role to load before checking permissions and redirecting. 
+    // FIX: wait for the user's role to load before checking permissions and redirecting.
     // This prevents jumping to /fsb before the app knows the correct dashboard to show.
     useEffect(() => {
-    // Wait until userRole is fetched
-    if (!loadingSession && user && userRole !== null && !grantedPermission) {
+        // Wait until userRole is fetched
+        if (
+            !loadingSession &&
+            user &&
+            userRole !== null &&
+            !grantedPermission
+        ) {
             navigate('/fsb', { replace: true })
         }
     }, [loadingSession, user, userRole, grantedPermission, navigate])
-
 
     useEffect(() => {
         if (!loadingSession && user && userRole) {
@@ -94,7 +110,9 @@ const App = () => {
 
     console.log({ user, userRole, loadingSession })
     // Block render until session or role fetch is complete
-    if (loadingSession || (user && userRole === null)) return <LoadingSpinner />
+    if (loadingSession || (user && userRole === null)) {
+        return <LoadingSpinner />
+    }
 
     const allowedTiles = getRoleTiles(userRole || 'none')
 
