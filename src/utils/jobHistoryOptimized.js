@@ -1,4 +1,4 @@
-import { supabase } from '../api/supabaseClient'
+import supabase from '../api/supabaseClient'
 
 /**
  * OPTIMIZED: Add a new job (history logging handled by database triggers)
