@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient'
+import { supabase } from '../api/supabaseClient'
 
 /**
  * Log job history when a job is created or updated

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 
-import supabase from '../supabaseClient'
+import supabase from '../api/supabaseClient'
 
 const Tile = ({ job, onJobUpdate }) => {
     const [isEditing, setIsEditing] = useState(false)

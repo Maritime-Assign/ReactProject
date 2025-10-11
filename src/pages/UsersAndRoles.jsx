@@ -7,7 +7,7 @@ import { faker } from '@faker-js/faker';
 import './UsersAndRoles.css';
 import { FaEdit, FaUserPlus, FaUserMinus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import supabase from '../supabaseClient';
+import supabase from '../api/supabaseClient';
 import ImageDropdown from '../components/ImageDropdown/ImageDropdown'
 import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from 'react-router-dom'

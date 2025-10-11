@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useFormStatus } from 'react-dom'
-import { supabase } from '../supabaseClient'
+import { supabase } from '../api/supabaseClient'
 
 const EditUser = () => {
     //Convert the data of a user and make it editable
