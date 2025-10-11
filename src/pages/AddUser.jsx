@@ -77,6 +77,11 @@ const onSubmit = async (values, actions) => {
             return
         }
 
+        // Save the current admin session
+        const {
+            data: { session: adminSession },
+        } = await supabase.auth.getSession()
+
         // Sign up user in Supabase Auth with metadata
         const { data: authData, error: signUpError } =
             await supabase.auth.signUp({
@@ -96,6 +101,11 @@ const onSubmit = async (values, actions) => {
             console.error('Supabase signUp error:', signUpError)
             actions.setStatus({ submitError: signUpError.message })
             return
+        }
+
+        // Restore admin session immediately
+        if (adminSession) {
+            await supabase.auth.setSession(adminSession.access_token)
         }
 
         console.log('User Sign Up Success:', authData)
