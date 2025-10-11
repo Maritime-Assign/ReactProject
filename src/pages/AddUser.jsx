@@ -21,12 +21,12 @@ const userValidationSchema = yup.object().shape({
     fName: yup
         .string()
         .required('Required')
-        .min(2, 'First Name must be at least 2 character')
+        .min(2, 'First Name must be at least 2 characters')
         .max(50, 'First Name must be 50 characters or less'),
     lName: yup
         .string()
         .required('Required')
-        .min(2, 'Last Name must be at least 2 character')
+        .min(2, 'Last Name must be at least 2 characters')
         .max(50, 'Last Name must be 50 characters or less'),
     username: yup
         .string()
