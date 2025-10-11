@@ -9,6 +9,7 @@ function ViewBoard() {
     const [view, setView] = useState('tile')
     const [filterOpen, setFilterOpen] = useState(false)
     const [jobs, setJobs] = useState([]) // Initialize jobs as an empty array
+    const [searchWord, setSearchWord] = useState('');
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -23,6 +24,23 @@ function ViewBoard() {
         }
         loadJobs()
     }, [])
+
+    const filteredJobs = jobs.filter((job) => {
+        const term = searchWord.toLowerCase()
+        if (!term) return true
+
+        const vessel = (job.shipName || '').toLowerCase()
+        const region = (job.region || '').toLowerCase()
+        const hall = (job.hall || '').toLowerCase()
+        const joinDate = (job.joinDate || '').toString().toLowerCase()
+
+        return (
+            vessel.includes(term) ||
+            region.includes(term) ||
+            hall.includes(term) ||
+            joinDate.includes(term)
+        )
+    })
 
     // Update handler
     const handleJobUpdate = (updatedJob) => {
@@ -56,10 +74,21 @@ function ViewBoard() {
                 </div>
             </div>
             <Filter setView={setView} setFilterOpen={setFilterOpen} />
+            <div className='flex justify-center py-4 rounded-md w-full mb-6'>
+                <div className="w-full max-w-2xl px-4">
+                    <input
+                        type="text"
+                        placeholder="Search vessel, region, hall, or join date…"
+                        value={searchWord}
+                        onChange={(e) => setSearchWord(e.target.value)}
+                        className="w-full max-w-[700px] px-4 py-2 border border-gray-300 rounded text-center shadow-sm"
+                    />
+                </div>
+            </div>
             <div className='w-full'>
                 {view === 'tile' ? (
                     <div className='grid md:grid-cols-2 grid-cols-1 justify-start place-items-center gap-4'>
-                        {(filterOpen ? jobs.filter((j) => j.open) : jobs).map(
+                        {(filterOpen ? filteredJobs.filter((j) => j.open) : filteredJobs).map(
                             (job) => (
                                 <Tile
                                     key={job.id}
@@ -71,7 +100,7 @@ function ViewBoard() {
                     </div>
                 ) : (
                     <div className='space-y-4'>
-                        {(filterOpen ? jobs.filter((j) => j.open) : jobs).map(
+                        {(filterOpen ? filteredJobs.filter((j) => j.open) : filteredJobs).map(
                             (job) => (
                                 <Tile
                                     key={job.id}
