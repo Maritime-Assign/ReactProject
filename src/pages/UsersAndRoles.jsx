@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useContext } from 'react';
-import { faker } from '@faker-js/faker';
 import './UsersAndRoles.css';
 import { FaEdit, FaUserPlus, FaUserMinus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -101,28 +100,21 @@ const UsersAndRoles = () => {
                         </span>
                     </div>
                     <div className="grid-cell">Name</div>
-                    <div className="grid-cell">Email</div>
+                    <div className="grid-cell">Username</div>
                 </div>
                 {filteredUsers.map((user) => (
                     <div className="grid-row" key={user.id}>
                         <div className="grid-cell">
-                            <ImageDropdown 
-                                userId={user.id} 
-                                currentRole={user.role_id}
-                                onRoleChange={(newRole) => {
-                                    console.log(`User ${user.id} changed role to: ${newRole}`);
-                                }}
-                            />
-                        </div>
-                        <div className="grid-cell">{user.first_name}</div>
-                        <div className="grid-cell">{user.email}</div>
-
                         {/*Button that links to the edit user page*/}
-                        <Link to={'/edituser'} state={user}>
-                            <button className="edit-button" title="Edit Role">
-                                <FaEdit />
-                            </button>
-                        </Link>
+                            <Link to={'/edituser'} state={user}>
+                                <button className="edit-button" title="Edit Role">
+                                    <FaEdit />
+                                </button>
+                            </Link>
+                        </div>
+                        <div className="grid-cell">{user.role[0].toUpperCase() + user.role.slice(1)}</div>
+                        <div className="grid-cell">{user.first_name}</div>
+                        <div className="grid-cell">{user.username}</div>
                     </div>
                 ))}
             </div>
