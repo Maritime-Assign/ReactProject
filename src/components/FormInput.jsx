@@ -33,7 +33,20 @@ const FormInput = ({
     className,
     errors,
     touched,
+    submitCount = 0,
+    setFieldError,
 }) => {
+    const handleChange = (e) => {
+        onChange(e)
+
+        // Clear the error if the field is now valid
+        if (submitCount > 0 && errors) {
+            const val = e.target?.value ?? e
+            if (val && val.toString().trim() !== '')
+                setFieldError(name, undefined)
+        }
+    }
+
     const inputId = `input-${name}` // save an input id for later use if needed
 
     const appliedClass = styles[className]
@@ -46,7 +59,7 @@ const FormInput = ({
                     id={inputId}
                     name={name}
                     value={value}
-                    onChange={onChange}
+                    onChange={handleChange} // Change from onChange={onChange}
                     onBlur={onBlur}
                     disabled={disabled}
                     className={appliedClass}
@@ -79,14 +92,9 @@ const FormInput = ({
                 <DatePicker
                     name={name}
                     selected={value}
-                    onChange={(date) => {
-                        onChange({
-                            target: {
-                                name: name,
-                                value: formatDateString(date),
-                            },
-                        })
-                    }}
+                    onChange={(date) =>
+                        handleChange({ target: { name, value: date } })
+                    }
                     dateFormat='MM/dd/yyyy'
                     placeholderText={placeholder}
                     className={appliedClass}
@@ -101,7 +109,7 @@ const FormInput = ({
                     id={inputId}
                     name={name}
                     value={value}
-                    onChange={onChange}
+                    onChange={handleChange}
                     rows={rows}
                     placeholder={placeholder}
                     disabled={disabled}
@@ -117,7 +125,7 @@ const FormInput = ({
                 id={inputId}
                 name={name}
                 value={value}
-                onChange={onChange}
+                onChange={handleChange}
                 placeholder={placeholder}
                 disabled={disabled}
                 className={appliedClass}
@@ -127,25 +135,22 @@ const FormInput = ({
 
     // final displayed component with error css applied if errors are passed in as props
     return (
-        <div className='flex flex-col mb-2 items-start justify-start'>
-            <span
-                className={
-                    errors && touched
-                        ? 'text-lg font-medium text-red-500 mb-1 font-mont'
-                        : 'text-lg font-medium text-mebablue-dark mb-1 font-mont'
-                }
-            >
-                {errors && touched ? (
-                    <span className='text-lg font-medium text-red-500 mb-1 font-mont'>
-                        {label} {errors}*
-                    </span>
-                ) : (
-                    <span className='text-lg font-medium text-mebablue-dark mb-1 font-mont'>
-                        {label}
+        <div className='flex flex-col items-center mb-1 w-full'>
+            {/* Input wrapper with fixed width */}
+            <div className='w-full max-w-sm flex flex-col'>
+                {/* Label */}
+                <span className='text-lg font-medium text-mebablue-dark mb-1 font-mont'>
+                    {label}
+                </span>
+                {/* Input */}
+                {renderInput()}
+                {/* Error */}
+                {errors && submitCount > 0 && touched && (
+                    <span className=' text-red-500 text-sm mt-1 block'>
+                        {errors}
                     </span>
                 )}
-            </span>
-            {renderInput()}
+            </div>
         </div>
     )
 }
