@@ -90,11 +90,10 @@ const FormInput = ({
         if (type === 'date') {
             return (
                 <DatePicker
+                    id={inputId} // 👈 new line
                     name={name}
                     selected={value}
-                    onChange={(date) =>
-                        handleChange({ target: { name, value: date } })
-                    }
+                    onChange={(date) => handleChange({ target: { name, value: date } })}
                     dateFormat='MM/dd/yyyy'
                     placeholderText={placeholder}
                     className={appliedClass}
@@ -139,9 +138,13 @@ const FormInput = ({
             {/* Input wrapper with fixed width */}
             <div className='w-full max-w-sm flex flex-col'>
                 {/* Label */}
-                <span className='text-lg font-medium text-mebablue-dark mb-1 font-mont'>
+                <label
+                    htmlFor={inputId}
+                    className='text-lg font-medium text-mebablue-dark mb-1 font-mont'
+                >
                     {label}
-                </span>
+                </label>
+
                 {/* Input */}
                 {renderInput()}
                 {/* Error */}
