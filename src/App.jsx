@@ -100,7 +100,7 @@ const App = () => {
             const path = redirectRoutes[userRole] || "/login";
             navigate(path, { replace: true })
         }
-    }, [loadingSession, user, userRole, grantedPermission, navigate])
+    }, [loadingSession, user, userRole, grantedPermission, navigate, redirectRoutes])
     
     useEffect(() => {
         if (!loadingSession && user && userRole) {
@@ -111,11 +111,11 @@ const App = () => {
                 } else if (userRole === 'dispatch') {
                     navigate('/dispatch/dashboard', { replace: true })
                 } else {
-                    navigate('/display/dashboard', { replace: true })
+                    navigate('/fsb', { replace: true })
                 }
             }
         }
-    }, [loadingSession, user, userRole, location.pathname, navigate])
+    }, [loadingSession, user, userRole, location.pathname, navigate, redirectRoutes])
 
     console.log({ user, userRole, loadingSession })
     // Block render until session or role fetch is complete
