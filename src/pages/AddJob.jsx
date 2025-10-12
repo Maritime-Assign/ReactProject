@@ -14,7 +14,7 @@ import { IoArrowBack } from 'react-icons/io5'
 import { UserAuth } from '../context/AuthContext'
 import { addJob } from '../utils/jobHistoryOptimized'
 
-// Arrays for options for the various dropdowns 
+// Arrays for options for the various dropdowns
 const statusOptions = ['Open', 'Filled']
 const billetOptions = ['1 A/E', '2M', '3M']
 const typeOptions = ['Relief', 'Permanent']
@@ -23,7 +23,7 @@ const typeOptions = ['Relief', 'Permanent']
 const createOnSubmit = (user) => async (values, actions) => {
     try {
         console.log('Submitting job with values:', values)
-        
+
         if (!user) {
             actions.setStatus({ error: 'You must be logged in to add a job.' })
             return
@@ -44,7 +44,7 @@ const createOnSubmit = (user) => async (values, actions) => {
             company: values.company || null,
             crewRelieved: values.crewRelieved || null,
             notes: values.notes || null,
-            open: values.status === 'Open' // Convert status to boolean - table uses 'open' not 'status'
+            open: values.status === 'Open', // Convert status to boolean - table uses 'open' not 'status'
         }
 
         // Debug: Log the exact data being sent
@@ -52,12 +52,12 @@ const createOnSubmit = (user) => async (values, actions) => {
 
         // Add the job (history logging handled automatically by database triggers)
         const result = await addJob(jobData)
-        
+
         if (result.success) {
             console.log('Job added successfully:', result.data)
             actions.setStatus({ success: 'Job added successfully!' })
             actions.resetForm() // reset/clear the form
-            
+
             // Note: Navigation will happen when user manually navigates
             // Auto-navigation removed to prevent errors
         } else {
@@ -85,6 +85,8 @@ const AddJob = () => {
         isSubmitting,
         touched,
         status,
+        submitCount,
+        setFieldError,
     } = useFormik({
         initialValues: {
             status: '',
@@ -103,7 +105,7 @@ const AddJob = () => {
         },
         validationSchema: jobValidationSchema, // bring in Schema from jobValidationSchema.jsx in data dir
         onSubmit: createOnSubmit(user),
-        validateOnChange: true,
+        validateOnChange: false,
         validateOnBlur: false,
     })
 
@@ -137,7 +139,7 @@ const AddJob = () => {
             {/* Form */}
             <div className='my-4 w-full font-mont bg-white rounded-lg shadow p-4'>
                 <form onSubmit={handleSubmit} autoComplete='off'>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className='grid grid-cols-2 gap-6'>
                         <div className='flex flex-col items-center'>
                             <FormInput
                                 type='select'
@@ -155,6 +157,8 @@ const AddJob = () => {
                                 }
                                 errors={errors.status}
                                 touched={touched.status}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                             <FormInput
                                 type='select'
@@ -172,6 +176,8 @@ const AddJob = () => {
                                 }
                                 errors={errors.region}
                                 touched={touched.region}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                             <FormInput
                                 type='select'
@@ -189,6 +195,8 @@ const AddJob = () => {
                                 }
                                 errors={errors.hall}
                                 touched={touched.hall}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                             <FormInput
                                 type='date'
@@ -206,6 +214,8 @@ const AddJob = () => {
                                 }
                                 errors={errors.dateCalled}
                                 touched={touched.dateCalled}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                             <FormInput
                                 type='text'
@@ -222,6 +232,8 @@ const AddJob = () => {
                                 }
                                 errors={errors.shipName}
                                 touched={touched.shipName}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                             <FormInput
                                 type='date'
@@ -238,9 +250,11 @@ const AddJob = () => {
                                 }
                                 errors={errors.dateCalled}
                                 touched={touched.dateCalled}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
-                        </div>    
-                        <div className='flex flex-col items-center'>    
+                        </div>
+                        <div className='flex flex-col items-center'>
                             <FormInput
                                 type='select'
                                 label='Billet'
@@ -257,6 +271,8 @@ const AddJob = () => {
                                 }
                                 errors={errors.billet}
                                 touched={touched.billet}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                             <FormInput
                                 type='select'
@@ -275,6 +291,8 @@ const AddJob = () => {
                                 }
                                 errors={errors.type}
                                 touched={touched.type}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                             <FormInput
                                 type='text'
@@ -292,6 +310,8 @@ const AddJob = () => {
                                 }
                                 errors={errors.days}
                                 touched={touched.days}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                             <FormInput
                                 type='text'
@@ -309,6 +329,8 @@ const AddJob = () => {
                                 }
                                 errors={errors.location}
                                 touched={touched.location}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                             <FormInput
                                 type='text'
@@ -326,6 +348,8 @@ const AddJob = () => {
                                 }
                                 errors={errors.company}
                                 touched={touched.company}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                             <FormInput
                                 type='text'
@@ -343,6 +367,8 @@ const AddJob = () => {
                                 }
                                 errors={errors.crewRelieved}
                                 touched={touched.crewRelieved}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                         </div>
                         <div className='col-span-2 flex flex-col items-center'>
@@ -358,16 +384,20 @@ const AddJob = () => {
                                 onBlur={handleBlur}
                                 errors={errors.notes}
                                 touched={touched.notes}
+                                submitCount={submitCount}
+                                setFieldError={setFieldError}
                             />
                         </div>
                     </div>
                     {/* Status Messages */}
                     {status && (
-                        <div className={`mt-4 p-3 rounded-md text-center ${
-                            status.error
-                                ? 'bg-red-100 border border-red-400 text-red-700'
-                                : 'bg-green-100 border border-green-400 text-green-700'
-                        }`}>
+                        <div
+                            className={`mt-4 p-3 rounded-md text-center ${
+                                status.error
+                                    ? 'bg-red-100 border border-red-400 text-red-700'
+                                    : 'bg-green-100 border border-green-400 text-green-700'
+                            }`}
+                        >
                             {status.error || status.success}
                         </div>
                     )}
@@ -382,7 +412,11 @@ const AddJob = () => {
                                     ? styles.submitSubmitting
                                     : styles.submitBase
                             }
-                            title={!user ? 'You must be logged in to add a job' : ''}
+                            title={
+                                !user
+                                    ? 'You must be logged in to add a job'
+                                    : ''
+                            }
                         >
                             {isSubmitting ? 'Adding Job...' : 'Submit'}
                         </button>

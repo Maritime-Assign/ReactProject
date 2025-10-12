@@ -34,7 +34,6 @@ const App = () => {
     const { loadingSession, user, role } = UserAuth()
     const navigate = useNavigate()
     const location = useLocation()
-
     const [userRole, setUserRole] = useState(null) // from role-based-dash
 
     // Redirect to login if user logs out
@@ -52,49 +51,77 @@ const App = () => {
     // Fetch user role from Supabase when user changes (role-based-dash)
     useEffect(() => {
         async function getRole() {
-            if (user && user.id) {
-                const role = await fetchUserRole(user.id)
-                console.log('Fetched user role:', role)
-                setUserRole(role)
-            } else {
+            if (!user?.id) {
                 setUserRole(null)
+                return
+            }
+
+            try {
+                const role = await fetchUserRole(user.id)
+                if (role) {
+                    setUserRole(role)
+                } else {
+                    // No role found → log out user
+                    setUserRole(null)
+                    navigate('/login', { replace: true })
+                }
+            } catch (err) {
+                console.error('Failed to fetch role:', err)
+                setUserRole(null)
+                navigate('/login', { replace: true })
             }
         }
+
         getRole()
-    }, [user])
+    }, [user, navigate])
 
     // Compute permissions for current path
     var grantedPermission = usePermission(role, location.pathname)
+    
+    //map to redirect unauthorized access to pages
+    const redirectRoutes = {
+        admin: "/admin/dashboard",
+        dispatch: "/dispatch/dashboard",
+        display: "/fsb",
 
+    }
     // Redirect to FSboard if logged-in user has no permission
-    // FIX: wait for the user's role to load before checking permissions and redirecting. 
+    // FIX: wait for the user's role to load before checking permissions and redirecting.
     // This prevents jumping to /fsb before the app knows the correct dashboard to show.
     useEffect(() => {
-    // Wait until userRole is fetched
-    if (!loadingSession && user && userRole !== null && !grantedPermission) {
-            navigate('/fsb', { replace: true })
+        // Wait until userRole is fetched
+        if (
+            !loadingSession &&
+            user &&
+            userRole !== null &&
+            !grantedPermission
+        ) {
+            // redirect based on user - fall back on login
+            const path = redirectRoutes[userRole] || "/login";
+            navigate(path, { replace: true })
         }
-    }, [loadingSession, user, userRole, grantedPermission, navigate])
-
-
+    }, [loadingSession, user, userRole, grantedPermission, navigate, redirectRoutes])
+    
     useEffect(() => {
         if (!loadingSession && user && userRole) {
             const currentPath = location.pathname
             if (currentPath === '/login' || currentPath === '/') {
                 if (userRole === 'admin') {
-                    navigate('/dashboard/admin', { replace: true })
+                    navigate('/admin/dashboard', { replace: true })
                 } else if (userRole === 'dispatch') {
-                    navigate('/dashboard/dispatch', { replace: true })
+                    navigate('/dispatch/dashboard', { replace: true })
                 } else {
-                    navigate('/dashboard/display', { replace: true })
+                    navigate('/fsb', { replace: true })
                 }
             }
         }
-    }, [loadingSession, user, userRole, location.pathname, navigate])
+    }, [loadingSession, user, userRole, location.pathname, navigate, redirectRoutes])
 
     console.log({ user, userRole, loadingSession })
     // Block render until session or role fetch is complete
-    if (loadingSession || (user && userRole === null)) return <LoadingSpinner />
+    if (loadingSession || (user && userRole === null)) {
+        return <LoadingSpinner />
+    }
 
     const allowedTiles = getRoleTiles(userRole || 'none')
 
@@ -129,17 +156,17 @@ const App = () => {
                     {/* Role-based dashboard routing (preferred from role-based-dash) */}
 
                     <Route
-                        path='/dashboard/admin'
+                        path='/admin/dashboard'
                         element={<Dashboard allowedTiles={allowedTiles} />}
                     />
                     <Route
-                        path='/dashboard/dispatch'
+                        path='/dispatch/dashboard'
                         element={
                             <DashboardDispatch allowedTiles={allowedTiles} />
                         }
                     />
                     <Route
-                        path='/dashboard/display'
+                        path='/display/dashboard'
                         element={
                             <DashboardDisplay allowedTiles={allowedTiles} />
                         }
