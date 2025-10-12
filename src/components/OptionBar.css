@@ -54,6 +54,19 @@
     color: #252761;
 }
 
+/* Match navButtonText appearance */
+.signedInLabel,
+.usernameText {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  color: #252761;
+  font-size: 1rem; /* consistent with your nav labels */
+  margin-left: 10px;
+}
+
+
+
+
 .navButton:hover {
     color: #252761;
     background-color: #ffffff;

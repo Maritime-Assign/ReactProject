@@ -8,15 +8,12 @@ import HomeIcon from '@mui/icons-material/Home'
 import WorkIcon from '@mui/icons-material/Work'
 import LoginIcon from '@mui/icons-material/Login'
 import LogoutIcon from '@mui/icons-material/Logout'
-// mui avatar for login logout
-import Avatar from '@mui/material/Avatar'
 // pictures as objects
 import logo from '../assets/maritimelogo5.png'
-import tempAccountPic from '../assets/tom.jpg'
 // styles file
 import './OptionBar.css'
 // import link to nav to internal pages
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 // import user auth context to manage login state
 import { UserAuth } from '../context/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
@@ -25,6 +22,8 @@ import LoadingSpinner from './LoadingSpinner'
 const OptionBar = () => {
     const { user, role, loadingSession, signOut } = UserAuth()
     const isLoggedIn = !!user
+    const location = useLocation()
+    const isLoginPage = location.pathname === '/login'
 
     const handleLogout = async () => {
         if (!user) return
@@ -43,8 +42,8 @@ const OptionBar = () => {
         role === 'admin'
             ? '/dashboard/admin'
             : role === 'dispatch'
-            ? '/dashboard/dispatch'
-            : '/dashboard/display'
+                ? '/dashboard/dispatch'
+                : '/dashboard/display'
 
     const nav_Items = [
         {
@@ -63,10 +62,12 @@ const OptionBar = () => {
         <nav className='navbar'>
             <Logo />
             {isLoggedIn && <NavBar items={nav_Items} />}
-            <SessionManager
-                isLoggedIn={isLoggedIn}
-                handleLogout={handleLogout}
-            />
+            {!isLoginPage && (
+                <SessionManager
+                    isLoggedIn={isLoggedIn}
+                    handleLogout={handleLogout}
+                />
+            )}
         </nav>
     )
 }
@@ -102,39 +103,40 @@ const NavButton = ({ item }) => (
 
 // session manager component deals with the authentication login/logout ui
 // isLoggedIn determines the current authentication state
-const SessionManager = ({ isLoggedIn, handleLogout }) => (
-    <div>
-        {isLoggedIn ? (
-            <div className='sessionContainer'>
-                <Link to='/userprofile'>
-                    <Avatar
-                        alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
-                        src={isLoggedIn ? tempAccountPic : ''}
-                        className='userAvatar'
-                        title='user settings'
-                    />
-                </Link>
-                <Button onClick={handleLogout} className='navButton'>
-                    <LogoutIcon className='navBarIcon' />
-                    <span className='navButtonText'>Logout</span>
-                </Button>
-            </div>
-        ) : (
-            <div className='sessionContainer'>
-                <Avatar
-                    alt={isLoggedIn ? 'User Avatar' : 'Guest Avatar'}
-                    src={isLoggedIn ? tempAccountPic : ''}
-                    className='userAvatar'
-                />
-                <Link to='/login' className='navLink'>
-                    <Button className='navButton'>
-                        <LoginIcon className='navBarIcon' />
-                        <span className='navButtonText'>Login</span>
+const SessionManager = ({ isLoggedIn, handleLogout }) => {
+    const { user } = UserAuth()
+
+    return (
+        <div>
+            {isLoggedIn ? (
+                <div className='sessionContainer'>
+                    <div className='userInfo'>
+                        <span className='signedInLabel'>Signed in as:</span>
+                        <span className='usernameText'>
+                            {user?.email?.split('@')[0] || 'User'}
+                        </span>
+                    </div>
+                    <Button onClick={handleLogout} className='navButton'>
+                        <LogoutIcon className='navBarIcon' />
+                        <span className='navButtonText'>Logout</span>
                     </Button>
-                </Link>
-            </div>
-        )}
-    </div>
-)
+                </div>
+            ) : (
+                <div className='sessionContainer'>
+                    <div className='userInfo'>
+                        <span className='signedInLabel'>Signed in as:</span>
+                        <span className='usernameText'>Guest</span>
+                    </div>
+                    <Link to='/login' className='navLink'>
+                        <Button className='navButton'>
+                            <LoginIcon className='navBarIcon' />
+                            <span className='navButtonText'>Login</span>
+                        </Button>
+                    </Link>
+                </div>
+            )}
+        </div>
+    )
+}
 
 export default OptionBar
