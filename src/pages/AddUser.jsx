@@ -10,7 +10,6 @@ import { useFormik } from 'formik'
 import { useNavigate } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
 import * as yup from 'yup'
-import supabaseAdmin from '../api/supabaseAdmin'
 import supabase from '../api/supabaseClient'
 
 // Array for role options in the dropdown
