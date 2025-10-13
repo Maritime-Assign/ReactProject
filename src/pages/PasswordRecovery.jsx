@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './Login.module.css'
-import supabase from '../supabaseClient'
+import supabase from '../api/supabaseClient'
 
 function PasswordRecovery() {
     const [text, setText] = useState('')

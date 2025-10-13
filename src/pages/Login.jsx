@@ -3,7 +3,7 @@ import styles from './Login.module.css'
 import showPasswordIcon from '../assets/show_password_icon.svg'
 import { useNavigate } from 'react-router-dom'
 import { UserAuth } from '../context/AuthContext'
-import supabase from '../supabaseClient'
+import supabase from '../api/supabaseClient'
 
 const Login = () => {
     const [username, setUsername] = useState('')

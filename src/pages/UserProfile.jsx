@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import React, { useState, useEffect } from 'react'
-import supabase from "../supabaseClient"
+import supabase from "../api/supabaseClient"
 
 //Gets the user's data from the database
 const GetUserData = async () => {
