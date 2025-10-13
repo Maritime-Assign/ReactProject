@@ -52,7 +52,7 @@ vi.mock('../components/FormInput', () => ({
 }))
 
 
-vi.mock('../supabaseClient', () => {
+vi.mock('../api/supabaseClient', () => {
   const mockMaybeSingle = vi.fn()
   const mockEq = vi.fn(() => ({ maybeSingle: mockMaybeSingle }))
   const mockSelect = vi.fn(() => ({ eq: mockEq }))
@@ -82,7 +82,7 @@ vi.mock('../supabaseClient', () => {
   }
   return {default: defaultExport}
 })
-import supabase from '../supabaseClient' // the mocked module
+import supabase from '../api/supabaseClient' // the mocked module
 
 
 import { render, screen, waitFor } from '@testing-library/react'
