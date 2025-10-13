@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './Login.module.css'
 import showPasswordIcon from '../assets/show_password_icon.svg'
-import supabase from '../supabaseClient'
+import supabase from '../api/supabaseClient'
 
 function SetPassword() {
     const navigate = useNavigate()

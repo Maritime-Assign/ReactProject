@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import supabase from "../../supabaseClient"; // Make sure path is correct
+import supabase from "../../api/supabaseClient"; // Make sure path is correct
 
 const ImageDropdown = ({ userId, currentRole, onRoleChange }) => {
   const [showDropdown, setShowDropdown] = useState(false);

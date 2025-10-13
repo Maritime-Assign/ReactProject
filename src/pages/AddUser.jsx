@@ -10,7 +10,7 @@ import { useFormik } from 'formik'
 import { useNavigate } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
 import * as yup from 'yup'
-import supabase from '../supabaseClient'
+import supabase from '../api/supabaseClient'
 
 // Array for role options in the dropdown
 // changed to match enum type for user roles
@@ -55,7 +55,7 @@ const userValidationSchema = yup.object().shape({
 
 const onSubmit = async (values, actions) => {
     // Clear previous status
-    actions.setStatus({ submitError: null })
+    actions.setStatus({ submitError: null, submitSuccess: null })
 
     try {
         // Check if username already exists in public Users table
@@ -78,9 +78,8 @@ const onSubmit = async (values, actions) => {
         }
 
         // Save the current admin session
-        const {
-            data: { session: adminSession },
-        } = await supabase.auth.getSession()
+        const getSessionRes = await supabase.auth.getSession()
+        const adminSession = getSessionRes?.data?.session || null
 
         // Sign up user in Supabase Auth with metadata
         const { data: authData, error: signUpError } =
@@ -100,6 +99,13 @@ const onSubmit = async (values, actions) => {
         if (signUpError) {
             console.error('Supabase signUp error:', signUpError)
             actions.setStatus({ submitError: signUpError.message })
+             if (adminSession) {
+                try {
+                    await supabase.auth.setSession(adminSession)
+                } catch (e) {
+                    console.warn('Failed to restore admin session after signUp error', e)
+                }
+            }
             return
         }
 
@@ -110,6 +116,7 @@ const onSubmit = async (values, actions) => {
 
         console.log('User Sign Up Success:', authData)
         actions.resetForm()
+        actions.setStatus({ submitSuccess: 'User added successfully' })
     } catch (error) {
         console.error('Unexpected error submitting form:', error)
         actions.setStatus({ submitError: 'Unexpected error occurred' })
@@ -133,6 +140,8 @@ const AddUser = () => {
         submitCount,
         setFieldError,
         touched,
+        status,
+        setStatus,
     } = useFormik({
         initialValues: {
             username: '',
@@ -270,6 +279,21 @@ const AddUser = () => {
                             setFieldError={setFieldError}
                         />
                     </div>
+
+                    {/* submit-level status messages (accessible) */}
+                    <div className="flex justify-center mt-3">
+                        {status?.submitError && (
+                        <div role="alert" data-testid="submit-error" className="text-red-600">
+                            {status.submitError}
+                        </div>
+                        )}
+                        {status?.submitSuccess && (
+                        <div role="status" data-testid="submit-success" className="text-green-600">
+                            {status.submitSuccess}
+                        </div>
+                        )}
+                    </div>
+                    
                     {/* Submit button */}
                     <div className='flex flex-row space-x-4 mt-4 justify-center'>
                         <button
