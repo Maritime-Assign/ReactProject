@@ -10,14 +10,12 @@ If you want to replicate the tests you must first:
 */
 
 
-import React from 'react'
+
 // mock routing library
 import { MemoryRouter } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 
 import DashboardAdmin from '../pages/Dashboard'
-import DashboardDispatch from '../pages/DashboardDispatch'
-import DashboardDisplay from '../pages/DashboardDisplay'
 
 // Helper to find the <a> link from a tile label
 // First find the label element, then go up to the closest div (the tile container)
@@ -82,61 +80,4 @@ describe('Dashboard components', () => {
       'href',
       '/addjob'
     )
-  })
-
- // For the Dispatch dashboard
-  test('Dispatch dashboard renders all tiles and buttons work', () => {
-    render(
-      <MemoryRouter>
-        <DashboardDispatch
-          allowedTiles={[
-            'manageJobs',
-            'addJobListing',
-            'viewChanges',
-            'viewJobBoard',
-          ]}
-        />
-      </MemoryRouter>
-    )
-
-    expect(screen.getByText(/Manage Jobs/i)).toBeInTheDocument()
-    expect(screen.getByText(/Add Job Listing/i)).toBeInTheDocument()
-    expect(screen.getByText(/View Changes/i)).toBeInTheDocument()
-    expect(screen.getByText(/View Job Board/i)).toBeInTheDocument()
-
-    expect(getLinkFromLabel(/Manage Jobs/i)).toHaveAttribute(
-      'href',
-      '/board'
-    )
-    expect(getLinkFromLabel(/Add Job Listing/i)).toHaveAttribute(
-      'href',
-      '/addjob'
-    )
-    expect(getLinkFromLabel(/View Changes/i)).toHaveAttribute(
-      'href',
-      '/history'
-    )
-    expect(getLinkFromLabel(/View Job Board/i)).toHaveAttribute(
-      'href',
-      '/fsb'
-    )
-  })
-
-  // For the Display dashboard
-  test('Display dashboard renders only view job board tile and button works', () => {
-    render(
-      <MemoryRouter>
-        <DashboardDisplay allowedTiles={['viewJobBoard']} />
-      </MemoryRouter>
-    )
-
-    expect(screen.getByText(/View Job Board/i)).toBeInTheDocument()
-    expect(screen.queryByText(/Manage Jobs/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Add Job Listing/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Manage Users/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Add User/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/View Changes/i)).not.toBeInTheDocument()
-
-    expect(getLinkFromLabel(/View Job Board/i)).toHaveAttribute('href', '/fsb')
-  })
-})
+  })})

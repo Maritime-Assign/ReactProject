@@ -18,6 +18,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { UserAuth } from '../context/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 
+
 // contains the core 3 components
 const OptionBar = () => {
     const { user, role, loadingSession, signOut } = UserAuth()
@@ -42,26 +43,31 @@ const OptionBar = () => {
         role === 'admin'
             ? '/dashboard/admin'
             : role === 'dispatch'
-                ? '/dashboard/dispatch'
-                : '/dashboard/display'
+            ? '/dashboard/dispatch'
+            : '/dashboard/display'
 
-    const nav_Items = [
-        {
-            text: 'Home',
-            icon: <HomeIcon className='navBarIcon' />,
-            to: dashboardPath,
-        },
-        {
-            text: 'Job Board',
-            icon: <WorkIcon className='navBarIcon' />,
-            to: '/fsb',
-        },
-    ]
+    // restrict HOME and JOB BOARD nav buttons for Display Tier
+    let navItems = []
+    if (role !== 'display') {
+        navItems = [
+            {
+                text: 'Home',
+                icon: <HomeIcon className='navBarIcon' />,
+                to: dashboardPath,
+            },
+            {
+                text: 'Job Board',
+                icon: <WorkIcon className='navBarIcon' />,
+                to: '/fsb',
+            },
+        ]
+    }
+    
 
     return (
         <nav className='navbar'>
             <Logo />
-            {isLoggedIn && <NavBar items={nav_Items} />}
+            {isLoggedIn && <NavBar items={navItems} />}
             {!isLoginPage && (
                 <SessionManager
                     isLoggedIn={isLoggedIn}
