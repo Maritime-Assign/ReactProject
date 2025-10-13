@@ -18,7 +18,6 @@ import { Link, useLocation } from 'react-router-dom'
 import { UserAuth } from '../context/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 
-
 // contains the core 3 components
 const OptionBar = () => {
     const { user, role, loadingSession, signOut } = UserAuth()
@@ -41,10 +40,10 @@ const OptionBar = () => {
     // Dynamically set dashboard path based on role
     const dashboardPath =
         role === 'admin'
-            ? '/dashboard/admin'
+            ? '/admin/dashboard'
             : role === 'dispatch'
-            ? '/dashboard/dispatch'
-            : '/dashboard/display'
+            ? '/dispatch/dashboard'
+            : '/display/dashboard'
 
     // restrict HOME and JOB BOARD nav buttons for Display Tier
     let navItems = []
@@ -62,7 +61,6 @@ const OptionBar = () => {
             },
         ]
     }
-    
 
     return (
         <nav className='navbar'>
