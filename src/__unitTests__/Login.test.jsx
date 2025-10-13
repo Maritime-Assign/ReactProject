@@ -3,12 +3,11 @@
  *
  * Tests included:
  * 1. Renders username input, password input, and login button.
- * 2. Shows "Username Required" error if username is empty on submit.
+ * 2. Shows "Username Required" error if usernme is empty on submit.
  * 3. Shows "Password Required" error if password is empty on submit.
  * 4. Calls signInUser with correct arguments when valid username and password are provided.
  * 5. Toggles password visibility when the show password icon is clicked.
  *
- * Notes:
  * - Supabase API calls and UserAuth context are mocked.
  * - useNavigate is mocked for routing.
  * - Focuses on component state, validation, and interactions; no real API calls are made.
@@ -27,12 +26,10 @@ vi.mock('../api/supabaseClient', () => ({
         from: vi.fn(() => ({
             select: vi.fn(() => ({
                 eq: vi.fn(() => ({
-                    single: vi
-                        .fn()
-                        .mockResolvedValue({
-                            data: { UUID: 'user-123' },
-                            error: null,
-                        }),
+                    single: vi.fn().mockResolvedValue({
+                        data: { UUID: 'user-123' },
+                        error: null,
+                    }),
                 })),
             })),
         })),
