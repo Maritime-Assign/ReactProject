@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "db:dump": "node supabase/db-dump.js",
-    "test" : "vitest"
+    "test": "vitest"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
