@@ -1,4 +1,4 @@
-import supabase from '../supabaseClient';
+import supabase from '../api/supabaseClient';
 import { useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Link, useNavigate, useLocation } from "react-router-dom";

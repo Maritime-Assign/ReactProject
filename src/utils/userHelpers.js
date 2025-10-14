@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient'
+import supabase from '../api/supabaseClient'
 
 // Function to fetch user role from Supabase
 // Returns the role as a string, or null if not found

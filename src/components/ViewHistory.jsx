@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import supabase from '../api/supabaseClient'
 import { IoArrowBack, IoRefresh, IoFilter, IoDownload, IoChevronDown, IoChevronUp, IoCopy, IoListOutline } from 'react-icons/io5'
 import { BiSort } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
 import { formatJobHistoryRecord, getJobStateComparison } from '../utils/jobHistoryOptimized'
 import HistoryPopout from './HistoryPopout'
 

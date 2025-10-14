@@ -1,7 +1,7 @@
 import React from 'react'
+import supabase from '../api/supabaseClient'
 import { useEffect, useState } from 'react'
 import { UserAuth } from '../context/AuthContext.jsx'
-import { supabase } from '../supabaseClient'
 import { updateJobWithHistory } from '../utils/jobHistory'
 
 const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
@@ -9,6 +9,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
     const [status, setStatus] = useState(props.open)
     const [makingClaim, setClaim] = useState(false)
     const [error, setError] = useState(null)
+    const [userRole, setUserRole] = useState(null)
 
     // make sure the status matches incoming prop
     useEffect(() => {
@@ -26,18 +27,39 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
         }
     }, [error])
 
+    const getUserRole = async () => {
+        const {data, error} = await supabase.from("Users").select().eq('UUID', user.id)
+        if (error) {
+            console.log('Error finding user data.', error)
+            return
+        }
+        else {
+            setUserRole(data.at(0).role)
+            return
+        }
+    }
     // Claim a job function with history logging
     const claimJob = async () => {
         setClaim(true)
         setError(null)
 
+        const {data, error} = await supabase.from("Users").select().eq('UUID', user.id)
+        if (error) {
+            console.log('Error finding user data.', error)
+            return
+        }
         // If claim is made when not logged in
         if (!user) {
             setError('You must be logged in to claim a job.')
             setClaim(false)
             return
         }
-
+        // Check if a user has the right permissions to claim a job
+        else if (userRole == 'display') {
+            setError('Only admin and dispatch users are able to claim a job.')
+            setClaim(false)
+            return
+        }
         try {
             // Prepare the updated job data for claiming
             const claimData = {
@@ -70,22 +92,30 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
         }
     }
 
-    const rowClass = rowIndex % 2 === 0 ? 'bg-gray-200' : 'bg-gray-100'
-    const cellStyle = 'px-1 py-1 items-center justify-center flex'
-
+    const rowClass = rowIndex % 2 === 0 ? 'bg-[#D9E3FF]' : 'bg-gray-100'
+    const cellStyle = 'px-1 py-3 items-center justify-center flex'
+    getUserRole()
     return (
         <div className='grid grid-cols-20 w-full text-sm font-mont font-semibold h-fit'>
+            {/*Disable the button if the user's role is display*/} 
             <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
-                {status ? (
+                {status ?
+                ( userRole == 'display' ? 
+                    <div
+                        className="bg-green-600 text-white px-3 py-1 rounded"
+                    >
+                        Open
+                    </div>
+                    : 
                     <button
                         onClick={claimJob}
                         disabled={makingClaim}
-                        className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-150"
+                        className="bg-green-600 text-white px-3 py-1 rounded hover:outline-2 hover:outline-green-900 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-150"
                     >
-                        {makingClaim ? 'Claiming...' : 'Claim'}
+                        {makingClaim ? 'Opening...' : 'Open'}
                     </button>
                 ) : (
-                    <span className="text-red-700 text-sm text-center">
+                    <span className="text-red-700 text-m text-center">
                         Claimed {props.FillDate ? `on ${props.FillDate}` : ''}
                     </span>
                 )}

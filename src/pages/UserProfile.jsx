@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import React, { useState, useEffect } from 'react'
-import supabase from "../supabaseClient"
+import supabase from "../api/supabaseClient"
 
 //Gets the user's data from the database
 const GetUserData = async () => {
@@ -109,11 +109,13 @@ const UserProfile = () => {
                         </div>
                     </div>
                 </div>
-                <Link to='/editprofile' className='px-4' state={user}>
-                    <button className='px-4 h-12 bg-mebablue-light rounded-md text-white hover:bg-mebablue-hover'>
-                        Edit Profile
-                    </button>
-                </Link>
+                <>
+                    <Link to='/editprofile' className='px-4' state={user}>
+                        <button className='px-4 h-12 bg-mebablue-light rounded-md text-white hover:bg-mebablue-hover'>
+                            Edit Profile
+                        </button>
+                    </Link>
+                </>
             </div>
         );
     }

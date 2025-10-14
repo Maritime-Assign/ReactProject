@@ -53,6 +53,7 @@ function ViewBoard() {
         <div className='w-full pt-4 flex flex-col max-w-[1280px] mx-auto'>
             <div className='flex py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center'>
                 <button
+                    aria-label="back"
                     onClick={() => navigate(-1)} // navigate back one page
                     className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark'
                 >
