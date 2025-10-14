@@ -16,6 +16,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 
 import DashboardAdmin from '../pages/Dashboard'
+import { describe } from 'vitest'
 
 // Helper to find the <a> link from a tile label
 // First find the label element, then go up to the closest div (the tile container)
@@ -31,7 +32,7 @@ const getLinkFromLabel = (labelText) => {
 // and that tiles that should not be present are not in the document
 
 // For the Admin dashboard
-describe('Dashboard components', () => {
+describe('Admin Dash Positive Tests', () => {
   test('Admin dashboard renders all tiles and buttons work', () => {
     render(
       <MemoryRouter>
@@ -80,4 +81,41 @@ describe('Dashboard components', () => {
       'href',
       '/addjob'
     )
-  })})
+  }
+  )
+
+test('Admin Dashboard tiles have valid links', () => {
+  render(
+    <MemoryRouter>
+      <DashboardAdmin allowedTiles={['manageUsers', 'addUser', 'viewChanges', 'viewJobBoard', 'addJobListing', 'manageJobs' ]} />
+    </MemoryRouter>
+  )
+  expect(getLinkFromLabel(/Manage Jobs/i)).toHaveAttribute('href', '/board')
+  expect(getLinkFromLabel(/Add Job Listing/i)).toHaveAttribute('href', '/addjob')
+  expect(getLinkFromLabel(/View Job Board/i)).toHaveAttribute('href', '/fsb')
+  expect(getLinkFromLabel(/View Changes/i)).toHaveAttribute('href', '/history')
+  expect(getLinkFromLabel(/Manage Users/i)).toHaveAttribute('href', '/users-roles')
+  expect(getLinkFromLabel(/Add User/i)).toHaveAttribute('href', '/add-user')
+
+ }
+ )
+
+})
+
+// "Negative Tests": These are to test for unexpected behavior when interacting with the dashboard components
+describe('Admin Dash Negative Tests', () => {
+  test('Admin dashboard with no allowed tiles renders no tiles', () => {
+    render(
+    <MemoryRouter>
+      <DashboardAdmin allowedTiles={[]}/>
+      </MemoryRouter>
+      )
+      expect(screen.queryByText(/Manage Jobs/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/Add Job Listing/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/View Job Board/i)).not.toBeInTheDocument()
+
+      expect(screen.queryByText(/View Changes/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/Manage Users/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/Add User/i)).not.toBeInTheDocument()
+  })
+})
