@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import supabase from '../api/supabaseClient'
-import { IoArrowBack, IoRefresh, IoFilter, IoDownload, IoChevronDown, IoChevronUp, IoCopy } from 'react-icons/io5'
+import { IoArrowBack, IoRefresh, IoFilter, IoDownload, IoChevronDown, IoChevronUp, IoCopy, IoListOutline } from 'react-icons/io5'
 import { BiSort } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
 import { formatJobHistoryRecord, getJobStateComparison } from '../utils/jobHistoryOptimized'
+import HistoryPopout from './HistoryPopout'
 
 const ViewHistory = () => {
     const navigate = useNavigate()
     const [logs, setLogs] = useState([])
+    const [groupedLogs, setGroupedLogs] = useState([])
     const [summary, setSummary] = useState({})
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -22,6 +24,8 @@ const ViewHistory = () => {
     const [showFilters, setShowFilters] = useState(false)
     const [expandedRows, setExpandedRows] = useState(new Set())
     const [copySuccess, setCopySuccess] = useState('')
+    const [selectedJobId, setSelectedJobId] = useState(null)
+    const [viewMode, setViewMode] = useState('grouped') // 'grouped' or 'flat'
 
     const ITEMS_PER_PAGE = 25
 
@@ -30,6 +34,110 @@ const ViewHistory = () => {
         setLoading(true)
         setError(null)
 
+        try {
+            if (viewMode === 'grouped') {
+                // Fetch grouped view - only most recent change per job
+                await fetchGroupedLogs(page, currentFilters)
+            } else {
+                // Fetch flat view - all history records
+                await fetchFlatLogs(page, currentFilters)
+            }
+        } catch (err) {
+            setError('An error occurred while loading data')
+            console.error(err)
+            setLoading(false)
+        }
+    }
+
+    // Fetch grouped logs (most recent change per job_id)
+    const fetchGroupedLogs = async (page = 1, currentFilters = filters) => {
+        try {
+            const offset = (page - 1) * ITEMS_PER_PAGE
+
+            // First, get all job_ids that match the filters
+            let jobIdsQuery = supabase
+                .from('JobsHistory')
+                .select('job_id')
+
+            // Apply filters
+            if (currentFilters.jobId && currentFilters.jobId.trim()) {
+                jobIdsQuery = jobIdsQuery.eq('job_id', currentFilters.jobId.trim())
+            }
+
+            if (currentFilters.dateFrom) {
+                jobIdsQuery = jobIdsQuery.gte('change_time', currentFilters.dateFrom)
+            }
+
+            if (currentFilters.dateTo) {
+                jobIdsQuery = jobIdsQuery.lte('change_time', currentFilters.dateTo + 'T23:59:59')
+            }
+
+            if (currentFilters.userId && currentFilters.userId.trim()) {
+                jobIdsQuery = jobIdsQuery.eq('changed_by_user_id', currentFilters.userId.trim())
+            }
+
+            const { data: allJobIds, error: jobIdsError } = await jobIdsQuery
+
+            if (jobIdsError) {
+                setError(`Failed to load job IDs: ${jobIdsError.message}`)
+                console.error('Job IDs error:', jobIdsError)
+                setLoading(false)
+                return
+            }
+
+            // Get unique job IDs
+            const uniqueJobIds = [...new Set(allJobIds.map(item => item.job_id))]
+            const totalUniqueJobs = uniqueJobIds.length
+
+            // Paginate the unique job IDs
+            const paginatedJobIds = uniqueJobIds.slice(offset, offset + ITEMS_PER_PAGE)
+
+            // Fetch the most recent record for each paginated job_id
+            const groupedData = []
+            for (const jobId of paginatedJobIds) {
+                let query = supabase
+                    .from('JobsHistory')
+                    .select('*')
+                    .eq('job_id', jobId)
+                    .order('change_time', { ascending: false })
+                    .limit(1)
+
+                // Re-apply filters for consistency
+                if (currentFilters.dateFrom) {
+                    query = query.gte('change_time', currentFilters.dateFrom)
+                }
+
+                if (currentFilters.dateTo) {
+                    query = query.lte('change_time', currentFilters.dateTo + 'T23:59:59')
+                }
+
+                if (currentFilters.userId && currentFilters.userId.trim()) {
+                    query = query.eq('changed_by_user_id', currentFilters.userId.trim())
+                }
+
+                const { data, error } = await query
+
+                if (!error && data && data.length > 0) {
+                    groupedData.push(data[0])
+                }
+            }
+
+            // Sort by most recent change_time
+            groupedData.sort((a, b) => new Date(b.change_time) - new Date(a.change_time))
+
+            const formattedLogs = groupedData.map(formatJobHistoryRecord)
+            setGroupedLogs(formattedLogs)
+            setTotalCount(totalUniqueJobs)
+            setLoading(false)
+        } catch (err) {
+            setError('An error occurred while loading grouped data')
+            console.error(err)
+            setLoading(false)
+        }
+    }
+
+    // Fetch flat logs (all history records)
+    const fetchFlatLogs = async (page = 1, currentFilters = filters) => {
         try {
             const offset = (page - 1) * ITEMS_PER_PAGE
             let query = supabase
@@ -62,26 +170,17 @@ const ViewHistory = () => {
             if (fetchError) {
                 setError(`Failed to load job history: ${fetchError.message}`)
                 console.error('Fetch error details:', fetchError)
+                setLoading(false)
                 return
-            }
-
-            console.log('Raw JobsHistory data:', data)
-            console.log('Total count:', count)
-
-            if (!data || data.length === 0) {
-                console.log('No history records found. This could mean:')
-                console.log('1. No jobs have been created yet')
-                console.log('2. Database triggers are not working')
-                console.log('3. RLS policy is blocking access to JobsHistory')
             }
 
             const formattedLogs = data ? data.map(formatJobHistoryRecord) : []
             setLogs(formattedLogs)
             setTotalCount(count || 0)
+            setLoading(false)
         } catch (err) {
-            setError('An error occurred while loading data')
+            setError('An error occurred while loading flat data')
             console.error(err)
-        } finally {
             setLoading(false)
         }
     }
@@ -121,7 +220,7 @@ const ViewHistory = () => {
     useEffect(() => {
         fetchLogs(1)
         fetchSummaryData()
-    }, [])
+    }, [viewMode])
 
     // Handle filter changes
     const handleFilterChange = (key, value) => {
@@ -153,6 +252,22 @@ const ViewHistory = () => {
     const handleRefresh = () => {
         fetchLogs(currentPage)
         fetchSummaryData()
+    }
+
+    // Toggle view mode
+    const toggleViewMode = () => {
+        setViewMode(viewMode === 'grouped' ? 'flat' : 'grouped')
+        setCurrentPage(1)
+    }
+
+    // Open history popout
+    const openHistoryPopout = (jobId, initialData) => {
+        setSelectedJobId(jobId)
+    }
+
+    // Close history popout
+    const closeHistoryPopout = () => {
+        setSelectedJobId(null)
     }
 
     // Toggle expanded row
@@ -248,6 +363,13 @@ ${log.new_state}`
 
                 <div className='absolute right-4 flex gap-2'>
                     <button
+                        onClick={toggleViewMode}
+                        className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
+                        title={viewMode === 'grouped' ? 'Switch to Flat View' : 'Switch to Grouped View'}
+                    >
+                        <IoListOutline className='w-5 h-5' />
+                    </button>
+                    <button
                         onClick={() => setShowFilters(!showFilters)}
                         className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
                         title='Toggle Filters'
@@ -271,10 +393,22 @@ ${log.new_state}`
                 </div>
             </div>
 
+            {/* View Mode Indicator */}
+            <div className='bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4'>
+                <div className='text-sm text-blue-800'>
+                    {viewMode === 'grouped' ?
+                        '📊 Grouped View: Showing most recent change per job. Click a row to view full history.' :
+                        '📋 Flat View: Showing all history records chronologically.'
+                    }
+                </div>
+            </div>
+
             {/* Summary Cards */}
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
                 <div className='bg-white rounded-lg shadow p-4'>
-                    <div className='text-sm text-gray-600'>Total History Records</div>
+                    <div className='text-sm text-gray-600'>
+                        {viewMode === 'grouped' ? 'Unique Jobs with Changes' : 'Total History Records'}
+                    </div>
                     <div className='text-2xl font-bold text-mebablue-dark'>{summary.totalActions || 0}</div>
                 </div>
                 <div className='bg-white rounded-lg shadow p-4'>
@@ -394,19 +528,29 @@ ${log.new_state}`
                                 </tr>
                             </thead>
                             <tbody className='bg-white divide-y divide-gray-200'>
-                                {logs.map((log) => (
+                                {(viewMode === 'grouped' ? groupedLogs : logs).map((log) => (
                                     <React.Fragment key={log.id}>
-                                        <tr className='hover:bg-gray-50'>
+                                        <tr
+                                            className={`hover:bg-gray-50 ${viewMode === 'grouped' ? 'cursor-pointer' : ''}`}
+                                            onClick={() => viewMode === 'grouped' && openHistoryPopout(log.job_id, log)}
+                                        >
                                             <td className='px-2 py-4 text-center'>
-                                                <button
-                                                    onClick={() => toggleRowExpansion(log.id)}
-                                                    className='text-gray-400 hover:text-gray-600'
-                                                >
-                                                    {expandedRows.has(log.id) ? 
-                                                        <IoChevronUp className='w-5 h-5' /> : 
-                                                        <IoChevronDown className='w-5 h-5' />
-                                                    }
-                                                </button>
+                                                {viewMode === 'grouped' ? (
+                                                    <IoChevronDown className='w-5 h-5 text-gray-400' />
+                                                ) : (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            toggleRowExpansion(log.id)
+                                                        }}
+                                                        className='text-gray-400 hover:text-gray-600'
+                                                    >
+                                                        {expandedRows.has(log.id) ?
+                                                            <IoChevronUp className='w-5 h-5' /> :
+                                                            <IoChevronDown className='w-5 h-5' />
+                                                        }
+                                                    </button>
+                                                )}
                                             </td>
                                             <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
                                                 {log.formattedDate}
@@ -426,16 +570,50 @@ ${log.new_state}`
                                             </td>
                                             <td className='px-6 py-4 text-sm text-gray-900'>
                                                 <div className='font-medium'>Job #{log.job_id}</div>
-                                                <div className='text-gray-500'>View details in expanded view</div>
+                                                <div className='text-gray-500'>
+                                                    {viewMode === 'grouped' ? 'Click to view full history' : 'View details in expanded view'}
+                                                </div>
                                             </td>
-                                            <td className='px-6 py-4 text-sm text-gray-500 max-w-xs'>
-                                                <div className='truncate' title={log.changesSummary}>
-                                                    {log.changesSummary}
+                                            <td className='px-6 py-4 text-sm text-gray-500'>
+                                                <div className='max-w-md'>
+                                                    {(() => {
+                                                        const changes = getJobStateComparison(log.previousStateFormatted, log.newStateFormatted)
+                                                        const displayChanges = changes.slice(0, 3)
+                                                        const remainingCount = changes.length - 3
+                                                        
+                                                        return (
+                                                            <div className='space-y-1'>
+                                                                {displayChanges.map((change, idx) => (
+                                                                    <div key={idx} className='flex items-center gap-2 text-xs'>
+                                                                        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                                                            change.changeType === 'added' ? 'bg-green-100 text-green-700' :
+                                                                            change.changeType === 'removed' ? 'bg-red-100 text-red-700' :
+                                                                            'bg-blue-100 text-blue-700'
+                                                                        }`}>
+                                                                            {change.field}
+                                                                        </span>
+                                                                        <span className='text-gray-400'>→</span>
+                                                                        <span className='truncate max-w-[200px]' title={String(change.newValue || 'None')}>
+                                                                            {String(change.newValue || 'None')}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                                {remainingCount > 0 && (
+                                                                    <div className='text-xs text-gray-400 italic'>
+                                                                        +{remainingCount} more change{remainingCount !== 1 ? 's' : ''}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )
+                                                    })()}
                                                 </div>
                                             </td>
                                             <td className='px-6 py-4 whitespace-nowrap text-sm'>
                                                 <button
-                                                    onClick={() => copyToClipboard(getFullContentForCopy(log), log.id)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        copyToClipboard(getFullContentForCopy(log), log.id)
+                                                    }}
                                                     className='text-mebablue-dark hover:text-mebablue-hover'
                                                     title='Copy full details'
                                                 >
@@ -443,14 +621,17 @@ ${log.new_state}`
                                                 </button>
                                             </td>
                                         </tr>
-                                        {expandedRows.has(log.id) && (
+                                        {viewMode === 'flat' && expandedRows.has(log.id) && (
                                             <tr>
                                                 <td colSpan="8" className='px-6 py-4 bg-gray-50'>
                                                     <div className='space-y-4'>
                                                         <div className='flex justify-between items-center'>
-                                                            <h4 className='text-lg font-semibold text-gray-900'>Full Change Details</h4>
+                                                            <h4 className='text-lg font-semibold text-gray-900'>Change Summary</h4>
                                                             <button
-                                                                onClick={() => copyToClipboard(getFullContentForCopy(log), log.id)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation()
+                                                                    copyToClipboard(getFullContentForCopy(log), log.id)
+                                                                }}
                                                                 className='bg-mebablue-dark text-white px-3 py-1 rounded text-sm hover:bg-mebablue-hover flex items-center gap-2'
                                                             >
                                                                 <IoCopy className='w-4 h-4' />
@@ -458,53 +639,93 @@ ${log.new_state}`
                                                             </button>
                                                         </div>
                                                         
-                                                        {/* Field-by-field comparison */}
-                                                        <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
-                                                            <div>
-                                                                <h5 className='font-medium text-gray-900 mb-2'>Field Changes:</h5>
-                                                                <div className='bg-white p-3 rounded border max-h-60 overflow-y-auto'>
-                                                                    {getJobStateComparison(log.previousStateFormatted, log.newStateFormatted).map((change, index) => (
-                                                                        <div key={index} className='mb-2 text-sm'>
-                                                                            <div className='font-medium text-gray-700'>{change.field}:</div>
-                                                                            <div className='ml-2'>
-                                                                                <span className={`px-2 py-1 rounded text-xs ${
-                                                                                    change.changeType === 'added' ? 'bg-green-100 text-green-800' :
-                                                                                    change.changeType === 'removed' ? 'bg-red-100 text-red-800' :
-                                                                                    'bg-blue-100 text-blue-800'
-                                                                                }`}>
-                                                                                    {change.changeType}
-                                                                                </span>
-                                                                                <div className='mt-1'>
-                                                                                    <span className='text-gray-500'>From: </span>
-                                                                                    <span className='font-mono text-sm'>{change.oldValue || 'N/A'}</span>
-                                                                                </div>
-                                                                                <div>
-                                                                                    <span className='text-gray-500'>To: </span>
-                                                                                    <span className='font-mono text-sm'>{change.newValue || 'N/A'}</span>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
+                                                        {/* Spreadsheet-style Field Changes Table */}
+                                                        <div className="mb-4">
+                                                            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                                                <table className="min-w-full divide-y divide-gray-200">
+                                                                    <thead className="bg-gray-100">
+                                                                        <tr>
+                                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Field</th>
+                                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Previous Value</th>
+                                                                            <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase w-24">Change</th>
+                                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">New Value</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody className="bg-white divide-y divide-gray-200">
+                                                                        {getJobStateComparison(log.previousStateFormatted, log.newStateFormatted).map((change, index) => (
+                                                                            <tr key={index} className="hover:bg-gray-50">
+                                                                                <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
+                                                                                    {change.field}
+                                                                                </td>
+                                                                                <td className="px-4 py-3 text-sm text-gray-700">
+                                                                                    {change.oldValue || <span className="text-gray-400 italic">None</span>}
+                                                                                </td>
+                                                                                <td className="px-4 py-3 text-center">
+                                                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                                                        change.changeType === 'added' ? 'bg-green-100 text-green-800' :
+                                                                                        change.changeType === 'removed' ? 'bg-red-100 text-red-800' :
+                                                                                        'bg-blue-100 text-blue-800'
+                                                                                    }`}>
+                                                                                        {change.changeType === 'added' ? '+ Added' :
+                                                                                         change.changeType === 'removed' ? '- Removed' :
+                                                                                         '↻ Modified'}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="px-4 py-3 text-sm text-gray-700">
+                                                                                    {change.newValue || <span className="text-gray-400 italic">None</span>}
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
                                                             </div>
-                                                            
-                                                            <div>
-                                                                <h5 className='font-medium text-gray-900 mb-2'>Raw Data:</h5>
-                                                                <div className='space-y-2'>
-                                                                    {log.previousStateFormatted && (
-                                                                        <div>
-                                                                            <div className='text-sm font-medium text-gray-700'>Previous State:</div>
-                                                                            <pre className='bg-gray-100 p-2 rounded text-xs overflow-x-auto max-h-40 overflow-y-auto whitespace-pre-wrap'>
-                                                                                {JSON.stringify(log.previousStateFormatted, null, 2)}
-                                                                            </pre>
-                                                                        </div>
-                                                                    )}
-                                                                    
+                                                        </div>
+
+                                                        {/* Complete Job Snapshot */}
+                                                        <div className="mt-4">
+                                                            <h5 className="font-medium text-gray-900 mb-2">Complete Job Snapshot</h5>
+                                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                                {log.previousStateFormatted && (
                                                                     <div>
-                                                                        <div className='text-sm font-medium text-gray-700'>New State:</div>
-                                                                        <pre className='bg-gray-100 p-2 rounded text-xs overflow-x-auto max-h-40 overflow-y-auto whitespace-pre-wrap'>
-                                                                            {JSON.stringify(log.newStateFormatted, null, 2)}
-                                                                        </pre>
+                                                                        <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">Before Changes</div>
+                                                                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden max-h-80 overflow-y-auto">
+                                                                            <table className="min-w-full divide-y divide-gray-200">
+                                                                                <tbody className="bg-white divide-y divide-gray-100">
+                                                                                    {Object.entries(log.previousStateFormatted).map(([key, value], idx) => (
+                                                                                        <tr key={idx} className="hover:bg-gray-50">
+                                                                                            <td className="px-3 py-2 text-xs font-medium text-gray-600 w-1/3">
+                                                                                                {key}
+                                                                                            </td>
+                                                                                            <td className="px-3 py-2 text-xs text-gray-900">
+                                                                                                {value !== null && value !== undefined ? String(value) : <span className="text-gray-400 italic">null</span>}
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    ))}
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                                
+                                                                <div>
+                                                                    <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">
+                                                                        {log.previousStateFormatted ? 'After Changes' : 'Job Created'}
+                                                                    </div>
+                                                                    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden max-h-80 overflow-y-auto">
+                                                                        <table className="min-w-full divide-y divide-gray-200">
+                                                                            <tbody className="bg-white divide-y divide-gray-100">
+                                                                                {Object.entries(log.newStateFormatted).map(([key, value], idx) => (
+                                                                                    <tr key={idx} className="hover:bg-gray-50">
+                                                                                        <td className="px-3 py-2 text-xs font-medium text-gray-600 w-1/3">
+                                                                                            {key}
+                                                                                        </td>
+                                                                                        <td className="px-3 py-2 text-xs text-gray-900">
+                                                                                            {value !== null && value !== undefined ? String(value) : <span className="text-gray-400 italic">null</span>}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                ))}
+                                                                            </tbody>
+                                                                        </table>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -564,11 +785,20 @@ ${log.new_state}`
             )}
 
             {/* Empty State */}
-            {!loading && !error && logs.length === 0 && (
+            {!loading && !error && (viewMode === 'grouped' ? groupedLogs : logs).length === 0 && (
                 <div className='text-center py-12'>
                     <div className='text-gray-500 text-lg'>No history found</div>
                     <div className='text-gray-400 text-sm mt-2'>Try adjusting your filters or check back later</div>
                 </div>
+            )}
+
+            {/* History Popout */}
+            {selectedJobId && (
+                <HistoryPopout
+                    jobId={selectedJobId}
+                    onClose={closeHistoryPopout}
+                    initialData={groupedLogs.find(log => log.job_id === selectedJobId)}
+                />
             )}
         </div>
     )
