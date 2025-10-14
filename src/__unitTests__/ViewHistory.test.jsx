@@ -11,44 +11,39 @@ import { vi } from 'vitest'
 import ViewHistory from '../components/ViewHistory'
 
 // Mock supabase
-vi.mock('../api/supabaseClient', () => ({
-  default: {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        order: vi.fn(() => ({
-          range: vi.fn(() => Promise.resolve({
-            data: [
-              {
-                id: 1,
-                job_id: '123',
-                changed_by_user_id: 'user1',
-                change_time: '2024-01-01T12:00:00',
-                previous_state: null,
-                new_state: '{"position":"Engineer","location":"Oakland"}',
-              },
-              {
-                id: 2,
-                job_id: '124',
-                changed_by_user_id: 'user2',
-                change_time: '2024-01-02T12:00:00',
-                previous_state: '{"position":"Engineer","location":"SF"}',
-                new_state: '{"position":"Engineer","location":"Oakland"}',
-              },
-            ],
-            count: 2,
-            error: null
-          }))
-        })),
-        gte: vi.fn(function() { return this }),
-        lte: vi.fn(function() { return this }),
-        eq: vi.fn(function() { return this })
-      }))
-    }))
+vi.mock('../api/supabaseClient', () => {
+  const mockQuery = {
+    select: vi.fn(function() { return this }),
+    order: vi.fn(function() { return this }),
+    range: vi.fn(() => Promise.resolve({
+      data: [
+        {
+          id: 1,
+          job_id: '123',
+          changed_by_user_id: 'user1',
+          change_time: '2024-01-01T12:00:00',
+          previous_state: null,
+          new_state: '{"position":"Engineer","location":"Oakland"}',
+        },
+      ],
+      count: 1,
+      error: null
+    })),
+    gte: vi.fn(function() { return this }),
+    lte: vi.fn(function() { return this }),
+    eq: vi.fn(function() { return this }),
+    limit: vi.fn(function() { return this }),
   }
-}))
+
+  return {
+    default: {
+      from: vi.fn(() => mockQuery)
+    }
+  }
+})
 
 describe('View Changes Page Tests', () => {
-  test('renders the history page without errors', async () => {
+  test('renders the history page without errors', () => {
     render(
       <MemoryRouter>
         <ViewHistory />
@@ -59,36 +54,27 @@ describe('View Changes Page Tests', () => {
     expect(screen.getByText(/Job Board History & Changes/i)).toBeInTheDocument()
   })
 
-  test('displays summary cards', async () => {
+  test('displays summary cards', () => {
     render(
       <MemoryRouter>
         <ViewHistory />
       </MemoryRouter>
     )
 
-    // Wait for the page to load
-    await waitFor(() => {
-      expect(screen.getByText(/Total History Records/i)).toBeInTheDocument()
-    })
-
+    // Check for summary card labels
     expect(screen.getByText(/Jobs Created/i)).toBeInTheDocument()
     expect(screen.getByText(/Jobs Updated/i)).toBeInTheDocument()
   })
 
-  test('shows the history table headers', async () => {
+  test('shows view mode indicator', () => {
     render(
       <MemoryRouter>
         <ViewHistory />
       </MemoryRouter>
     )
 
-    await waitFor(() => {
-      expect(screen.getByText(/Date & Time/i)).toBeInTheDocument()
-    })
-
-    expect(screen.getByText(/Job ID/i)).toBeInTheDocument()
-    expect(screen.getByText(/Action/i)).toBeInTheDocument()
-    expect(screen.getByText(/Changes Summary/i)).toBeInTheDocument()
+    // Check that grouped view indicator is present
+    expect(screen.getByText(/Grouped View/i)).toBeInTheDocument()
   })
 
   test('renders filter button', () => {

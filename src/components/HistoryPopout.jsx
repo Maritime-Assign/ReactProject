@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { IoClose, IoChevronDown, IoChevronUp, IoCopy } from 'react-icons/io5'
-import { supabase } from '../supabaseClient'
+import supabase from '../api/supabaseClient'
 import { formatJobHistoryRecord, getJobStateComparison } from '../utils/jobHistoryOptimized'
 
 const HistoryPopout = ({ jobId, onClose, initialData = null }) => {
