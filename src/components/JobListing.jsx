@@ -97,36 +97,50 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
     useEffect(() => {
         const checkOverflow = () => {
             if (spanRef.current) {
-                setShowButton(
+                const isOverflowing =
                     spanRef.current.scrollWidth > spanRef.current.clientWidth
-                )
+                setShowButton(isOverflowing)
+                console.log('📏 OVERFLOW CHECK:', {
+                    notes: `"${props.notes}"`,
+                    scrollWidth: spanRef.current.scrollWidth,
+                    clientWidth: spanRef.current.clientWidth,
+                    isOverflowing,
+                })
             }
         }
 
+        // Immediate check + micro-delay for DOM stability
         checkOverflow()
         const timeout = setTimeout(checkOverflow, 0)
 
-        return () => clearTimeout(timeout)
+        // Re-check on window resize (handles dynamic layouts)
+        window.addEventListener('resize', checkOverflow)
+        return () => {
+            clearTimeout(timeout)
+            window.removeEventListener('resize', checkOverflow)
+        }
     }, [props.notes])
 
     const rowClass = rowIndex % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'
     const cellStyle = 'px-1 py-3 items-center justify-center flex'
     return (
-        <div className='grid grid-cols-20 w-full text-xs font-mont font-semibold h-fit'>
+        <div className='grid grid-cols-20 w-full text-[0.8125rem] font-mont font-semibold h-fit'>
             {/*Disable the button if the user's role is display*/}
             <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
                 {status ? (
                     role == 'display' ? (
-                        <div className='bg-green-600 text-white px-3 py-1 rounded'>
+                        <div className='inline-flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 text-white px-2 py-1 rounded font-medium text-sm'>
                             Open
                         </div>
                     ) : (
                         <button
                             onClick={claimJob}
                             disabled={makingClaim}
-                            className='bg-green-600 text-white px-3 py-1 rounded hover:outline-2 hover:outline-green-900 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-150'
+                            className='inline-flex items-center justify-center px-2 py-1 rounded bg-gradient-to-r from-green-500 to-green-600
+                                     text-white hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed
+                                       transition-all duration-200 ease-out font-medium text-sm hover:cursor-pointer'
                         >
-                            {makingClaim ? 'Opening...' : 'Open'}
+                            {makingClaim ? 'Filling...' : 'Open'}
                         </button>
                     )
                 ) : (
@@ -187,7 +201,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                     <button
                         type='button'
                         onClick={() => setExpandedNotes(!expandedNotes)}
-                        className='flex justify-between items-start w-full mx-4 p-2 rounded hover:bg-indigo-200 hover:opacity-90 transition-all'
+                        className='flex justify-between items-start w-full mx-4 p-2 rounded hover:bg-indigo-200 hover:opacity-90 hover:cursor-pointer transition-all'
                     >
                         <span
                             className={`flex-1 overflow-hidden transition-all ${
