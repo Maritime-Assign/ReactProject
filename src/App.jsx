@@ -23,7 +23,7 @@ import AddUser from './pages/AddUser'
 import SetPassword from './pages/SetPassword'
 import EditUser from './pages/EditUser'
 import LoadingSpinner from './components/LoadingSpinner'
-import { UserAuth } from './context/AuthContext'
+import { UserAuth } from './auth/AuthContext'
 import usePermission from './components/PermissionsTable'
 import UserProfile from './pages/UserProfile'
 import EditProfile from './pages/EditProfile'
@@ -77,13 +77,12 @@ const App = () => {
 
     // Compute permissions for current path
     var grantedPermission = usePermission(role, location.pathname)
-    
+
     //map to redirect unauthorized access to pages
     const redirectRoutes = {
-        admin: "/admin/dashboard",
-        dispatch: "/dispatch/dashboard",
-        display: "/fsb",
-
+        admin: '/admin/dashboard',
+        dispatch: '/dispatch/dashboard',
+        display: '/fsb',
     }
     // Redirect to FSboard if logged-in user has no permission
     // FIX: wait for the user's role to load before checking permissions and redirecting.
@@ -97,11 +96,18 @@ const App = () => {
             !grantedPermission
         ) {
             // redirect based on user - fall back on login
-            const path = redirectRoutes[userRole] || "/login";
+            const path = redirectRoutes[userRole] || '/login'
             navigate(path, { replace: true })
         }
-    }, [loadingSession, user, userRole, grantedPermission, navigate, redirectRoutes])
-    
+    }, [
+        loadingSession,
+        user,
+        userRole,
+        grantedPermission,
+        navigate,
+        redirectRoutes,
+    ])
+
     useEffect(() => {
         if (!loadingSession && user && userRole) {
             const currentPath = location.pathname
@@ -115,7 +121,14 @@ const App = () => {
                 }
             }
         }
-    }, [loadingSession, user, userRole, location.pathname, navigate, redirectRoutes])
+    }, [
+        loadingSession,
+        user,
+        userRole,
+        location.pathname,
+        navigate,
+        redirectRoutes,
+    ])
 
     console.log({ user, userRole, loadingSession })
     // Block render until session or role fetch is complete

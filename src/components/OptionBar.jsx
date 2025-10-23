@@ -15,7 +15,7 @@ import './OptionBar.css'
 // import link to nav to internal pages
 import { Link, useLocation } from 'react-router-dom'
 // import user auth context to manage login state
-import { UserAuth } from '../context/AuthContext'
+import { UserAuth } from '../auth/AuthContext'
 import LoadingSpinner from './LoadingSpinner'
 
 // contains the core 3 components
