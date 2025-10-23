@@ -28,47 +28,32 @@ const DashboardDispatch = ({ allowedTiles }) => {
 
                 <div className='flex flex-row gap-4 font-mont text-white font-medium text-2xl justify-center items-center'>
                     {allowedTiles.includes('manageJobs') && (
-                        <div className={dashButton}>
-                            <span className='mb-1'>Manage Jobs</span>
-                            <Link to='/board'>
-                                <button className='cursor-pointer'>
-                                    <RiListSettingsLine className='w-[100px] h-[100px]' />
-                                </button>
-                            </Link>
-                        </div>
-                    )}
+                        <Link to="/board" className={dashButton + " inline-flex flex-col items-center"}>
+                            <span className="mb-1">Manage Jobs</span>
+                            <RiListSettingsLine className="w-[100px] h-[100px]" />
+                        </Link>
+                        )}
+
                     {allowedTiles.includes('addJobListing') && (
-                        <div className={dashButton}>
-                            <span className='mb-1'>Add Job Listing</span>
-                            <Link to='/addjob'>
-                                <button className='cursor-pointer'>
-                                    <RiPlayListAddLine className='w-[100px] h-[100px]' />
-                                </button>
-                            </Link>
-                        </div>
-                    )}
+                        <Link to="/addjob" className={dashButton + " inline-flex flex-col items-center"}>
+                            <span className="mb-1">Add Job Listing</span>
+                            <RiPlayListAddLine className="w-[100px] h-[100px]" />
+                        </Link>
+                        )}
                 </div>
 
                 <div className='flex flex-row gap-4 font-mont text-white font-medium text-2xl justify-center items-center'>
                     {allowedTiles.includes('viewChanges') && (
-                        <div className={dashButton}>
-                            <span className='mb-1'>View Changes</span>
-                            <Link to='/history'>
-                                <button className='cursor-pointer'>
-                                    <AiOutlineHistory className='w-[100px] h-[100px]' />
-                                </button>
-                            </Link>
-                        </div>
+                        <Link to='/history' className={dashButton + " inline-flex flex-col items-center"}>
+                                <span className='mb-1'>View Changes</span>
+                                <AiOutlineHistory className='w-[100px] h-[100px]' />
+                        </Link>
                     )}
                     {allowedTiles.includes('viewJobBoard') && (
-                        <div className={dashButton}>
-                            <span className='mb-1'>View Job Board</span>
-                            <Link to='/fsb'>
-                                <button className='cursor-pointer'>
-                                    <RiListView className='w-[100px] h-[100px]' />
-                                </button>
-                            </Link>
-                        </div>
+                        <Link to="/fsb" className={dashButton + " inline-flex flex-col items-center"}>
+                            <span className="mb-1">View Job Board</span>
+                            <RiListView className="w-[100px] h-[100px]" />
+                        </Link>
                     )}
                 </div>
             </div>
