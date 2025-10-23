@@ -354,14 +354,24 @@ ${log.new_state}`
                 >
                     <IoArrowBack className='w-6 h-6' />
                 </button>
-
-                <div className='w-full text-center'>
+                {/*Title text*/}
+                <div className='flex-grow text-center'>
                     <span className='text-white text-2xl font-medium'>
                         Job Board History & Changes
                     </span>
                 </div>
+                {/* Search Bar */}
+                <div className='flex-grow mx-4'>
+                    <input
+                        type='text'
+                        placeholder='Search job id, user, change type, or date…'
+                        className='w-full py-2 px-4 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                    />
+                </div>
 
-                <div className='absolute right-4 flex gap-2'>
+
+                {/* icons */}
+                <div className='flex gap-2 mr-4'>
                     <button
                         onClick={toggleViewMode}
                         className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
