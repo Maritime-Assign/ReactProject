@@ -133,23 +133,23 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
     }, [props.notes])
 
     const rowClass = rowIndex % 2 === 0 ? 'bg-slate-200' : 'bg-slate-100'
-    const cellStyle = 'px-1 py-3 items-center justify-center flex'
+    const cellStyle = 'px-1 py-2 items-center justify-center flex h-full'
     return (
-        <div className='grid grid-cols-20 w-full text-[0.8125rem] font-mont font-semibold h-fit border-slate-300 border-b'>
+        <div className='grid grid-cols-26 w-full text-[8px] md:text-[0.8125rem] font-mont font-semibold border-slate-300 border-b overflow-visible min-h-12 md:min-h-14'>
             {/*Disable the button if the user's role is display*/}
             <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
                 {status ? (
                     role == 'display' ? (
-                        <div className='inline-flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 text-white px-2 py-1 rounded font-medium text-sm'>
+                        <div className='inline-flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 text-white px-2 py-1 rounded font-medium text-xs md:text-sm'>
                             Open
                         </div>
                     ) : (
                         <button
                             onClick={claimJob}
                             disabled={makingClaim}
-                            className='inline-flex items-center justify-center px-2 py-1 rounded bg-gradient-to-r from-green-500 to-green-600
+                            className='inline-flex items-center justify-center px-1 md:px-2 py-1 rounded bg-gradient-to-r from-green-500 to-green-600
                                      text-white hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed
-                                       transition-all duration-200 ease-out font-medium text-sm hover:cursor-pointer'
+                                       transition-all duration-200 ease-out font-medium text-[10px] md:text-sm hover:cursor-pointer'
                         >
                             {makingClaim ? 'Filling...' : 'Open'}
                         </button>
@@ -173,7 +173,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
                 <span>{props.dateCalled}</span>
             </div>
-            <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
+            <div className={`col-span-3 ${cellStyle} ${rowClass}`}>
                 <span>{props.shipName}</span>
             </div>
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
@@ -182,26 +182,25 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
             <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
                 <span>{props.billet}</span>
             </div>
-            <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
+            <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
                 <span>{props.type}</span>
             </div>
             <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
                 <span>{props.days}</span>
             </div>
-            <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
+            <div className={`col-span-3 ${cellStyle} ${rowClass}`}>
                 <span>{props.location}</span>
             </div>
-            <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
+            <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
                 <span>{props.company}</span>
             </div>
-            <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
+            <div className={`col-span-3 ${cellStyle} ${rowClass}`}>
                 <span>{props.crewRelieved}</span>
             </div>
-            <div className={`relative col-span-3 ${cellStyle} ${rowClass}`}>
-                {/* HIDDEN MEASUREMENT SPAN - Always exists for ref */}
+            <div className={`relative col-span-4 ${cellStyle} ${rowClass}`}>
                 <span
                     ref={spanRef}
-                    className='mx-4 whitespace-nowrap text-ellipsis overflow-hidden transition-all'
+                    className='mx-3 p-2 whitespace-nowrap text-ellipsis overflow-hidden transition-all'
                     style={{
                         display: showButton ? 'none' : 'inline',
                         visibility: showButton ? 'hidden' : 'visible',
@@ -210,29 +209,32 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                     {props.notes}
                 </span>
 
-                {/* VISIBLE BUTTON WHEN OVERFLOWS */}
                 {showButton && (
                     <button
                         type='button'
                         onClick={() => setExpandedNotes(!expandedNotes)}
-                        className={`flex justify-between items-start w-full mx-4 p-2 rounded hover:bg-indigo-200 hover:opacity-90 hover:cursor-pointer transition-all ${
+                        className={`flex justify-between items-start w-full mx-3 p-2 rounded hover:bg-indigo-200 hover:cursor-pointer transition-all ${
                             expandedNotes
                                 ? 'absolute z-50 bg-white shadow-lg border border-mebagold'
-                                : ''
+                                : 'relative'
                         }`}
+                        style={{
+                            transition:
+                                'transform 0.2s, background-color 0.2s, box-shadow 0.2s, border 0.2s',
+                        }}
                     >
                         <span
-                            className={`flex-1 overflow-hidden transition-all ${
+                            className={`flex-1 overflow-hidden ${
                                 expandedNotes
                                     ? 'whitespace-normal'
                                     : 'whitespace-nowrap text-ellipsis'
                             }`}
+                            style={{ transition: 'white-space 0.2s' }}
                         >
                             {props.notes}
                         </span>
-
                         <ChevronDown
-                            className={`ml-2 flex-shrink-0 transition-transform duration-200 ${
+                            className={`ml-2 transition-transform duration-200 ${
                                 expandedNotes ? 'rotate-180' : 'rotate-0'
                             }`}
                             size={16}
