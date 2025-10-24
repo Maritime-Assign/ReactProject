@@ -13,6 +13,17 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
     const [showButton, setShowButton] = useState(false)
     const spanRef = useRef(null)
 
+    // format dates coming from supabase
+    const formatDate = (dateString) => {
+        if (!dateString) return ''
+        const date = new Date(dateString)
+        return date.toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric',
+        })
+    }
+
     // make sure the status matches incoming prop
     useEffect(() => {
         setStatus(props.open)
@@ -121,10 +132,10 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
         }
     }, [props.notes])
 
-    const rowClass = rowIndex % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'
+    const rowClass = rowIndex % 2 === 0 ? 'bg-slate-200' : 'bg-slate-100'
     const cellStyle = 'px-1 py-3 items-center justify-center flex'
     return (
-        <div className='grid grid-cols-20 w-full text-[0.8125rem] font-mont font-semibold h-fit'>
+        <div className='grid grid-cols-20 w-full text-[0.8125rem] font-mont font-semibold h-fit border-slate-300 border-b'>
             {/*Disable the button if the user's role is display*/}
             <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
                 {status ? (
@@ -145,7 +156,10 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                     )
                 ) : (
                     <span className='text-red-700 text-m text-center'>
-                        Claimed {props.FillDate ? `on ${props.FillDate}` : ''}
+                        Filled{' '}
+                        {props.FillDate
+                            ? `on ${formatDate(props.FillDate)}`
+                            : ''}
                     </span>
                 )}
             </div>
@@ -183,7 +197,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
                 <span>{props.crewRelieved}</span>
             </div>
-            <div className={`col-span-3 ${cellStyle} ${rowClass}`}>
+            <div className={`relative col-span-3 ${cellStyle} ${rowClass}`}>
                 {/* HIDDEN MEASUREMENT SPAN - Always exists for ref */}
                 <span
                     ref={spanRef}
@@ -201,7 +215,11 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                     <button
                         type='button'
                         onClick={() => setExpandedNotes(!expandedNotes)}
-                        className='flex justify-between items-start w-full mx-4 p-2 rounded hover:bg-indigo-200 hover:opacity-90 hover:cursor-pointer transition-all'
+                        className={`flex justify-between items-start w-full mx-4 p-2 rounded hover:bg-indigo-200 hover:opacity-90 hover:cursor-pointer transition-all ${
+                            expandedNotes
+                                ? 'absolute z-50 bg-white shadow-lg border border-mebagold'
+                                : ''
+                        }`}
                     >
                         <span
                             className={`flex-1 overflow-hidden transition-all ${
