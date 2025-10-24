@@ -2,8 +2,8 @@ const FSBheader = () => {
     const cellStyle = 'py-1 font-mont'
 
     return (
-        <div className='grid grid-cols-26 w-full text-center font-bold text-mebablue-dark text-[8px] md:text-sm border-b border-mebagold'>
-            <div className={`col-span-1 ${cellStyle}`}>
+        <div className='grid grid-cols-27 w-full text-center font-bold text-mebablue-dark text-[8px] md:text-sm border-b border-mebagold'>
+            <div className={`col-span-2 ${cellStyle}`}>
                 <span>Status</span>
             </div>
             <div className={`col-span-1 ${cellStyle}`}>

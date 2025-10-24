@@ -135,9 +135,9 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
     const rowClass = rowIndex % 2 === 0 ? 'bg-slate-200' : 'bg-slate-100'
     const cellStyle = 'px-1 py-2 items-center justify-center flex h-full'
     return (
-        <div className='grid grid-cols-26 w-full text-[8px] md:text-[0.8125rem] font-mont font-semibold border-slate-300 border-b overflow-visible min-h-12 md:min-h-14'>
+        <div className='grid grid-cols-27 w-full text-[8px] md:text-[0.8125rem] font-mont font-semibold border-slate-300 border-b overflow-visible min-h-12 md:min-h-14'>
             {/*Disable the button if the user's role is display*/}
-            <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
+            <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
                 {status ? (
                     role == 'display' ? (
                         <div className='inline-flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 text-white px-2 py-1 rounded font-medium text-xs md:text-sm'>
@@ -147,7 +147,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                         <button
                             onClick={claimJob}
                             disabled={makingClaim}
-                            className='inline-flex items-center justify-center px-1 md:px-2 py-1 rounded bg-gradient-to-r from-green-500 to-green-600
+                            className='inline-flex items-center justify-center px-1 md:px-4 py-2 rounded bg-gradient-to-r from-green-500 to-green-600
                                      text-white hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed
                                        transition-all duration-200 ease-out font-medium text-[10px] md:text-sm hover:cursor-pointer'
                         >
@@ -155,11 +155,9 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                         </button>
                     )
                 ) : (
-                    <span className='text-red-700 text-m text-center'>
-                        Filled{' '}
-                        {props.FillDate
-                            ? `on ${formatDate(props.FillDate)}`
-                            : ''}
+                    <span className='text-red-700 text-center'>
+                        Filled <br />
+                        {props.FillDate ? `${formatDate(props.FillDate)}` : ''}
                     </span>
                 )}
             </div>
