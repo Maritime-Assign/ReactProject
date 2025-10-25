@@ -5,7 +5,9 @@ import { BiSort } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
 import { formatJobHistoryRecord, getJobStateComparison } from '../utils/jobHistoryOptimized'
 import HistoryPopout from './HistoryPopout'
-import { clear } from '@testing-library/user-event/dist/cjs/utility/clear.js'
+//import { clear } from '@testing-library/user-event/dist/cjs/utility/clear.js'
+// clear icon for search bar
+import { IoClose } from 'react-icons/io5'
 
 const ViewHistory = () => {
     const ITEMS_PER_PAGE = 25
@@ -506,17 +508,28 @@ ${log.new_state}`
                     </span>
                 </div>
                 {/* Search Bar */}
-                <div className='flex-grow mx-4'>
+                <div className='flex-grow mx-4 relative overflow-visible'>
                     <input
                         type='text'
                         placeholder='Search (user:name, job:21, date:2025, date:2025-10-15)'
-                        className='w-full py-2 px-4 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                        value = {searchQuery}
+                        className='w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                        value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') handleSearch()
                         }}
                     />
+                    {searchQuery && (
+                        <button
+                            onClick={() => {
+                                setSearchQuery('')
+                                clearFilters()
+                            }}
+                            className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1'
+                        >
+                            <IoClose className='w-5 h-5' />
+                        </button>
+                    )}
                 </div>
 
 
@@ -529,13 +542,16 @@ ${log.new_state}`
                     >
                         <IoListOutline className='w-5 h-5' />
                     </button>
-                    <button
+                    
+                    {/*<button
                         onClick={() => setShowFilters(!showFilters)}
                         className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
                         title='Toggle Filters'
                     >
+                    
                         <IoFilter className='w-5 h-5' />
                     </button>
+                    */}
                     <button
                         onClick={handleRefresh}
                         className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
@@ -582,7 +598,7 @@ ${log.new_state}`
             </div>
 
             {/* Filters */}
-            {showFilters && (
+            {/*{showFilters && (
                 <div className='bg-white rounded-lg shadow p-4 mb-4'>
                     <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
                         <div>
@@ -630,6 +646,7 @@ ${log.new_state}`
                     </div>
                 </div>
             )}
+                */}
 
             {/* Loading State */}
             {loading && (
