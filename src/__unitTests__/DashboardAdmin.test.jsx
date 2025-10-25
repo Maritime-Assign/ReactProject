@@ -23,8 +23,7 @@ import { describe } from 'vitest'
 // then find the <a> link inside that div
 const getLinkFromLabel = (labelText) => {
   const labelEl = screen.getByText(labelText)
-  const tileDiv = labelEl.closest('div')
-  return tileDiv?.querySelector('a')
+  return labelEl ? labelEl.closest('a') : null
 }
 // Tests for the Dashboard components
 // Each test renders a different dashboard with a set of allowed tiles
