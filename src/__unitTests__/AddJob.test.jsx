@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../auth/AuthContext', () => ({
     UserAuth: () => ({ user: { id: '1', email: 'test@example.com' } }),
 }))
 
