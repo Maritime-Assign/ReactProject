@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import supabase from '../api/supabaseClient'
 import { IoArrowBack, IoRefresh, IoFilter, IoDownload, IoChevronDown, IoChevronUp, IoCopy, IoListOutline } from 'react-icons/io5'
 import { BiSort } from 'react-icons/bi'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { formatJobHistoryRecord, getJobStateComparison } from '../utils/jobHistoryOptimized'
 import HistoryPopout from './HistoryPopout'
 //import { clear } from '@testing-library/user-event/dist/cjs/utility/clear.js'
@@ -11,6 +11,9 @@ import { IoClose } from 'react-icons/io5'
 
 const ViewHistory = () => {
     const ITEMS_PER_PAGE = 25
+
+    //used for URL updates based on search params
+    const location = useLocation()
 
     const navigate = useNavigate()
     const [logs, setLogs] = useState([])
@@ -59,6 +62,21 @@ const ViewHistory = () => {
             clearFilters()
         }
     }, [debouncedQuery])
+
+    // useEffect for search/pagination
+    useEffect(() => {
+        const params = new URLSearchParams(location.search)
+        const query = params.get('q') || ''
+        const page = parseInt(params.get('page'), 10) || 1
+
+        if (query) {
+            // Populate search, set page and trigger debounce effect
+            setSearchQuery(query)
+            setCurrentPage(page)
+            setDebouncedQuery(query)
+        }
+    }, [location.search])
+
 
 
 
@@ -194,6 +212,13 @@ const ViewHistory = () => {
 
         setFilters(newFilters)
         setCurrentPage(1)
+
+        // Update the URL without causing a reload
+        navigate({
+            pathname: '/history',
+            search: `?q=${encodeURIComponent(trimmedQuery)}&page=1`
+        }, { replace: true })
+
 
         // Fetch logs ONLY if filters are valid
         if (newFilters.jobId || newFilters.userId || (newFilters.dateFrom && newFilters.dateTo)) {
@@ -432,13 +457,21 @@ const ViewHistory = () => {
         setFilters(clearedFilters)
         setCurrentPage(1)
         await fetchLogs(1, clearedFilters)
-        await fetchSummaryData(clearFilters)
+        await fetchSummaryData(clearedFilters)
     }
 
     // Handle pagination
     const handlePageChange =  async (newPage) => {
         setCurrentPage(newPage)
         await fetchLogs(newPage)
+
+        // Update URL with search and page num without causing a reload on page
+        const params = new URLSearchParams(location.search)
+        params.set('page',newPage)
+        navigate({
+            pathname: '/history',
+            search: params.toString()
+        }, {replace: true})
     }
 
     // Refresh data
@@ -561,11 +594,13 @@ ${log.new_state}`
                         className='w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        //onKeyDown={(e) => {
-                            // Prevent double api calls if debounce and enter occur at the same time. 
-                            //clearTimeout(debounceTimerRef.current)
-                            //if (e.key === 'Enter') handleSearch()
-                        //}}
+                        onKeyDown={(e) => {
+                            if(e.key === 'Enter') {
+                                // Enter triggers the same behavior as letting debounce elapse
+                                e.preventDefault()
+                                setDebouncedQuery(searchQuery)
+                            }
+                        }}
                     />
                     {/* Loading spinner */}
                     {loading && (
