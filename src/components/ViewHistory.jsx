@@ -5,8 +5,11 @@ import { BiSort } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
 import { formatJobHistoryRecord, getJobStateComparison } from '../utils/jobHistoryOptimized'
 import HistoryPopout from './HistoryPopout'
+import { clear } from '@testing-library/user-event/dist/cjs/utility/clear.js'
 
 const ViewHistory = () => {
+    const ITEMS_PER_PAGE = 25
+
     const navigate = useNavigate()
     const [logs, setLogs] = useState([])
     const [groupedLogs, setGroupedLogs] = useState([])
@@ -27,7 +30,149 @@ const ViewHistory = () => {
     const [selectedJobId, setSelectedJobId] = useState(null)
     const [viewMode, setViewMode] = useState('grouped') // 'grouped' or 'flat'
 
-    const ITEMS_PER_PAGE = 25
+    // Define searchQuery State
+    const [searchQuery, setSearchQuery] = useState('')
+
+    // Build helper function to detect if its a jobid/username/date/etc
+    const detectSearchType = (query) => {
+        if (!query) return null
+
+        const trimmed = query.trim()
+
+        // Check if jobId
+        if (trimmed.startsWith('job:')) {
+            const jobIdValue = trimmed.slice(4).trim()
+            if (/^\d+$/.test(jobIdValue)) {
+                return { type: 'jobid', value: jobIdValue }
+            }
+        }
+
+        // Check if date
+        if (trimmed.startsWith('date:')) {
+            let dateValue = trimmed.slice(5).trim()
+
+            // YYYY
+            if (/^\d{4}$/.test(dateValue)) return { type: 'date', value: { type: 'year', value: dateValue } }
+
+            // YYYY-MM or YYYY-M
+            if (/^\d{4}-\d{1,2}$/.test(dateValue)) {
+                let [year, month] = dateValue.split('-')
+                month = month.padStart(2, '0')
+                return { type: 'date', value: { type: 'month', year, month } }
+            }
+
+            // YYYY-MM-DD or YYYY-M-D
+            if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateValue)) {
+                let [year, month, day] = dateValue.split('-')
+                month = month.padStart(2, '0')
+                day = day.padStart(2, '0')
+                return { type: 'date', value: { type: 'day', year, month, day } }
+            }
+        }
+
+
+        // Check if username
+        if (trimmed.startsWith('user:')) {
+            const usernameValue = trimmed.slice(5).trim()
+            return { type: 'username', value: usernameValue }
+        }
+
+        // Return null if its none of the types above
+        return null
+    }
+
+
+
+    // Build function to handle the search and refetch logs
+    const handleSearch = async () => {
+        const trimmedQuery = searchQuery.trim()
+
+        // If the search bar is empty, show everything
+        if (!trimmedQuery) {
+            setFilters({ jobId: '', dateFrom: '', dateTo: '', userId: '' })
+            setCurrentPage(1)
+            fetchLogs(1, { jobId: '', dateFrom: '', dateTo: '', userId: '' })
+            fetchSummaryData()
+            return
+        }
+
+        const result = detectSearchType(trimmedQuery)
+
+        // If invalid search input, do not show anything
+        if (!result) {
+            setLogs([])
+            setGroupedLogs([])
+            setTotalCount(0)
+            setFilters({ jobId: '', dateFrom: '', dateTo: '', userId: '' })
+            setLoading(false)
+            return
+        }
+
+        const newFilters = { jobId: '', dateFrom: '', dateTo: '', userId: '' }
+        // handle the filter types
+        switch (result.type) {
+            // handle jobid
+            case 'jobid':
+                newFilters.jobId = result.value
+                break
+            // handle username
+            case 'username':
+                const { data: userData, error: userError } = await supabase
+                    .from('Users')
+                    .select('UUID')
+                    .ilike('username', `%${result.value}%`)
+                // handle empty data or error
+                if (userError || !userData || userData.length === 0) {
+                    setLogs([])
+                    setGroupedLogs([])
+                    setTotalCount(0)
+                    setLoading(false)
+                    return
+                }
+                newFilters.userId = userData[0].UUID
+                break
+            // handle date
+            case 'date':
+                const dateObj = result.value
+                // YYYY
+                if (dateObj.type === 'year') {
+                    newFilters.dateFrom = `${dateObj.value}-01-01`
+                    newFilters.dateTo = `${dateObj.value}-12-31`
+                }
+                // YYYY-MM
+                if (dateObj.type === 'month') {
+                    const lastDay = new Date(Number(dateObj.year), Number(dateObj.month), 0).getDate()
+                    newFilters.dateFrom = `${dateObj.year}-${dateObj.month}-01`
+                    newFilters.dateTo = `${dateObj.year}-${dateObj.month}-${lastDay}`
+                }
+                // YYYY-MM-DD
+                if (dateObj.type === 'day') {
+                    newFilters.dateFrom = `${dateObj.year}-${dateObj.month}-${dateObj.day}`
+                    newFilters.dateTo   = `${dateObj.year}-${dateObj.month}-${dateObj.day}`
+                }
+                break
+        }
+
+        setFilters(newFilters)
+        setCurrentPage(1)
+
+        // Fetch logs ONLY if filters are valid
+        if (
+            (newFilters.jobId && newFilters.jobId.trim()) ||
+            (newFilters.userId && newFilters.userId.trim()) ||
+            (newFilters.dateFrom && newFilters.dateTo)
+        ) {
+            fetchLogs(1, newFilters)
+            fetchSummaryData()
+        } 
+        else {
+            setLogs([])
+            setGroupedLogs([])
+            setTotalCount(0)
+            setLoading(false)
+        }
+    }
+
 
     // Fetch job history logs
     const fetchLogs = async (page = 1, currentFilters = filters) => {
@@ -364,8 +509,13 @@ ${log.new_state}`
                 <div className='flex-grow mx-4'>
                     <input
                         type='text'
-                        placeholder='Search job id, user, change type, or date…'
+                        placeholder='Search (user:name, job:21, date:2025, date:2025-10-15)'
                         className='w-full py-2 px-4 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                        value = {searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSearch()
+                        }}
                     />
                 </div>
 
