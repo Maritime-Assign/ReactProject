@@ -11,7 +11,7 @@ import { useFormik } from 'formik'
 import jobValidationSchema from '../data/jobValidationSchema'
 import { useNavigate } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
-import { UserAuth } from '../context/AuthContext'
+import { UserAuth } from '../auth/AuthContext'
 import { addJob } from '../utils/jobHistoryOptimized'
 
 // Arrays for options for the various dropdowns
