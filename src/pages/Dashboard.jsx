@@ -30,68 +30,47 @@ const Dashboard = ({ allowedTiles }) => {
 
                 <div className='flex flex-row gap-4 font-mont text-white font-medium text-2xl justify-center items-center'>
                     {allowedTiles.includes('manageJobs') && (
-                        <div className={dashButton}>
-                            <span className='mb-1'>Manage Jobs</span>
-                            <Link to='/board'>
-                                <button className='cursor-pointer'>
-                                    <RiListSettingsLine className='w-[100px] h-[100px]' />
-                                </button>
-                            </Link>
-                        </div>
-                    )}
+                        <Link to="/board" className={dashButton + " inline-flex flex-col items-center"}>
+                            <span className="mb-1">Manage Jobs</span>
+                            <RiListSettingsLine className="w-[100px] h-[100px]" />
+                        </Link>
+                        )}
+
                     {allowedTiles.includes('addJobListing') && (
-                        <div className={dashButton}>
-                            <span className='mb-1'>Add Job Listing</span>
-                            <Link to='/addjob'>
-                                <button className='cursor-pointer'>
-                                    <RiPlayListAddLine className='w-[100px] h-[100px]' />
-                                </button>
-                            </Link>
-                        </div>
-                    )}
+                        <Link to="/addjob" className={dashButton + " inline-flex flex-col items-center"}>
+                            <span className="mb-1">Add Job Listing</span>
+                            <RiPlayListAddLine className="w-[100px] h-[100px]" />
+                        </Link>
+                        )}
+
                     {allowedTiles.includes('viewJobBoard') && (
-                        <div className={dashButton}>
-                            <span className='mb-1'>View Job Board</span>
-                            <Link to='/fsb'>
-                                <button className='cursor-pointer'>
-                                    <RiListView className='w-[100px] h-[100px]' />
-                                </button>
-                            </Link>
-                        </div>
-                    )}
+                        <Link to="/fsb" className={dashButton + " inline-flex flex-col items-center"}>
+                            <span className="mb-1">View Job Board</span>
+                            <RiListView className="w-[100px] h-[100px]" />
+                        </Link>
+                        )}
+
                 </div>
 
                 <div className='flex flex-row gap-4 font-mont text-white font-medium text-2xl justify-center items-center'>
                     {allowedTiles.includes('viewChanges') && (
-                        <div className={dashButton}>
-                            <span className='mb-1'>View Changes</span>
-                            <Link to='/history'>
-                                <button className='cursor-pointer'>
-                                    <AiOutlineHistory className='w-[100px] h-[100px]' />
-                                </button>
-                            </Link>
-                        </div>
+                        <Link to='/history' className={dashButton + " inline-flex flex-col items-center"}>
+                                <span className='mb-1'>View Changes</span>
+                                <AiOutlineHistory className='w-[100px] h-[100px]' />
+                        </Link>
                     )}
                     {allowedTiles.includes('manageUsers') && (
-                        <div className={dashButton}>
+                        <Link to="/users-roles" className={dashButton + " inline-flex flex-col items-center"}>
                             <span className='mb-1'>Manage Users</span>
-                            <Link to='/users-roles'>
-                                <button className='cursor-pointer'>
-                                    <LiaUsersCogSolid className='w-[100px] h-[100px]' />
-                                </button>
-                            </Link>
-                        </div>
+                            <LiaUsersCogSolid className='w-[100px] h-[100px]' />
+                        </Link>
                     )}
                     {allowedTiles.includes('addUser') && (
-                        <div className={dashButton}>
-                            <span className='mb-1'>Add User</span>
-                            <Link to='/add-user'>
-                                <button className='cursor-pointer'>
-                                    <LiaUserPlusSolid className='w-[100px] h-[100px]' />
-                                </button>
-                            </Link>
-                        </div>
-                    )}
+                        <Link to="/add-user" className={dashButton + " inline-flex flex-col items-center"}>
+                            <span className="mb-1">Add User</span>
+                            <LiaUserPlusSolid className="w-[100px] h-[100px]" />
+                        </Link>
+                        )}
                 </div>
             </div>
         </div>
