@@ -2,10 +2,10 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import OptionBar from '../components/OptionBar'
-import { UserAuth } from '../context/AuthContext'
+import { UserAuth } from '../auth/AuthContext'
 
 // Mock the UserAuth context
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../auth/AuthContext', () => ({
   UserAuth: vi.fn(),
 }))
 
