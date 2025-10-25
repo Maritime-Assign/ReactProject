@@ -34,6 +34,33 @@ const ViewHistory = () => {
 
     // Define searchQuery State
     const [searchQuery, setSearchQuery] = useState('')
+    // Define state for debounce
+    const [debouncedQuery, setDebouncedQuery] = useState(searchQuery)
+
+    // Used to prevent stale requests and manage search state
+    // token request method
+    const latestFetchID = React.useRef(0)
+
+    // Define debounce timer - 350 seems good
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedQuery(searchQuery)
+        }, 350)
+
+        // clear prior timeout
+        return () => clearTimeout(handler)
+
+    }, [searchQuery])
+    // Debounce when query changes
+    useEffect(() => {
+        if (debouncedQuery.trim() !== '') {
+            handleSearch(debouncedQuery)
+        } else {
+            clearFilters()
+        }
+    }, [debouncedQuery])
+
+
 
     // Build helper function to detect if its a jobid/username/date/etc
     const detectSearchType = (query) => {
@@ -44,14 +71,17 @@ const ViewHistory = () => {
         // Check if jobId
         if (trimmed.startsWith('job:')) {
             const jobIdValue = trimmed.slice(4).trim()
+            if(!jobIdValue) return null
             if (/^\d+$/.test(jobIdValue)) {
                 return { type: 'jobid', value: jobIdValue }
             }
+            return null
         }
 
         // Check if date
         if (trimmed.startsWith('date:')) {
             let dateValue = trimmed.slice(5).trim()
+            if (!dateValue) return null
 
             // YYYY
             if (/^\d{4}$/.test(dateValue)) return { type: 'date', value: { type: 'year', value: dateValue } }
@@ -70,12 +100,14 @@ const ViewHistory = () => {
                 day = day.padStart(2, '0')
                 return { type: 'date', value: { type: 'day', year, month, day } }
             }
+            return null
         }
 
 
         // Check if username
         if (trimmed.startsWith('user:')) {
             const usernameValue = trimmed.slice(5).trim()
+            if(!usernameValue) return null
             return { type: 'username', value: usernameValue }
         }
 
@@ -86,15 +118,16 @@ const ViewHistory = () => {
 
 
     // Build function to handle the search and refetch logs
-    const handleSearch = async () => {
-        const trimmedQuery = searchQuery.trim()
+    const handleSearch = async (query) => {
+        const trimmedQuery = query.trim()
 
         // If the search bar is empty, show everything
         if (!trimmedQuery) {
-            setFilters({ jobId: '', dateFrom: '', dateTo: '', userId: '' })
-            setCurrentPage(1)
-            fetchLogs(1, { jobId: '', dateFrom: '', dateTo: '', userId: '' })
-            fetchSummaryData()
+            clearFilters()
+            //setFilters({ jobId: '', dateFrom: '', dateTo: '', userId: '' })
+            //setCurrentPage(1)
+            //fetchLogs(1, { jobId: '', dateFrom: '', dateTo: '', userId: '' })
+            //fetchSummaryData()
             return
         }
 
@@ -102,11 +135,12 @@ const ViewHistory = () => {
 
         // If invalid search input, do not show anything
         if (!result) {
-            setLogs([])
-            setGroupedLogs([])
-            setTotalCount(0)
-            setFilters({ jobId: '', dateFrom: '', dateTo: '', userId: '' })
-            setLoading(false)
+            clearFilters()
+            //setLogs([])
+            //setGroupedLogs([])
+            //setTotalCount(0)
+            //setFilters({ jobId: '', dateFrom: '', dateTo: '', userId: '' })
+            //setLoading(false)
             return
         }
 
@@ -122,16 +156,19 @@ const ViewHistory = () => {
                 const { data: userData, error: userError } = await supabase
                     .from('Users')
                     .select('UUID')
-                    .ilike('username', `%${result.value}%`)
+                    .ilike('username', `${result.value}%`)
                 // handle empty data or error
                 if (userError || !userData || userData.length === 0) {
-                    setLogs([])
-                    setGroupedLogs([])
-                    setTotalCount(0)
-                    setLoading(false)
+                    clearFilters()
+                    //setLogs([])
+                    //setGroupedLogs([])
+                    //setTotalCount(0)
+                    //setLoading(false)
                     return
                 }
-                newFilters.userId = userData[0].UUID
+                // Turn objects into ID list and store it
+                const userIds = userData.map(u => u.UUID)
+                newFilters.userId = userIds
                 break
             // handle date
             case 'date':
@@ -159,19 +196,12 @@ const ViewHistory = () => {
         setCurrentPage(1)
 
         // Fetch logs ONLY if filters are valid
-        if (
-            (newFilters.jobId && newFilters.jobId.trim()) ||
-            (newFilters.userId && newFilters.userId.trim()) ||
-            (newFilters.dateFrom && newFilters.dateTo)
-        ) {
-            fetchLogs(1, newFilters)
-            fetchSummaryData()
+        if (newFilters.jobId || newFilters.userId || (newFilters.dateFrom && newFilters.dateTo)) {
+            await fetchLogs(1, newFilters)
+            await fetchSummaryData(newFilters)
         } 
         else {
-            setLogs([])
-            setGroupedLogs([])
-            setTotalCount(0)
-            setLoading(false)
+            clearFilters()
         }
     }
 
@@ -181,13 +211,24 @@ const ViewHistory = () => {
         setLoading(true)
         setError(null)
 
+        // capture fetchid and increment
+        const fetchId = ++latestFetchID.current
+
         try {
+            let logsData
             if (viewMode === 'grouped') {
                 // Fetch grouped view - only most recent change per job
-                await fetchGroupedLogs(page, currentFilters)
+                logsData = await fetchGroupedLogs(page, currentFilters)
             } else {
                 // Fetch flat view - all history records
-                await fetchFlatLogs(page, currentFilters)
+                logsData = await fetchFlatLogs(page, currentFilters)
+            }
+            // only update state if the fetch is the current one
+            if(fetchId === latestFetchID.current) {
+                if (viewMode === 'grouped') setGroupedLogs(logsData.logs)
+                else setLogs(logsData.logs)
+                setTotalCount(logsData.totalCount || 0)
+                setLoading(false)
             }
         } catch (err) {
             setError('An error occurred while loading data')
@@ -219,8 +260,8 @@ const ViewHistory = () => {
                 jobIdsQuery = jobIdsQuery.lte('change_time', currentFilters.dateTo + 'T23:59:59')
             }
 
-            if (currentFilters.userId && currentFilters.userId.trim()) {
-                jobIdsQuery = jobIdsQuery.eq('changed_by_user_id', currentFilters.userId.trim())
+            if (currentFilters.userId && currentFilters.userId.length > 0) {
+                jobIdsQuery = jobIdsQuery.in('changed_by_user_id', currentFilters.userId)
             }
 
             const { data: allJobIds, error: jobIdsError } = await jobIdsQuery
@@ -258,8 +299,8 @@ const ViewHistory = () => {
                     query = query.lte('change_time', currentFilters.dateTo + 'T23:59:59')
                 }
 
-                if (currentFilters.userId && currentFilters.userId.trim()) {
-                    query = query.eq('changed_by_user_id', currentFilters.userId.trim())
+                if (currentFilters.userId && currentFilters.userId.length > 0) {
+                    query = query.in('changed_by_user_id', currentFilters.userId)
                 }
 
                 const { data, error } = await query
@@ -273,9 +314,10 @@ const ViewHistory = () => {
             groupedData.sort((a, b) => new Date(b.change_time) - new Date(a.change_time))
 
             const formattedLogs = groupedData.map(formatJobHistoryRecord)
-            setGroupedLogs(formattedLogs)
-            setTotalCount(totalUniqueJobs)
-            setLoading(false)
+            //setGroupedLogs(formattedLogs)
+            //setTotalCount(totalUniqueJobs)
+            //setLoading(false)
+            return {logs: formattedLogs, totalCount: totalUniqueJobs}
         } catch (err) {
             setError('An error occurred while loading grouped data')
             console.error(err)
@@ -305,8 +347,8 @@ const ViewHistory = () => {
                 query = query.lte('change_time', currentFilters.dateTo + 'T23:59:59')
             }
 
-            if (currentFilters.userId && currentFilters.userId.trim()) {
-                query = query.eq('changed_by_user_id', currentFilters.userId.trim())
+            if (currentFilters.userId && currentFilters.userId.length > 0) {
+                query = query.in('changed_by_user_id', currentFilters.userId)
             }
 
             // Apply pagination
@@ -322,9 +364,10 @@ const ViewHistory = () => {
             }
 
             const formattedLogs = data ? data.map(formatJobHistoryRecord) : []
-            setLogs(formattedLogs)
-            setTotalCount(count || 0)
-            setLoading(false)
+            //setLogs(formattedLogs)
+            //setTotalCount(count || 0)
+            //setLoading(false)
+            return { logs: formattedLogs, totalCount: count || 0}
         } catch (err) {
             setError('An error occurred while loading flat data')
             console.error(err)
@@ -333,18 +376,21 @@ const ViewHistory = () => {
     }
 
     // Fetch summary data
-    const fetchSummaryData = async () => {
+    const fetchSummaryData = async (currentFilters = filters) => {
         try {
             let query = supabase
                 .from('JobsHistory')
                 .select('*')
 
-            if (filters.dateFrom) {
-                query = query.gte('change_time', filters.dateFrom)
+            if (currentFilters.dateFrom) {
+                query = query.gte('change_time', currentFilters.dateFrom)
             }
 
-            if (filters.dateTo) {
-                query = query.lte('change_time', filters.dateTo + 'T23:59:59')
+            if (currentFilters.dateTo) {
+                query = query.lte('change_time', currentFilters.dateTo + 'T23:59:59')
+            }
+            if (currentFilters.userId && currentFilters.userId.length > 0) {
+                query = query.in('changed_by_user_id', currentFilters.userId)
             }
 
             const { data, error: summaryError } = await query
@@ -381,24 +427,24 @@ const ViewHistory = () => {
         fetchSummaryData()
     }
 
-    const clearFilters = () => {
+    const clearFilters = async () => {
         const clearedFilters = { jobId: '', dateFrom: '', dateTo: '', userId: '' }
         setFilters(clearedFilters)
         setCurrentPage(1)
-        fetchLogs(1, clearedFilters)
-        fetchSummaryData()
+        await fetchLogs(1, clearedFilters)
+        await fetchSummaryData(clearFilters)
     }
 
     // Handle pagination
-    const handlePageChange = (newPage) => {
+    const handlePageChange =  async (newPage) => {
         setCurrentPage(newPage)
-        fetchLogs(newPage)
+        await fetchLogs(newPage)
     }
 
     // Refresh data
-    const handleRefresh = () => {
-        fetchLogs(currentPage)
-        fetchSummaryData()
+    const handleRefresh = async () => {
+        await fetchLogs(currentPage)
+        await fetchSummaryData()
     }
 
     // Toggle view mode
@@ -515,10 +561,17 @@ ${log.new_state}`
                         className='w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSearch()
-                        }}
+                        //onKeyDown={(e) => {
+                            // Prevent double api calls if debounce and enter occur at the same time. 
+                            //clearTimeout(debounceTimerRef.current)
+                            //if (e.key === 'Enter') handleSearch()
+                        //}}
                     />
+                    {/* Loading spinner */}
+                    {loading && (
+                        <div className='absolute right-10 top-1/2 -translate-y-1/2 animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4'></div>
+                    )}
+                    {/*Clear filter button*/}
                     {searchQuery && (
                         <button
                             onClick={() => {
@@ -650,9 +703,10 @@ ${log.new_state}`
 
             {/* Loading State */}
             {loading && (
-                <div className='flex justify-center items-center py-12'>
-                    <div className='text-lg text-gray-600'>Loading history...</div>
-                </div>
+                <div className='flex flex-col items-center gap-2 text-gray-600'>
+                    <div className='w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin'></div>
+                <div>Loading history...</div>
+            </div>
             )}
 
             {/* Error State */}
