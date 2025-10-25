@@ -55,11 +55,19 @@ const ViewHistory = () => {
 
     }, [searchQuery])
     // Debounce when query changes
+    // Track last applied filter and skip fetch when nothing is changed
+    const lastFilters = React.useRef(null)
     useEffect(() => {
         if (debouncedQuery.trim() !== '') {
-            handleSearch(debouncedQuery)
+            const newFilters = detectSearchType(debouncedQuery)
+            if (JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)) {
+                handleSearch(debouncedQuery)
+                lastFilters.current = newFilters
+            }
+            //handleSearch(debouncedQuery)
         } else {
             clearFilters()
+            lastFilters.current = null
         }
     }, [debouncedQuery])
 
@@ -153,12 +161,18 @@ const ViewHistory = () => {
 
         // If invalid search input, do not show anything
         if (!result) {
-            clearFilters()
-            //setLogs([])
-            //setGroupedLogs([])
-            //setTotalCount(0)
+            //clearFilters()
+            setLogs([])
+            setGroupedLogs([])
+            setTotalCount(0)
+            setSummary({
+                totalActions: 0,
+                newJobs: 0,
+                updatedJobs: 0,
+                recentActivity: []
+            })
             //setFilters({ jobId: '', dateFrom: '', dateTo: '', userId: '' })
-            //setLoading(false)
+            setLoading(false)
             return
         }
 
@@ -177,11 +191,17 @@ const ViewHistory = () => {
                     .ilike('username', `${result.value}%`)
                 // handle empty data or error
                 if (userError || !userData || userData.length === 0) {
-                    clearFilters()
-                    //setLogs([])
-                    //setGroupedLogs([])
-                    //setTotalCount(0)
-                    //setLoading(false)
+                    //clearFilters()
+                    setLogs([])
+                    setGroupedLogs([])
+                    setTotalCount(0)
+                    setSummary({
+                        totalActions: 0,
+                        newJobs: 0,
+                        updatedJobs: 0,
+                        recentActivity: []
+                    })
+                    setLoading(false)
                     return
                 }
                 // Turn objects into ID list and store it
@@ -226,7 +246,17 @@ const ViewHistory = () => {
             await fetchSummaryData(newFilters)
         } 
         else {
-            clearFilters()
+            //clearFilters()
+            setLogs([])
+            setGroupedLogs([])
+            setTotalCount(0)
+            setSummary({
+                totalActions: 0,
+                newJobs: 0,
+                updatedJobs: 0,
+                recentActivity: []
+            })
+            setLoading(false)
         }
     }
 
@@ -406,6 +436,11 @@ const ViewHistory = () => {
             let query = supabase
                 .from('JobsHistory')
                 .select('*')
+
+            // Filter for job id
+            if (currentFilters.jobId && currentFilters.jobId.trim()) {
+                query = query.eq('job_id', currentFilters.jobId.trim())
+            }
 
             if (currentFilters.dateFrom) {
                 query = query.gte('change_time', currentFilters.dateFrom)
