@@ -22,7 +22,7 @@ const ViewHistory = () => {
         newJobs: 0,
         updatedJobs: 0,
         recentActivity: [],
-        openJobs: 0, // <-- new metric
+        closedJobs: 0, // <-- changed to closedJobs
     })
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -163,7 +163,7 @@ const ViewHistory = () => {
                 newJobs: 0,
                 updatedJobs: 0,
                 recentActivity: [],
-                openJobs: 0
+                closedJobs: 0
             })
             setLoading(false)
             return
@@ -192,7 +192,7 @@ const ViewHistory = () => {
                         newJobs: 0,
                         updatedJobs: 0,
                         recentActivity: [],
-                        openJobs: 0
+                        closedJobs: 0
                     })
                     setLoading(false)
                     return
@@ -247,7 +247,7 @@ const ViewHistory = () => {
                 newJobs: 0,
                 updatedJobs: 0,
                 recentActivity: [],
-                openJobs: 0
+                closedJobs: 0
             })
             setLoading(false)
         }
@@ -416,7 +416,7 @@ const ViewHistory = () => {
         }
     }
 
-    // Fetch summary data (now includes openJobs)
+    // Fetch summary data (now includes closedJobs)
     const fetchSummaryData = async (currentFilters = filters) => {
         try {
             let query = supabase
@@ -451,19 +451,18 @@ const ViewHistory = () => {
                 // derive unique job ids from history rows
                 const uniqueJobIds = [...new Set(data.map(d => d.job_id))].filter(Boolean)
 
-                // Now query Jobs table for those job ids and count where open === true
-                let openJobsCount = 0
+                // Now query Jobs table for those job ids and count where open === false (closed)
+                let closedJobsCount = 0
                 if (uniqueJobIds.length > 0) {
                     const { data: jobsData, error: jobsError } = await supabase
                         .from('Jobs')
                         .select('id')
                         .in('id', uniqueJobIds)
-                        .eq('open', true)
-
+                        .eq('open', false) // <-- closed jobs
                     if (!jobsError && jobsData) {
-                        openJobsCount = jobsData.length
+                        closedJobsCount = jobsData.length
                     } else if (jobsError) {
-                        console.error('Error fetching Jobs open state:', jobsError)
+                        console.error('Error fetching Jobs closed state:', jobsError)
                     }
                 }
 
@@ -472,7 +471,7 @@ const ViewHistory = () => {
                     newJobs,
                     updatedJobs,
                     recentActivity,
-                    openJobs: openJobsCount
+                    closedJobs: closedJobsCount
                 }
                 setSummary(newSummary)
             } else {
@@ -482,7 +481,7 @@ const ViewHistory = () => {
                     newJobs: 0,
                     updatedJobs: 0,
                     recentActivity: [],
-                    openJobs: 0
+                    closedJobs: 0
                 })
             }
         } catch (err) {
@@ -492,7 +491,7 @@ const ViewHistory = () => {
                 newJobs: 0,
                 updatedJobs: 0,
                 recentActivity: [],
-                openJobs: 0
+                closedJobs: 0
             })
         }
     }
@@ -737,8 +736,8 @@ ${log.new_state}`
                     <div className='text-2xl font-bold text-blue-600'>{summary.updatedJobs || 0}</div>
                 </div>
                 <div className='bg-white rounded-lg shadow p-4'>
-                    <div className='text-sm text-gray-600'>Jobs Open</div>
-                    <div className='text-2xl font-bold text-yellow-600'>{summary.openJobs || 0}</div>
+                    <div className='text-sm text-gray-600'>Jobs Closed</div>
+                    <div className='text-2xl font-bold text-red-600'>{summary.closedJobs || 0}</div>
                 </div>
             </div>
 
