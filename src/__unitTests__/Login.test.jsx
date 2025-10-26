@@ -16,7 +16,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import Login from '../pages/Login'
-import { UserAuth } from '../context/AuthContext'
+import { UserAuth } from '../auth/AuthContext'
 import { MemoryRouter } from 'react-router-dom'
 import supabase from '../api/supabaseClient'
 
@@ -38,7 +38,7 @@ vi.mock('../api/supabaseClient', () => ({
 
 // Mock UserAuth context
 const mockSignInUser = vi.fn()
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../auth/AuthContext', () => ({
     UserAuth: () => ({ signInUser: mockSignInUser }),
 }))
 
