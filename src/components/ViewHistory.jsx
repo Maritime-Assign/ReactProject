@@ -5,7 +5,6 @@ import { BiSort } from 'react-icons/bi'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { formatJobHistoryRecord, getJobStateComparison } from '../utils/jobHistoryOptimized'
 import HistoryPopout from './HistoryPopout'
-//import { clear } from '@testing-library/user-event/dist/cjs/utility/clear.js'
 // clear icon for search bar
 import { IoClose } from 'react-icons/io5'
 
@@ -18,7 +17,13 @@ const ViewHistory = () => {
     const navigate = useNavigate()
     const [logs, setLogs] = useState([])
     const [groupedLogs, setGroupedLogs] = useState([])
-    const [summary, setSummary] = useState({})
+    const [summary, setSummary] = useState({
+        totalActions: 0,
+        newJobs: 0,
+        updatedJobs: 0,
+        recentActivity: [],
+        openJobs: 0, // <-- new metric
+    })
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [currentPage, setCurrentPage] = useState(1)
@@ -64,7 +69,6 @@ const ViewHistory = () => {
                 handleSearch(debouncedQuery)
                 lastFilters.current = newFilters
             }
-            //handleSearch(debouncedQuery)
         } else {
             clearFilters()
             lastFilters.current = null
@@ -84,9 +88,6 @@ const ViewHistory = () => {
             setDebouncedQuery(query)
         }
     }, [location.search])
-
-
-
 
     // Build helper function to detect if its a jobid/username/date/etc
     const detectSearchType = (query) => {
@@ -129,7 +130,6 @@ const ViewHistory = () => {
             return null
         }
 
-
         // Check if username
         if (trimmed.startsWith('user:')) {
             const usernameValue = trimmed.slice(5).trim()
@@ -141,8 +141,6 @@ const ViewHistory = () => {
         return null
     }
 
-
-
     // Build function to handle the search and refetch logs
     const handleSearch = async (query) => {
         const trimmedQuery = query.trim()
@@ -150,10 +148,6 @@ const ViewHistory = () => {
         // If the search bar is empty, show everything
         if (!trimmedQuery) {
             clearFilters()
-            //setFilters({ jobId: '', dateFrom: '', dateTo: '', userId: '' })
-            //setCurrentPage(1)
-            //fetchLogs(1, { jobId: '', dateFrom: '', dateTo: '', userId: '' })
-            //fetchSummaryData()
             return
         }
 
@@ -161,7 +155,6 @@ const ViewHistory = () => {
 
         // If invalid search input, do not show anything
         if (!result) {
-            //clearFilters()
             setLogs([])
             setGroupedLogs([])
             setTotalCount(0)
@@ -169,9 +162,9 @@ const ViewHistory = () => {
                 totalActions: 0,
                 newJobs: 0,
                 updatedJobs: 0,
-                recentActivity: []
+                recentActivity: [],
+                openJobs: 0
             })
-            //setFilters({ jobId: '', dateFrom: '', dateTo: '', userId: '' })
             setLoading(false)
             return
         }
@@ -191,7 +184,6 @@ const ViewHistory = () => {
                     .ilike('username', `${result.value}%`)
                 // handle empty data or error
                 if (userError || !userData || userData.length === 0) {
-                    //clearFilters()
                     setLogs([])
                     setGroupedLogs([])
                     setTotalCount(0)
@@ -199,7 +191,8 @@ const ViewHistory = () => {
                         totalActions: 0,
                         newJobs: 0,
                         updatedJobs: 0,
-                        recentActivity: []
+                        recentActivity: [],
+                        openJobs: 0
                     })
                     setLoading(false)
                     return
@@ -246,7 +239,6 @@ const ViewHistory = () => {
             await fetchSummaryData(newFilters)
         } 
         else {
-            //clearFilters()
             setLogs([])
             setGroupedLogs([])
             setTotalCount(0)
@@ -254,12 +246,12 @@ const ViewHistory = () => {
                 totalActions: 0,
                 newJobs: 0,
                 updatedJobs: 0,
-                recentActivity: []
+                recentActivity: [],
+                openJobs: 0
             })
             setLoading(false)
         }
     }
-
 
     // Fetch job history logs
     const fetchLogs = async (page = 1, currentFilters = filters) => {
@@ -329,7 +321,7 @@ const ViewHistory = () => {
             }
 
             // Get unique job IDs
-            const uniqueJobIds = [...new Set(allJobIds.map(item => item.job_id))]
+            const uniqueJobIds = [...new Set((allJobIds || []).map(item => item.job_id))]
             const totalUniqueJobs = uniqueJobIds.length
 
             // Paginate the unique job IDs
@@ -369,9 +361,6 @@ const ViewHistory = () => {
             groupedData.sort((a, b) => new Date(b.change_time) - new Date(a.change_time))
 
             const formattedLogs = groupedData.map(formatJobHistoryRecord)
-            //setGroupedLogs(formattedLogs)
-            //setTotalCount(totalUniqueJobs)
-            //setLoading(false)
             return {logs: formattedLogs, totalCount: totalUniqueJobs}
         } catch (err) {
             setError('An error occurred while loading grouped data')
@@ -419,9 +408,6 @@ const ViewHistory = () => {
             }
 
             const formattedLogs = data ? data.map(formatJobHistoryRecord) : []
-            //setLogs(formattedLogs)
-            //setTotalCount(count || 0)
-            //setLoading(false)
             return { logs: formattedLogs, totalCount: count || 0}
         } catch (err) {
             setError('An error occurred while loading flat data')
@@ -430,7 +416,7 @@ const ViewHistory = () => {
         }
     }
 
-    // Fetch summary data
+    // Fetch summary data (now includes openJobs)
     const fetchSummaryData = async (currentFilters = filters) => {
         try {
             let query = supabase
@@ -456,16 +442,58 @@ const ViewHistory = () => {
             const { data, error: summaryError } = await query
 
             if (!summaryError && data) {
-                const summary = {
-                    totalActions: data.length,
-                    newJobs: data.filter(log => !log.previous_state).length,
-                    updatedJobs: data.filter(log => log.previous_state).length,
-                    recentActivity: data.slice(0, 10)
+                // compute basic summary from history rows
+                const totalActions = data.length
+                const newJobs = data.filter(log => !log.previous_state).length
+                const updatedJobs = data.filter(log => log.previous_state).length
+                const recentActivity = data.slice(0, 10)
+
+                // derive unique job ids from history rows
+                const uniqueJobIds = [...new Set(data.map(d => d.job_id))].filter(Boolean)
+
+                // Now query Jobs table for those job ids and count where open === true
+                let openJobsCount = 0
+                if (uniqueJobIds.length > 0) {
+                    const { data: jobsData, error: jobsError } = await supabase
+                        .from('Jobs')
+                        .select('id')
+                        .in('id', uniqueJobIds)
+                        .eq('open', true)
+
+                    if (!jobsError && jobsData) {
+                        openJobsCount = jobsData.length
+                    } else if (jobsError) {
+                        console.error('Error fetching Jobs open state:', jobsError)
+                    }
                 }
-                setSummary(summary)
+
+                const newSummary = {
+                    totalActions,
+                    newJobs,
+                    updatedJobs,
+                    recentActivity,
+                    openJobs: openJobsCount
+                }
+                setSummary(newSummary)
+            } else {
+                // if error or no data, reset summary metrics
+                setSummary({
+                    totalActions: 0,
+                    newJobs: 0,
+                    updatedJobs: 0,
+                    recentActivity: [],
+                    openJobs: 0
+                })
             }
         } catch (err) {
             console.error('Error fetching summary:', err)
+            setSummary({
+                totalActions: 0,
+                newJobs: 0,
+                updatedJobs: 0,
+                recentActivity: [],
+                openJobs: 0
+            })
         }
     }
 
@@ -484,7 +512,7 @@ const ViewHistory = () => {
     const applyFilters = () => {
         setCurrentPage(1)
         fetchLogs(1, filters)
-        fetchSummaryData()
+        fetchSummaryData(filters)
     }
 
     const clearFilters = async () => {
@@ -512,7 +540,7 @@ const ViewHistory = () => {
     // Refresh data
     const handleRefresh = async () => {
         await fetchLogs(currentPage)
-        await fetchSummaryData()
+        await fetchSummaryData(filters)
     }
 
     // Toggle view mode
@@ -655,7 +683,6 @@ ${log.new_state}`
                     )}
                 </div>
 
-
                 {/* icons */}
                 <div className='flex gap-2 mr-4'>
                     <button
@@ -665,16 +692,7 @@ ${log.new_state}`
                     >
                         <IoListOutline className='w-5 h-5' />
                     </button>
-                    
-                    {/*<button
-                        onClick={() => setShowFilters(!showFilters)}
-                        className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
-                        title='Toggle Filters'
-                    >
-                    
-                        <IoFilter className='w-5 h-5' />
-                    </button>
-                    */}
+
                     <button
                         onClick={handleRefresh}
                         className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
@@ -702,8 +720,8 @@ ${log.new_state}`
                 </div>
             </div>
 
-            {/* Summary Cards */}
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
+            {/* Summary Cards - now 4 cards */}
+            <div className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-6'>
                 <div className='bg-white rounded-lg shadow p-4'>
                     <div className='text-sm text-gray-600'>
                         {viewMode === 'grouped' ? 'Unique Jobs with Changes' : 'Total History Records'}
@@ -718,58 +736,13 @@ ${log.new_state}`
                     <div className='text-sm text-gray-600'>Jobs Updated</div>
                     <div className='text-2xl font-bold text-blue-600'>{summary.updatedJobs || 0}</div>
                 </div>
+                <div className='bg-white rounded-lg shadow p-4'>
+                    <div className='text-sm text-gray-600'>Jobs Open</div>
+                    <div className='text-2xl font-bold text-yellow-600'>{summary.openJobs || 0}</div>
+                </div>
             </div>
 
-            {/* Filters */}
-            {/*{showFilters && (
-                <div className='bg-white rounded-lg shadow p-4 mb-4'>
-                    <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-                        <div>
-                            <label className='block text-sm font-medium text-gray-700 mb-1'>Job ID</label>
-                            <input
-                                type="text"
-                                value={filters.jobId}
-                                onChange={(e) => handleFilterChange('jobId', e.target.value)}
-                                placeholder="Enter Job ID"
-                                className='w-full border rounded px-3 py-2'
-                            />
-                        </div>
-                        <div>
-                            <label className='block text-sm font-medium text-gray-700 mb-1'>From Date</label>
-                            <input
-                                type="date"
-                                value={filters.dateFrom}
-                                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-                                className='w-full border rounded px-3 py-2'
-                            />
-                        </div>
-                        <div>
-                            <label className='block text-sm font-medium text-gray-700 mb-1'>To Date</label>
-                            <input
-                                type="date"
-                                value={filters.dateTo}
-                                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-                                className='w-full border rounded px-3 py-2'
-                            />
-                        </div>
-                        <div className='flex items-end gap-2'>
-                            <button
-                                onClick={applyFilters}
-                                className='bg-mebablue-dark text-white px-4 py-2 rounded hover:bg-mebablue-hover'
-                            >
-                                Apply
-                            </button>
-                            <button
-                                onClick={clearFilters}
-                                className='bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600'
-                            >
-                                Clear
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-                */}
+            {/* Filters (omitted in UI) */}
 
             {/* Loading State */}
             {loading && (
@@ -803,7 +776,6 @@ ${log.new_state}`
                             <thead className='bg-gray-50'>
                                 <tr>
                                     <th className='px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8'>
-                                        
                                     </th>
                                     <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                                         Date & Time
