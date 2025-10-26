@@ -1,4 +1,4 @@
-import supabase from '../api/supabaseClient'
+import supabase from '../api/supabaseAdmin'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useFormStatus } from 'react-dom'
@@ -17,41 +17,11 @@ const EditUser = () => {
     let [user, setUser] = useState({
         username: state.username,
         password: '',
-        passwordChanged: false,
         role: state.role || '',
     })
 
-    //State for the admin password modal
-    const [isModalOpen, setIsModalOpen] = useState(false)
-
-    const handleAdminPasswordSubmit = async (password) => {
-        console.log('set')
-        
-        setIsModalOpen(false)
-        return true
-    }
-
-    //Enables the use of a pending state to represent a form being processed
-    const { processing } = useFormStatus()
-
-    //Functions to handle edits of a user's info
-    function updateUsername(e) {
-        setUser({ ...user, username: e.target.value })
-    }
-
-    function updatePassword(e) {
-        setUser({ ...user, password: e.target.value, passwordChanged: true })
-    }
-
-    function updateRole(e) {
-        setUser({ ...user, role: e.target.value })
-    }
-
-    //Does nothing for now; Implement Supabase functionality when user data format is finalized
-    async function submitEdits(e) {
-        //Show a message to represent that the edits were submitted; REMOVE WHEN ACTUAL IMPLEMENTATION IS DONE
-        e.preventDefault()
-
+    
+    async function updateUser() {
         const updatedUser = {
             username: user.username,
             role: user.role
@@ -69,14 +39,64 @@ const EditUser = () => {
         else {
             alert('User updated successfully')
         }
-
-        if (user.passwordChanged) {
-            user.passwordChanged = !user.passwordChanged
-            setIsModalOpen(true)
-        }
             
         console.log(state.UUID);
         console.log(user);
+    }
+    
+    //State for the admin password modal
+    const [isModalOpen, setIsModalOpen] = useState(false)
+
+    const handleAdminPasswordSubmit = async (password) => {
+        const { data, error } = await supabase
+            .auth
+            .admin
+            .updateUserById(
+                state.UUID,
+                { password: user.password }
+            )
+        
+        if (error) {
+            alert('Failure to update user password')
+        }
+        
+        setIsModalOpen(false)
+
+        console.log(user)
+
+        updateUser()
+
+        return true
+    }
+
+    //Enables the use of a pending state to represent a form being processed
+    const { processing } = useFormStatus()
+
+    //Functions to handle edits of a user's info
+    function updateUsername(e) {
+        setUser({ ...user, username: e.target.value })
+    }
+
+    function updatePassword(e) {
+        setUser({ ...user, password: e.target.value })
+    }
+
+    function updateRole(e) {
+        setUser({ ...user, role: e.target.value })
+    }
+
+
+    //Does nothing for now; Implement Supabase functionality when user data format is finalized
+    function submitEdits(e) {
+        //Show a message to represent that the edits were submitted; REMOVE WHEN ACTUAL IMPLEMENTATION IS DONE
+        e.preventDefault()
+
+        if (user.password) {
+            setIsModalOpen(true)
+            return
+        }
+
+        updateUser()
     }
 
     return (

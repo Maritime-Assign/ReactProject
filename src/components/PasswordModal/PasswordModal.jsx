@@ -59,7 +59,7 @@ const PasswordModal = ({ isOpen, onClose, onSubmit }) => {
               value={adminPassword}
               onChange={(e) => setAdminPassword(e.target.value)}
               required
-              diabled={isVerifying}
+              disabled={isVerifying}
             />
             {errorMessage && <p className='error-message'>{errorMessage}</p>}
             <button type='submit' disabled={isVerifying}>Submit</button>
