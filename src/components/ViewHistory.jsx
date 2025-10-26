@@ -55,7 +55,7 @@ const ViewHistory = () => {
   const [closedModalLoading, setClosedModalLoading] = useState(false)
   const [expandedClosedJobs, setExpandedClosedJobs] = useState(new Set())
 
-  // NEW: confirm/timeout state + updating guard
+  // confirm/timeout state + updating guard
   // confirmPending: object mapping jobId -> boolean (true when waiting for confirm)
   const [confirmPending, setConfirmPending] = useState({})
   // updatingJobs: Set of jobIds being updated (to disable UI while supabase call)
@@ -436,7 +436,7 @@ const ViewHistory = () => {
     }
   }
 
-  // Fetch summary data (now includes closedJobs)
+  // Fetch summary data
   const fetchSummaryData = async (currentFilters = filters) => {
     try {
       let query = supabase.from('JobsHistory').select('*')
@@ -669,7 +669,7 @@ ${log.new_state}`
     return () => window.removeEventListener('keydown', onKey)
   }, [isClosedModalOpen])
 
-  // NEW: helper to set confirm pending state for a job
+  // helper to set confirm pending state for a job
   const setPendingFor = (jobId, val) => {
     setConfirmPending((prev) => {
       if (val) return { ...prev, [jobId]: true }
@@ -679,7 +679,7 @@ ${log.new_state}`
     })
   }
 
-  // NEW: handle click for Open?/Confirm?
+  // handle click for Open?/Confirm?
   const handleOpenClick = async (e, jobId) => {
     e.stopPropagation()
 
@@ -781,7 +781,6 @@ ${log.new_state}`
       }
 
       // 2) Query Jobs for those job ids and only where open === false (closed)
-      // IMPORTANT: include the columns you need here
       const { data: jobsData, error: jobsError } = await supabase
         .from('Jobs')
         .select('id, FillDate, shipName, type, crewRelieved')
@@ -1339,8 +1338,6 @@ ${log.new_state}`
                       const isUpdating = updatingJobs.has(String(job.id))
                       return (
                         <li key={job.id} className="py-3">
-                          {/* Container now has a left red "Open?" button and the main expandable row on the right.
-                              The "Open?" button stops propagation so clicking it won't expand/collapse the job. */}
                           <div className="flex items-start gap-3">
                             <div className="flex-shrink-0">
                               <button
