@@ -55,6 +55,14 @@ const ViewHistory = () => {
   const [closedModalLoading, setClosedModalLoading] = useState(false)
   const [expandedClosedJobs, setExpandedClosedJobs] = useState(new Set())
 
+  // NEW: confirm/timeout state + updating guard
+  // confirmPending: object mapping jobId -> boolean (true when waiting for confirm)
+  const [confirmPending, setConfirmPending] = useState({})
+  // updatingJobs: Set of jobIds being updated (to disable UI while supabase call)
+  const [updatingJobs, setUpdatingJobs] = useState(new Set())
+  // timers stored in a ref so they persist without re-renders
+  const confirmTimers = React.useRef({})
+
   // pagination state for closed modal + handlers
   const [closedPage, setClosedPage] = useState(1)
   const closedItemsPerPage = ITEMS_PER_PAGE
@@ -661,34 +669,101 @@ ${log.new_state}`
     return () => window.removeEventListener('keydown', onKey)
   }, [isClosedModalOpen])
 
+  // NEW: helper to set confirm pending state for a job
+  const setPendingFor = (jobId, val) => {
+    setConfirmPending((prev) => {
+      if (val) return { ...prev, [jobId]: true }
+      const copy = { ...prev }
+      delete copy[jobId]
+      return copy
+    })
+  }
+
+  // NEW: handle click for Open?/Confirm?
+  const handleOpenClick = async (e, jobId) => {
+    e.stopPropagation()
+
+    // If already updating this job, ignore clicks
+    if (updatingJobs.has(String(jobId))) return
+
+    const isPending = !!confirmPending[jobId]
+
+    if (!isPending) {
+      // start confirm window
+      setPendingFor(jobId, true)
+      // clear any existing timer just in case
+      if (confirmTimers.current[jobId]) {
+        clearTimeout(confirmTimers.current[jobId])
+      }
+      confirmTimers.current[jobId] = setTimeout(() => {
+        // 3s elapsed, clear pending state
+        setPendingFor(jobId, false)
+        delete confirmTimers.current[jobId]
+      }, 3000)
+      return
+    }
+
+    // If pending: user clicked "Confirm?" -> proceed to update DB
+    // clear the pending timer
+    if (confirmTimers.current[jobId]) {
+      clearTimeout(confirmTimers.current[jobId])
+      delete confirmTimers.current[jobId]
+    }
+    setPendingFor(jobId, false)
+
+    // Mark updating
+    setUpdatingJobs((prev) => {
+      const s = new Set(prev)
+      s.add(String(jobId))
+      return s
+    })
+
+    try {
+      // Perform supabase update: set open true
+      const { data, error } = await supabase.from('Jobs').update({ open: true }).eq('id', jobId)
+      if (error) throw error
+
+      // Optimistic UI: remove job from closedJobsList
+      setClosedJobsList((prev) => prev.filter((j) => String(j.id) !== String(jobId)))
+
+      // update summary counts (refetch summary)
+      await fetchSummaryData(filters)
+
+      setCopySuccess(`Job ${jobId} reopened.`)
+      setTimeout(() => setCopySuccess(''), 3000)
+    } catch (err) {
+      console.error('Failed to open job:', err)
+      setCopySuccess(`Failed to open job ${jobId}`)
+      setTimeout(() => setCopySuccess(''), 3000)
+    } finally {
+      // clear updating flag
+      setUpdatingJobs((prev) => {
+        const s = new Set(prev)
+        s.delete(String(jobId))
+        return s
+      })
+    }
+  }
+
   // Fetch closed jobs + their history when modal opens
   useEffect(() => {
-    if (!isClosedModalOpen) return
+  if (!isClosedModalOpen) return
 
-    let cancelled = false
-    const fetchClosedJobs = async () => {
-      setClosedModalLoading(true)
-      try {
-        setClosedPage(1)
+  let cancelled = false
+  const fetchClosedJobs = async () => {
+    setClosedModalLoading(true)
+    try {
+      setClosedPage(1)
 
-      // 1) Get job_ids from JobsHistory that match current filters (the same filters as the history page)
+      // 1) Get job_ids from JobsHistory that match current filters
       let jobIdsQuery = supabase.from('JobsHistory').select('job_id')
 
-      if (filters.jobId && filters.jobId.trim()) {
-        jobIdsQuery = jobIdsQuery.eq('job_id', filters.jobId.trim())
-      }
-      if (filters.dateFrom) {
-        jobIdsQuery = jobIdsQuery.gte('change_time', filters.dateFrom)
-      }
-      if (filters.dateTo) {
-        jobIdsQuery = jobIdsQuery.lte('change_time', filters.dateTo + 'T23:59:59')
-      }
-      if (filters.userId && filters.userId.length > 0) {
-        jobIdsQuery = jobIdsQuery.in('changed_by_user_id', filters.userId)
-      }
+      if (filters.jobId && filters.jobId.trim()) jobIdsQuery = jobIdsQuery.eq('job_id', filters.jobId.trim())
+      if (filters.dateFrom) jobIdsQuery = jobIdsQuery.gte('change_time', filters.dateFrom)
+      if (filters.dateTo) jobIdsQuery = jobIdsQuery.lte('change_time', filters.dateTo + 'T23:59:59')
+      if (filters.userId && filters.userId.length > 0) jobIdsQuery = jobIdsQuery.in('changed_by_user_id', filters.userId)
 
       const { data: jobIdRows, error: jobIdsError } = await jobIdsQuery
-
       if (jobIdsError) {
         console.error('Error fetching job IDs for closed modal:', jobIdsError)
         if (!cancelled) {
@@ -698,19 +773,18 @@ ${log.new_state}`
         return
       }
 
-        // Unique job ids that appear in the filtered JobsHistory
+      // Unique job ids that appear in the filtered JobsHistory
       const uniqueJobIds = [...new Set((jobIdRows || []).map((r) => r.job_id))].filter(Boolean)
-
       if (uniqueJobIds.length === 0) {
-        // No jobs in the current history -> nothing to show in the modal
         if (!cancelled) setClosedJobsList([])
         return
       }
 
       // 2) Query Jobs for those job ids and only where open === false (closed)
+      // IMPORTANT: include the columns you need here
       const { data: jobsData, error: jobsError } = await supabase
         .from('Jobs')
-        .select('id, FillDate')
+        .select('id, FillDate, shipName, type, crewRelieved')
         .in('id', uniqueJobIds)
         .eq('open', false)
 
@@ -720,10 +794,18 @@ ${log.new_state}`
         return
       }
 
-      // Map & normalize fillDate
+      // DEBUG: see what's returned (remove later)
+      console.log('jobsData (closed):', jobsData)
+
+      // Map & normalize fillDate + include shipName, type, crewRelieved (with fallbacks)
       const jobs = (jobsData || []).map((j) => ({
         id: j.id,
-        fillDate: j.FillDate || j.filldate || j.fill_date || null
+        fillDate: j.FillDate || j.filldate || j.fill_date || null,
+        // prefer explicit shipName, then snake case, then generic ship
+        shipName: j.shipName ?? j.ship_name ?? j.ship ?? null,
+        type: j.type ?? null,
+        // crewRelieved may be stored in multiple forms; prefer camelCase then snake_case
+        crewRelieved: j.crewRelieved ?? j.crew_relieved ?? null
       }))
 
       // Sort chronologically by fillDate (newest first)
@@ -743,15 +825,9 @@ ${log.new_state}`
           .order('change_time', { ascending: true })
 
         // Re-apply filters so modal history matches page filters
-        if (filters.dateFrom) {
-          historyQuery = historyQuery.gte('change_time', filters.dateFrom)
-        }
-        if (filters.dateTo) {
-          historyQuery = historyQuery.lte('change_time', filters.dateTo + 'T23:59:59')
-        }
-        if (filters.userId && filters.userId.length > 0) {
-          historyQuery = historyQuery.in('changed_by_user_id', filters.userId)
-        }
+        if (filters.dateFrom) historyQuery = historyQuery.gte('change_time', filters.dateFrom)
+        if (filters.dateTo) historyQuery = historyQuery.lte('change_time', filters.dateTo + 'T23:59:59')
+        if (filters.userId && filters.userId.length > 0) historyQuery = historyQuery.in('changed_by_user_id', filters.userId)
 
         const { data: historyData, error: historyError } = await historyQuery
 
@@ -760,6 +836,9 @@ ${log.new_state}`
           enriched.push({
             id: job.id,
             fillDate: job.fillDate,
+            shipName: job.shipName,
+            type: job.type,
+            crewRelieved: job.crewRelieved,
             history: []
           })
           continue
@@ -769,11 +848,15 @@ ${log.new_state}`
         enriched.push({
           id: job.id,
           fillDate: job.fillDate,
+          shipName: job.shipName,
+          type: job.type,
+          crewRelieved: job.crewRelieved,
           history: formattedHistory
         })
       }
 
       if (!cancelled) {
+        console.log('enriched closedJobsList:', enriched) // debug, remove later
         setClosedJobsList(enriched)
       }
     } catch (err) {
@@ -789,6 +872,7 @@ ${log.new_state}`
     cancelled = true
   }
 }, [isClosedModalOpen, filters])
+
 
   // Toggle expansion of job row inside closed modal
   const toggleClosedJobExpansion = (jobId) => {
@@ -832,6 +916,23 @@ ${log.new_state}`
   const closedStartIndex = (closedPage - 1) * closedItemsPerPage
   const closedEndIndex = Math.min(closedStartIndex + closedItemsPerPage, closedJobsList.length)
   const closedPageItems = closedJobsList.slice(closedStartIndex, closedEndIndex)
+
+  // CLEANUP: clear any confirm timers if modal closed or component unmounts
+  useEffect(() => {
+    if (!isClosedModalOpen) {
+      // Clear pending states and timers when modal closes
+      Object.values(confirmTimers.current).forEach((t) => clearTimeout(t))
+      confirmTimers.current = {}
+      setConfirmPending({})
+    }
+  }, [isClosedModalOpen])
+
+  useEffect(() => {
+    return () => {
+      Object.values(confirmTimers.current).forEach((t) => clearTimeout(t))
+      confirmTimers.current = {}
+    }
+  }, [])
 
   return (
     <div className="w-full pt-4 flex flex-col max-w-[1280px] mx-auto font-mont">
@@ -1234,76 +1335,113 @@ ${log.new_state}`
                   <ul className="divide-y divide-gray-200">
                     {closedPageItems.map(job => {
                       const isExpanded = expandedClosedJobs.has(String(job.id))
+                      const isPending = !!confirmPending[job.id]
+                      const isUpdating = updatingJobs.has(String(job.id))
                       return (
                         <li key={job.id} className="py-3">
-                          <button
-                            type="button"
-                            onClick={() => toggleClosedJobExpansion(String(job.id))}
-                            aria-expanded={isExpanded}
-                            aria-controls={`closed-job-history-${job.id}`}
-                            className="w-full text-left flex items-center justify-between gap-4 p-3 rounded hover:bg-gray-100 active:bg-gray-200 focus:outline-none"
-                          >
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">Job #{job.id}</div>
-                              <div className="text-xs text-gray-500">FillDate: {formatDateForDisplay(job.fillDate)}</div>
+                          {/* Container now has a left red "Open?" button and the main expandable row on the right.
+                              The "Open?" button stops propagation so clicking it won't expand/collapse the job. */}
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0">
+                              <button
+                                type="button"
+                                onClick={(e) => handleOpenClick(e, job.id)}
+                                className={`text-white px-3 py-1 rounded text-sm focus:outline-none ${
+                                  isUpdating
+                                    ? 'bg-gray-400 cursor-wait'
+                                    : isPending
+                                    ? 'bg-green-500 hover:bg-green-600 active:bg-green-700'
+                                    : 'bg-red-500 hover:bg-red-600 active:bg-red-700'
+                                }`}
+                                aria-label={`Open job ${job.id}`}
+                                disabled={isUpdating}
+                              >
+                                {isUpdating ? 'Opening...' : isPending ? 'Confirm?' : 'Open?'}
+                              </button>
                             </div>
 
-                            <div className="flex items-center gap-2">
-                              {isExpanded ? <IoChevronUp className="w-5 h-5 text-gray-600" /> : <IoChevronDown className="w-5 h-5 text-gray-600" />}
-                            </div>
-                          </button>
-
-                          {isExpanded && (
-                            <div id={`closed-job-history-${job.id}`} className="mt-3 bg-gray-50 rounded p-3">
-                              {job.history.length === 0 ? (
-                                <div className="text-sm text-gray-500">No history entries for this job.</div>
-                              ) : (
-                                <div className="space-y-3">
-                                  {job.history.map(entry => (
-                                    <div key={entry.id} className="bg-white border border-gray-200 rounded px-3 py-2">
-                                      <div className="flex items-start justify-between">
-                                        <div>
-                                          <div className="text-xs text-gray-600">{entry.formattedDate}</div>
-                                          <div className="text-sm font-medium">{entry.changed_by_user_id || 'Unknown User'}</div>
-                                          <div className="text-xs text-gray-500">{entry.isNewJob ? 'Created' : 'Updated'}</div>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                          <button
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              copyToClipboard(getFullContentForCopy(entry), entry.id)
-                                            }}
-                                            className="text-mebablue-dark hover:text-mebablue-hover"
-                                            title="Copy full details"
-                                          >
-                                            <IoCopy className="w-5 h-5" />
-                                          </button>
-                                        </div>
-                                      </div>
-
-                                      <div className="mt-2 text-xs text-gray-700">
-                                        {(() => {
-                                          const changes = getJobStateComparison(entry.previousStateFormatted, entry.newStateFormatted)
-                                          if (!changes || changes.length === 0) return <span className="text-gray-400 italic">No changes recorded</span>
-                                          return (
-                                            <div className="flex flex-wrap gap-2">
-                                              {changes.slice(0, 6).map((c, i) => (
-                                                <span key={i} className="inline-flex items-center px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-700">
-                                                  {c.field}: {String(c.newValue ?? 'None')}
-                                                </span>
-                                              ))}
-                                              {changes.length > 6 && <span className="text-xs text-gray-400 italic">+{changes.length - 6} more</span>}
-                                            </div>
-                                          )
-                                        })()}
-                                      </div>
+                            {/* Main expandable content (click expands/collapses) */}
+                            <div className="flex-1">
+                              <button
+                                type="button"
+                                onClick={() => toggleClosedJobExpansion(String(job.id))}
+                                aria-expanded={isExpanded}
+                                aria-controls={`closed-job-history-${job.id}`}
+                                className="w-full text-left flex items-center justify-between gap-4 p-3 rounded hover:bg-gray-100 active:bg-gray-200 focus:outline-none"
+                              >
+                                <div className="ml-1">
+                                    <div className="text-sm font-medium text-gray-900">
+                                        Job #{job.id}
+                                        {job.shipName ? <span className="text-sm font-medium text-gray-600 ml-2">— {job.shipName}</span> : null}
                                     </div>
-                                  ))}
+
+                                    <div className="text-xs text-gray-500 mt-1">
+                                        <span>Type: {job.type ?? '—'}</span>
+                                        <span className="mx-2">·</span>
+                                        <span>Crew Relieved: {job.crewRelieved !== null && job.crewRelieved !== undefined ? String(job.crewRelieved) : '—'}</span>
+                                        <span className="mx-2">·</span>
+                                        <span>FillDate: {formatDateForDisplay(job.fillDate)}</span>
+                                    </div>
+                                    </div>
+
+                                <div className="flex items-center gap-2">
+                                  {isExpanded ? <IoChevronUp className="w-5 h-5 text-gray-600" /> : <IoChevronDown className="w-5 h-5 text-gray-600" />}
+                                </div>
+                              </button>
+
+                              {isExpanded && (
+                                <div id={`closed-job-history-${job.id}`} className="mt-3 bg-gray-50 rounded p-3">
+                                  {job.history.length === 0 ? (
+                                    <div className="text-sm text-gray-500">No history entries for this job.</div>
+                                  ) : (
+                                    <div className="space-y-3">
+                                      {job.history.map(entry => (
+                                        <div key={entry.id} className="bg-white border border-gray-200 rounded px-3 py-2">
+                                          <div className="flex items-start justify-between">
+                                            <div>
+                                              <div className="text-xs text-gray-600">{entry.formattedDate}</div>
+                                              <div className="text-sm font-medium">{entry.changed_by_user_id || 'Unknown User'}</div>
+                                              <div className="text-xs text-gray-500">{entry.isNewJob ? 'Created' : 'Updated'}</div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation()
+                                                  copyToClipboard(getFullContentForCopy(entry), entry.id)
+                                                }}
+                                                className="text-mebablue-dark hover:text-mebablue-hover"
+                                                title="Copy full details"
+                                              >
+                                                <IoCopy className="w-5 h-5" />
+                                              </button>
+                                            </div>
+                                          </div>
+
+                                          <div className="mt-2 text-xs text-gray-700">
+                                            {(() => {
+                                              const changes = getJobStateComparison(entry.previousStateFormatted, entry.newStateFormatted)
+                                              if (!changes || changes.length === 0) return <span className="text-gray-400 italic">No changes recorded</span>
+                                              return (
+                                                <div className="flex flex-wrap gap-2">
+                                                  {changes.slice(0, 6).map((c, i) => (
+                                                    <span key={i} className="inline-flex items-center px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-700">
+                                                      {c.field}: {String(c.newValue ?? 'None')}
+                                                    </span>
+                                                  ))}
+                                                  {changes.length > 6 && <span className="text-xs text-gray-400 italic">+{changes.length - 6} more</span>}
+                                                </div>
+                                              )
+                                            })()}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
-                          )}
+                          </div>
                         </li>
                       )
                     })}
