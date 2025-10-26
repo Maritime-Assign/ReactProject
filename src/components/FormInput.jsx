@@ -31,12 +31,12 @@ const FormInput = ({
     const handleChange = (e) => {
         let val = e.target?.value ?? e;
 
-        // If the value is a Date object, reformat it to "YEAR/MONTH/DAY"
+        // If the value is a Date object, reformat it to "mm/dd/yyyy" with zero padding
         if (val instanceof Date) {
             const year = val.getFullYear();
-            const month = String(val.getMonth() + 1); // Adding 1 cause months are 0-indexed
-            const day = String(val.getDate()); //
-            val = `${month}/${day}/${year}`; // Reformatted date string (mm/dd/yyyy) and impliclity pruning timpstamp
+            const month = String(val.getMonth() + 1).padStart(2,'0'); // Adding 1 cause months are 0-indexed
+            const day = String(val.getDate()).padStart(2,'0'); //
+            val = `${month}/${day}/${year}`; // Reformatted date string and impliclity pruning timestamp
         }
 
         onChange({ target: { name: e.target?.name ?? name, value: val } });
