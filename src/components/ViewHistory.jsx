@@ -781,6 +781,7 @@ ${log.new_state}`
       }
 
       // 2) Query Jobs for those job ids and only where open === false (closed)
+      // IMPORTANT: include the columns you need here
       const { data: jobsData, error: jobsError } = await supabase
         .from('Jobs')
         .select('id, FillDate, shipName, type, crewRelieved')
