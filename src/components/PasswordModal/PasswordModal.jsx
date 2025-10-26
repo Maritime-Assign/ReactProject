@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import './PasswordModal.css'
+import supabase from '../../api/supabaseClient'
 
 const PasswordModal = ({ isOpen, onClose, onSubmit }) => {
     const [adminPassword, setAdminPassword] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
+    const [isVerifying, setIsVerifying] = useState(false)
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -13,11 +15,33 @@ const PasswordModal = ({ isOpen, onClose, onSubmit }) => {
             return
         }
 
-        // Send password to parent component to verify
+        setIsVerifying(true)
+
+        const { data: { user }, error } = await supabase.auth.getUser()
+
+        if (error || !user) {
+            setErrorMessage('Failed to fetch user')
+            setIsVerifying(false)
+            return
+        }
+
+        const { data, error: passwordError } = await supabase.auth.signInWithPassword({
+            email: user.email,
+            password: adminPassword,
+        })
+
+        if (passwordError) {
+            setErrorMessage('Invalid password.')
+            setIsVerifying(false)
+            return
+        }
+
         const isValid = await onSubmit(adminPassword)
         if (!isValid) {
-            setErrorMessage('Invalid password.');
+            setErrorMessage('Invalid password.')
         }
+
+        setIsVerifying(false)
     }
 
     if (!isOpen) {
@@ -35,10 +59,11 @@ const PasswordModal = ({ isOpen, onClose, onSubmit }) => {
               value={adminPassword}
               onChange={(e) => setAdminPassword(e.target.value)}
               required
+              diabled={isVerifying}
             />
             {errorMessage && <p className='error-message'>{errorMessage}</p>}
-            <button type='submit'>Submit</button>
-            <button type='button' onClick={onClose}>Cancel</button>
+            <button type='submit' disabled={isVerifying}>Submit</button>
+            <button type='button' onClick={onClose} disabled={isVerifying}>Cancel</button>
           </form>
         </div>
       </div>
