@@ -2,6 +2,7 @@ import supabase from '../api/supabaseClient'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useFormStatus } from 'react-dom'
+import PasswordModal from '../components/PasswordModal/PasswordModal.jsx'
 
 const EditUser = () => {
     //Convert the data of a user and make it editable
@@ -13,27 +14,33 @@ const EditUser = () => {
         return null
     }
 
-    const [user, setUser] = useState({
-        fname: state.first_name,
-        lname: state.last_name,
-        email: state.email || '',
+    let [user, setUser] = useState({
+        username: state.username,
+        password: '',
+        passwordChanged: false,
         role: state.role || '',
     })
+
+    //State for the admin password modal
+    const [isModalOpen, setIsModalOpen] = useState(false)
+
+    const handleAdminPasswordSubmit = async (password) => {
+        console.log('set')
+        
+        setIsModalOpen(false)
+        return true
+    }
 
     //Enables the use of a pending state to represent a form being processed
     const { processing } = useFormStatus()
 
     //Functions to handle edits of a user's info
-    function updateFirstName(e) {
-        setUser({ ...user, fname: e.target.value })
+    function updateUsername(e) {
+        setUser({ ...user, username: e.target.value })
     }
 
-    function updateLastName(e) {
-        setUser({ ...user, lname: e.target.value })
-    }
-
-    function updateEmail(e) {
-        setUser({ ...user, email: e.target.value })
+    function updatePassword(e) {
+        setUser({ ...user, password: e.target.value, passwordChanged: true })
     }
 
     function updateRole(e) {
@@ -46,9 +53,7 @@ const EditUser = () => {
         e.preventDefault()
 
         const updatedUser = {
-            first_name: user.fname,
-            last_name: user.lname,
-            email: user.email,
+            username: user.username,
             role: user.role
         }
 
@@ -64,33 +69,15 @@ const EditUser = () => {
         else {
             alert('User updated successfully')
         }
+
+        if (user.passwordChanged) {
+            user.passwordChanged = !user.passwordChanged
+            setIsModalOpen(true)
+        }
             
         console.log(state.UUID);
         console.log(user);
     }
-
-    /*
-    async function testPost(append) {
-        const updatedUser = {
-            first_name: 'Unit' + String(append),
-        }
-
-        const { data, error } = await supabase
-            .from('Users')
-            .update(updatedUser)
-            .eq('UUID', '5d87ebd2-896e-46f0-adf0-738b315f172f')
-            .select()
-        
-        if (error) {
-            console.log('Failed to update test user');
-        }
-        else {
-            console.log('Test user updated successfully');
-        }
-    }
-
-    testPost(Math.random());
-    */
 
     return (
         <div className='flex justify-center flex-col py-4 mb-4 w-[1280px] m-auto'>
@@ -103,50 +90,36 @@ const EditUser = () => {
                 <div className='grid grid-cols-3 p-4 gap-2'>
                     <div>
                         <span className='text-xl text-[#242762] text-semibold'>
-                            First Name
+                            Username
                         </span>
                         <div className='flex content-center py-3 gap-3'>
                             <input
                                 type='text'
-                                placeholder='Enter name here'
-                                value={user.fname}
-                                onChange={updateFirstName}
+                                placeholder='Enter username here'
+                                value={user.username}
+                                onChange={updateUsername}
                                 className='w-[300px] h-[48px] text-center bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                             />
                         </div>
                     </div>
                     <div>
                         <span className='text-xl text-[#242762] text-semibold'>
-                            Last Name
+                            Password
                         </span>
                         <div className='flex content-center py-3 gap-3'>
                             <input
                                 type='text'
-                                placeholder='Enter name here'
-                                value={user.lname}
-                                onChange={updateLastName}
+                                placeholder='Enter password here'
+                                value={user.password}
+                                onChange={updatePassword}
                                 className='w-[300px] h-[48px] text-center bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                             />
                         </div>
                     </div>
                 </div>
 
-                {/*User's email and assigned role section*/}
+                {/*User's assigned role section*/}
                 <div className='grid grid-flex-rows p-4 gap-2'>
-                    <div>
-                        <span className='text-xl text-[#242762] text-semibold'>
-                            Email
-                        </span>
-                        <div className='flex content-center py-3'>
-                            <input
-                                type='text'
-                                placeholder='Enter email here'
-                                value={user.email}
-                                onChange={updateEmail}
-                                className='w-[300px] h-[48px] text-center bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-                            />
-                        </div>
-                    </div>
                     {/*User role selection section*/}
                     <div>
                         <span className='py-2 text-[#242762] text-xl text-semibold'>
@@ -184,6 +157,11 @@ const EditUser = () => {
                     </button>
                 </div>
             </form>
+            <PasswordModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              onSubmit={handleAdminPasswordSubmit}
+            />
         </div>
     )
 }
