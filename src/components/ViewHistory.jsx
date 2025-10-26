@@ -735,10 +735,20 @@ ${log.new_state}`
                     <div className='text-sm text-gray-600'>Jobs Updated</div>
                     <div className='text-2xl font-bold text-blue-600'>{summary.updatedJobs || 0}</div>
                 </div>
-                <div className='bg-white rounded-lg shadow p-4'>
+
+                {/* Jobs Closed card converted to a clickable button.
+                    Hover: slightly grey (hover:bg-gray-100)
+                    Active (pressed): darker grey (active:bg-gray-200)
+                    Clicking currently does nothing (empty handler). */}
+                <button
+                    type='button'
+                    onClick={() => {}}
+                    aria-label='Jobs Closed'
+                    className='bg-white rounded-lg shadow p-4 text-left transition-colors hover:bg-gray-300 active:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 cursor-pointer'
+                >
                     <div className='text-sm text-gray-600'>Jobs Closed</div>
                     <div className='text-2xl font-bold text-red-600'>{summary.closedJobs || 0}</div>
-                </div>
+                </button>
             </div>
 
             {/* Filters (omitted in UI) */}
