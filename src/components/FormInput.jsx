@@ -9,14 +9,6 @@ import 'react-datepicker/dist/react-datepicker.css'
 import styles from './FormInput.module.css'
 
 // reformate output date string to desired string format
-const formatDateString = (date) => {
-    if (!date) return ''
-    return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date
-        .getDate()
-        .toString()
-        .padStart(2, '0')}/${date.getFullYear()}`
-}
-
 // Form Input Component
 const FormInput = ({
     label,
@@ -37,15 +29,25 @@ const FormInput = ({
     setFieldError,
 }) => {
     const handleChange = (e) => {
-        onChange(e)
+        let val = e.target?.value ?? e;
+
+        // If the value is a Date object, reformat it to "mm/dd/yyyy" with zero padding
+        if (val instanceof Date) {
+            const year = val.getFullYear();
+            const month = String(val.getMonth() + 1).padStart(2,'0'); // Adding 1 cause months are 0-indexed
+            const day = String(val.getDate()).padStart(2,'0'); //
+            val = `${month}/${day}/${year}`; // Reformatted date string and impliclity pruning timestamp
+        }
+
+        onChange({ target: { name: e.target?.name ?? name, value: val } });
 
         // Clear the error if the field is now valid
         if (submitCount > 0 && errors) {
-            const val = e.target?.value ?? e
-            if (val && val.toString().trim() !== '')
-                setFieldError(name, undefined)
+            if (val && val.toString().trim() !== '') {
+                setFieldError(name, undefined);
+            }
         }
-    }
+    };
 
     const inputId = `input-${name}` // save an input id for later use if needed
 
