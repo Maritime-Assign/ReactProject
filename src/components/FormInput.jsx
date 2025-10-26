@@ -36,7 +36,7 @@ const FormInput = ({
             const year = val.getFullYear();
             const month = String(val.getMonth() + 1); // Adding 1 cause months are 0-indexed
             const day = String(val.getDate()); //
-            val = `${year}/${month}/${day}`; // Reformatted date string and impliclity pruning timpstamp
+            val = `${month}/${day}/${year}`; // Reformatted date string (mm/dd/yyyy) and impliclity pruning timpstamp
         }
 
         onChange({ target: { name: e.target?.name ?? name, value: val } });
