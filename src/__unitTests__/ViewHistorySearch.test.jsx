@@ -1,5 +1,5 @@
 // Set up basic imports
-import { vi } from 'vitest'
+import { describe, expect, vi } from 'vitest'
 // https://testing-library.com/docs/react-testing-library/example-intro/
 // Import needed react testing methods
 import { render, screen, fireEvent } from '@testing-library/react'
@@ -59,17 +59,22 @@ const getSearchInput = () => {
   )
 }
 
+// Helper to establish render()
+const setRender = () => {
+    render(
+        <MemoryRouter>
+            <ViewHistory />
+        </MemoryRouter>
+    )
+}
+
 
 // Positive tests
 describe("ViewHistory Search Bar: Positive Test", () => {
     // Test search input rendering
     test("search input is rendered", () => {
         // Render the ViewHistory component inside Memory Router
-        render(
-            <MemoryRouter>
-                <ViewHistory />
-            </MemoryRouter>
-        )
+        setRender()
 
         // Expect that the placeholder text is there
         expect (
@@ -81,24 +86,18 @@ describe("ViewHistory Search Bar: Positive Test", () => {
 
     // Test debounce
     test("typing called debounced search after 350ms", async () => {
-        render(
-            <MemoryRouter>
-                <ViewHistory /> 
-            </MemoryRouter>
-        )
+        
+        setRender()
         // Use helper to get search input
         const input = getSearchInput()
         expect(input).toBeInTheDocument()
 
         // Without this, we would have to wait for a debounce for the test to finish
         vi.useFakeTimers()
-
-
         // Fire a search for job:27 which exists in the database
         fireEvent.change(input, {target: {value: 'job:27' } })
         // Followed by what your expecting
         expect(input.value).toBe('job:27')
-
         // Trigger debounce with advance timers - 350ms
         vi.advanceTimersByTime(350)
 
@@ -108,5 +107,61 @@ describe("ViewHistory Search Bar: Positive Test", () => {
 
         // Reset timers
         vi.useRealTimers()
+    })
+
+    // Empty search should not call the api - Same conceptual workflow as positive test
+    test("empty search input triggers backend call to fetch all data",  async () => {
+        
+        setRender()
+        // Get search input
+        const input = getSearchInput()
+        expect(input).toBeInTheDocument()
+
+        vi.useFakeTimers()
+        // Simulate empty string inputted
+        fireEvent.change(input, {target: {value: ''}})
+        // Trigger debounce
+        vi.advanceTimersByTime(350)
+
+        
+        const supabase = await import('../api/supabaseClient')
+        // Expect back end call on an empty search - display everything
+        expect(supabase.default.from).toHaveBeenCalled()
+        // reset timer
+        vi.useRealTimers()
+    })
+
+    // Test rendering of search results 
+    test("search results are correctly displayed on page", async () => {
+
+        
+        
+
+    })
+})
+
+// Negative tests
+describe("ViewHistory Search bar: Negative tests", () => {
+
+    // Test invalid input - incorrect filter does not make back end calls and renders empty state
+    test("invalid input does not trigger back end calls", async () => {
+
+        setRender()
+
+        const supabase = await import('../api/supabaseClient')
+        // Clear any calls
+        supabase.default.from.mockClear()
+
+        const input = getSearchInput()
+        expect(input).toBeInTheDocument()
+
+        vi.useFakeTimers()
+        fireEvent.change(input, { target: { value: 'invalid:|||'}})
+        vi.advanceTimersByTime(350)
+
+        // Expect no back end calls
+        expect(supabase.default.from).not.toHaveBeenCalled()
+        vi.useRealTimers()
+
     })
 })
