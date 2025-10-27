@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import styles from './Login.module.css'
 import showPasswordIcon from '../assets/show_password_icon.svg'
 import { useNavigate } from 'react-router-dom'
-import { UserAuth } from '../context/AuthContext'
+import { UserAuth } from '../auth/AuthContext'
 import supabase from '../api/supabaseClient'
 
 const Login = () => {

@@ -38,20 +38,20 @@ const FSboard = () => {
     }
 
     return (
-        <div className='w-full max-h-screen flex flex-col my-2 shadow-[0_0_5px_5px_rgba(0,0,0,0.05)] rounded-md'>
+        <div className='w-full flex flex-col my-4 shadow-[0_0_5px_5px_rgba(0,0,0,0.05)] rounded-md'>
             <FSBheader />
             {jobs.map((job, index) => (
                 <JobListing
                     key={job.id} // the primary key for each job
                     id={job.id}
-
                     {...job}
                     handleClaimJob={() => {
                         // need to refresh jobs after claiming'
-                        setLoading(true);
-                        getJobsArray().then(setJobs).finally(() => setLoading(false));
-                    }} 
-
+                        setLoading(true)
+                        getJobsArray()
+                            .then(setJobs)
+                            .finally(() => setLoading(false))
+                    }}
                     region={job.region}
                     hall={job.hall}
                     open={job.open}

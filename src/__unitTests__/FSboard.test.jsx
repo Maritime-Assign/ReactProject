@@ -7,7 +7,7 @@ import { vi } from 'vitest'
 import FSBoard from '../pages/FSboard'
 import getJobsArray from "../components/jobDataAPI";
 
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../auth/AuthContext', () => ({
     UserAuth: () => ({ user: {
         id: '1',
         email: 'test@example.com'
@@ -42,7 +42,7 @@ describe('FSBoard components', () => {
         region: 'OAK',
         hall: 'SEA',
         open: false,
-        FillDate: 'CHS',
+        FillDate: '2/10/2025',
         dateCalled: '2/4/2025',
         shipName: 'Bob Hope',
         joinDate: 'ASAP',
@@ -94,6 +94,6 @@ describe('FSBoard components', () => {
         )
         await waitForElementToBeRemoved(() => screen.queryByText("Loading jobs..."));
         expect(screen.getAllByText('Open')).toHaveLength(1)
-        expect(screen.getAllByText('Claimed on CHS')).toHaveLength(1)
+        expect(screen.getAllByText('Filled 02/10/2025')).toHaveLength(1)
     })
 })

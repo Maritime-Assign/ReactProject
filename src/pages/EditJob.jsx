@@ -1,14 +1,14 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom'
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { UserAuth } from '../context/AuthContext'
+import { UserAuth } from '../auth/AuthContext'
 import { updateJob } from '../utils/jobHistoryOptimized'
 
 const EditJob = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const { user } = UserAuth();
-    const { jobData } = location.state || {};  // Access the job data
+    const location = useLocation()
+    const navigate = useNavigate()
+    const { user } = UserAuth()
+    const { jobData } = location.state || {} // Access the job data
 
     // Form state for all editable fields
     const [formData, setFormData] = useState({
@@ -24,14 +24,14 @@ const EditJob = () => {
         company: jobData?.company || '',
         billet: jobData?.billet || '',
         type: jobData?.type || '',
-        crewRelieved: jobData?.crewRelieved || ''
-    });
+        crewRelieved: jobData?.crewRelieved || '',
+    })
 
     const [status, setStatus] = useState(formData.open)
-    const [message, setMessage] = useState('');
-    const [messageType, setMessageType] = useState(''); // 'success' or 'error'
-    const [window, setWindow] = useState(false);
-    const [saving, setSaving] = useState(false);
+    const [message, setMessage] = useState('')
+    const [messageType, setMessageType] = useState('') // 'success' or 'error'
+    const [window, setWindow] = useState(false)
+    const [saving, setSaving] = useState(false)
 
     // Update form data when jobData changes
     useEffect(() => {
@@ -49,71 +49,71 @@ const EditJob = () => {
                 company: jobData.company || '',
                 billet: jobData.billet || '',
                 type: jobData.type || '',
-                crewRelieved: jobData.crewRelieved || ''
-            });
+                crewRelieved: jobData.crewRelieved || '',
+            })
         }
-    }, [jobData]);
+    }, [jobData])
 
     const handleInputChange = (field, value) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [field]: value
-        }));
-    };
+            [field]: value,
+        }))
+    }
 
     const save = async () => {
         if (!user) {
-            setMessage('You must be logged in to edit jobs.');
-            setMessageType('error');
-            setWindow(true);
-            return;
+            setMessage('You must be logged in to edit jobs.')
+            setMessageType('error')
+            setWindow(true)
+            return
         }
 
         if (!jobData?.id) {
-            setMessage('Invalid job data. Cannot save changes.');
-            setMessageType('error');
-            setWindow(true);
-            return;
+            setMessage('Invalid job data. Cannot save changes.')
+            setMessageType('error')
+            setWindow(true)
+            return
         }
 
-        setSaving(true);
-        
+        setSaving(true)
+
         try {
             // Prepare the updated data (history logging handled automatically by database triggers)
             const updatedData = {
-                ...formData
-            };
+                ...formData,
+            }
 
             // Update the job
-            const result = await updateJob(jobData.id, updatedData);
-            
+            const result = await updateJob(jobData.id, updatedData)
+
             if (result.success) {
-                setMessage('Job updated successfully!');
-                setMessageType('success');
-                setWindow(true);
-                
+                setMessage('Job updated successfully!')
+                setMessageType('success')
+                setWindow(true)
+
                 // Optionally navigate back after a delay
                 setTimeout(() => {
-                    navigate('/board');
-                }, 2000);
+                    navigate('/board')
+                }, 2000)
             } else {
-                console.error('Failed to update job:', result.error);
-                setMessage('Failed to update job. Please try again.');
-                setMessageType('error');
-                setWindow(true);
+                console.error('Failed to update job:', result.error)
+                setMessage('Failed to update job. Please try again.')
+                setMessageType('error')
+                setWindow(true)
             }
         } catch (error) {
-            console.error('Error updating job:', error);
-            setMessage('An error occurred while updating the job.');
-            setMessageType('error');
-            setWindow(true);
+            console.error('Error updating job:', error)
+            setMessage('An error occurred while updating the job.')
+            setMessageType('error')
+            setWindow(true)
         } finally {
-            setSaving(false);
+            setSaving(false)
         }
-    };
+    }
 
     const closeWindow = () => {
-        setWindow(false);
+        setWindow(false)
     }
 
     // status color green if state is true, red if false (open vs filled)
@@ -131,25 +131,31 @@ const EditJob = () => {
                 {/* Row 1: Ship Name, regions, Halls, Status 3 Col Grid*/}
                 <div className='grid grid-cols-3 gap-2 py-2 font-semibold text-white'>
                     <input
-                        type="text"
+                        type='text'
                         value={formData.shipName}
-                        onChange={(e) => handleInputChange('shipName', e.target.value)}
-                        placeholder="Ship Name"
+                        onChange={(e) =>
+                            handleInputChange('shipName', e.target.value)
+                        }
+                        placeholder='Ship Name'
                         className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white placeholder-gray-300'
                     />
                     <div className='grid grid-cols-2 gap-1'>
                         <input
-                            type="text"
+                            type='text'
                             value={formData.region}
-                            onChange={(e) => handleInputChange('region', e.target.value)}
-                            placeholder="Region"
+                            onChange={(e) =>
+                                handleInputChange('region', e.target.value)
+                            }
+                            placeholder='Region'
                             className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white placeholder-gray-300 text-sm'
                         />
                         <input
-                            type="text"
+                            type='text'
                             value={formData.hall}
-                            onChange={(e) => handleInputChange('hall', e.target.value)}
-                            placeholder="Hall"
+                            onChange={(e) =>
+                                handleInputChange('hall', e.target.value)
+                            }
+                            placeholder='Hall'
                             className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white placeholder-gray-300 text-sm'
                         />
                     </div>
@@ -157,13 +163,13 @@ const EditJob = () => {
                     <select
                         value={formData.open ? 'Open' : 'Filled'}
                         onChange={(e) => {
-                            const isOpen = e.target.value === 'Open';
-                            handleInputChange('open', isOpen);
+                            const isOpen = e.target.value === 'Open'
+                            handleInputChange('open', isOpen)
                         }}
                         className={`${statusColor} px-2 py-1 rounded-md text-white text-center`}
                     >
-                        <option value="Open">Open</option>
-                        <option value="Filled">Filled</option>
+                        <option value='Open'>Open</option>
+                        <option value='Filled'>Filled</option>
                     </select>
                 </div>
                 {/* Row 2: Notes */}
@@ -171,73 +177,91 @@ const EditJob = () => {
                     <span className='font-semibold'>Requirements/Notes:</span>
                     <textarea
                         value={formData.notes}
-                        onChange={(e) => handleInputChange('notes', e.target.value)}
-                        placeholder="Enter notes/requirements"
+                        onChange={(e) =>
+                            handleInputChange('notes', e.target.value)
+                        }
+                        placeholder='Enter notes/requirements'
                         rows={2}
-                        className="bg-mebablue-light py-1 rounded-md text-white outline-none w-full mx-auto placeholder-gray-300"
+                        className='bg-mebablue-light py-1 rounded-md text-white outline-none w-full mx-auto placeholder-gray-300'
                     />
                 </div>
                 {/* Row 3: Details 4 col Grid */}
                 <div className='grid grid-cols-4 gap-2 font-medium text-sm py-2 w-full mx-auto'>
                     <input
-                        type="text"
+                        type='text'
                         value={formData.location}
-                        onChange={(e) => handleInputChange('location', e.target.value)}
-                        placeholder="Location"
+                        onChange={(e) =>
+                            handleInputChange('location', e.target.value)
+                        }
+                        placeholder='Location'
                         className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-2 placeholder-gray-300'
                     />
                     <input
-                        type="text"
+                        type='text'
                         value={formData.days}
-                        onChange={(e) => handleInputChange('days', e.target.value)}
-                        placeholder="Days"
+                        onChange={(e) =>
+                            handleInputChange('days', e.target.value)
+                        }
+                        placeholder='Days'
                         className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-2 placeholder-gray-300'
                     />
                     <input
-                        type="date"
+                        type='date'
                         value={formData.dateCalled}
-                        onChange={(e) => handleInputChange('dateCalled', e.target.value)}
+                        onChange={(e) =>
+                            handleInputChange('dateCalled', e.target.value)
+                        }
                         className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-2'
                     />
                     <input
-                        type="date"
+                        type='date'
                         value={formData.joinDate}
-                        onChange={(e) => handleInputChange('joinDate', e.target.value)}
+                        onChange={(e) =>
+                            handleInputChange('joinDate', e.target.value)
+                        }
                         className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-2'
                     />
                     <input
-                        type="text"
+                        type='text'
                         value={formData.company}
-                        onChange={(e) => handleInputChange('company', e.target.value)}
-                        placeholder="Company"
+                        onChange={(e) =>
+                            handleInputChange('company', e.target.value)
+                        }
+                        placeholder='Company'
                         className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-2 placeholder-gray-300'
                     />
                     <input
-                        type="text"
+                        type='text'
                         value={formData.billet}
-                        onChange={(e) => handleInputChange('billet', e.target.value)}
-                        placeholder="Billet"
+                        onChange={(e) =>
+                            handleInputChange('billet', e.target.value)
+                        }
+                        placeholder='Billet'
                         className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-2 placeholder-gray-300'
                     />
                     <input
-                        type="text"
+                        type='text'
                         value={formData.type}
-                        onChange={(e) => handleInputChange('type', e.target.value)}
-                        placeholder="Type"
+                        onChange={(e) =>
+                            handleInputChange('type', e.target.value)
+                        }
+                        placeholder='Type'
                         className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-2 placeholder-gray-300'
                     />
                     <input
-                        type="text"
+                        type='text'
                         value={formData.crewRelieved}
-                        onChange={(e) => handleInputChange('crewRelieved', e.target.value)}
-                        placeholder="Crew Relieved"
+                        onChange={(e) =>
+                            handleInputChange('crewRelieved', e.target.value)
+                        }
+                        placeholder='Crew Relieved'
                         className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-2 placeholder-gray-300'
                     />
                 </div>
             </div>
 
             {/* Exit and Save Button, Exit redirect to Job board, Save result in a status message */}
-            <div className="flex justify-center gap-4 p-4">
+            <div className='flex justify-center gap-4 p-4'>
                 <Link to='/board'>
                     {/* Exit button is linked directly to the job board */}
                     <button className='bg-red-500 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 hover:bg-red-600'>
@@ -262,22 +286,32 @@ const EditJob = () => {
             {/* Message Popup */}
             {window && (
                 <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
-                    <div className={`p-6 rounded-md shadow-lg max-w-sm w-full border ${
-                        messageType === 'success'
-                            ? 'bg-green-100 border-green-300'
-                            : 'bg-red-100 border-red-300'
-                    }`}>
-                        <h2 className={`text-xl font-semibold ${
-                            messageType === 'success' ? 'text-green-800' : 'text-red-800'
-                        }`}>
+                    <div
+                        className={`p-6 rounded-md shadow-lg max-w-sm w-full border ${
+                            messageType === 'success'
+                                ? 'bg-green-100 border-green-300'
+                                : 'bg-red-100 border-red-300'
+                        }`}
+                    >
+                        <h2
+                            className={`text-xl font-semibold ${
+                                messageType === 'success'
+                                    ? 'text-green-800'
+                                    : 'text-red-800'
+                            }`}
+                        >
                             {messageType === 'success' ? 'Success!' : 'Error'}
                         </h2>
-                        <p className={`mt-2 ${
-                            messageType === 'success' ? 'text-green-700' : 'text-red-700'
-                        }`}>
+                        <p
+                            className={`mt-2 ${
+                                messageType === 'success'
+                                    ? 'text-green-700'
+                                    : 'text-red-700'
+                            }`}
+                        >
                             {message}
                         </p>
-                        <div className="mt-6 flex justify-center w-full">
+                        <div className='mt-6 flex justify-center w-full'>
                             <button
                                 onClick={closeWindow}
                                 className={`py-2 px-4 rounded-md text-white ${
@@ -293,7 +327,7 @@ const EditJob = () => {
                 </div>
             )}
         </div>
-    );
-};
+    )
+}
 
-export default EditJob;
+export default EditJob

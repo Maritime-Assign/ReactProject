@@ -77,15 +77,18 @@ describe('View Changes Page Tests', () => {
     expect(screen.getByText(/Grouped View/i)).toBeInTheDocument()
   })
 
-  test('renders filter button', () => {
-    render(
-      <MemoryRouter>
-        <ViewHistory />
-      </MemoryRouter>
-    )
+  // Feature replaced with search bar - Target test is commented out below
+  // Replacement test for search bar will be in its own test file 
+  
+  //test('renders filter button', () => {
+    //render(
+      //<MemoryRouter>
+       // <ViewHistory />
+      //</MemoryRouter>
+   // )
 
     // Filter button should be present
-    const filterButtons = screen.getAllByTitle(/Toggle Filters/i)
-    expect(filterButtons.length).toBeGreaterThan(0)
-  })
+    //const filterButtons = screen.getAllByTitle(/Toggle Filters/i)
+    //expect(filterButtons.length).toBeGreaterThan(0)
+  //})
 })
