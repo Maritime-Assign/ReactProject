@@ -103,7 +103,7 @@ const setRender = () => {
 // Positive tests
 describe("ViewHistory Search Bar: Positive Test", () => {
     // Test search input rendering
-    test("search input is rendered", () => {
+    test("Search bar placeholder text is rendered", () => {
         // Render the ViewHistory component inside Memory Router
         setRender()
 
@@ -209,6 +209,36 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         vi.useRealTimers()
     })
 
+    // Test clearing the input resets the results to the unfiltered state
+    test('clearing the input resets results to unfiltered state', async () => {
+        
+        const supabase = await import('../api/supabaseClient')
+        supabase.default.from.mockClear()
+
+        vi.useFakeTimers()
+
+        setRender()
+        const input = getSearchInput()
+
+        // Simulate a valid filtered search
+        fireEvent.change(input, { target: { value: 'job:27' } })
+        // Trigger debounce
+        await act(async () => {
+            vi.advanceTimersByTime(350)
+        })
+
+        // Input is cleared
+        fireEvent.change(input, { target: { value: '' } })
+        // Debounce triggered again
+        await act(async () => {
+            vi.advanceTimersByTime(350)
+        })
+
+        // Expect back end call to fetch all entries
+        expect(supabase.default.from).toHaveBeenCalled()
+
+        vi.useRealTimers()
+    })
 })
 
 // Negative tests
