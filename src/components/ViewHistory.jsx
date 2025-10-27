@@ -2,11 +2,20 @@ import React, { useState, useEffect } from 'react'
 import supabase from '../api/supabaseClient'
 import { IoArrowBack, IoRefresh, IoFilter, IoDownload, IoChevronDown, IoChevronUp, IoCopy, IoListOutline } from 'react-icons/io5'
 import { BiSort } from 'react-icons/bi'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { formatJobHistoryRecord, getJobStateComparison } from '../utils/jobHistoryOptimized'
 import HistoryPopout from './HistoryPopout'
+import EditJobModal from './EditJobModal'
+//import { clear } from '@testing-library/user-event/dist/cjs/utility/clear.js'
+// clear icon for search bar
+import { IoClose } from 'react-icons/io5'
 
 const ViewHistory = () => {
+    const ITEMS_PER_PAGE = 25
+
+    //used for URL updates based on search params
+    const location = useLocation()
+
     const navigate = useNavigate()
     const [logs, setLogs] = useState([])
     const [groupedLogs, setGroupedLogs] = useState([])
@@ -26,21 +35,258 @@ const ViewHistory = () => {
     const [copySuccess, setCopySuccess] = useState('')
     const [selectedJobId, setSelectedJobId] = useState(null)
     const [viewMode, setViewMode] = useState('grouped') // 'grouped' or 'flat'
+    const [showEditModal, setShowEditModal] = useState(false)
+    const [selectedJobForEdit, setSelectedJobForEdit] = useState(null)
 
-    const ITEMS_PER_PAGE = 25
+    // Define searchQuery State
+    const [searchQuery, setSearchQuery] = useState('')
+    // Define state for debounce
+    const [debouncedQuery, setDebouncedQuery] = useState(searchQuery)
+
+    // Used to prevent stale requests and manage search state
+    // token request method
+    const latestFetchID = React.useRef(0)
+
+    // Define debounce timer - 350 seems good
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedQuery(searchQuery)
+        }, 350)
+
+        // clear prior timeout
+        return () => clearTimeout(handler)
+
+    }, [searchQuery])
+    // Debounce when query changes
+    // Track last applied filter and skip fetch when nothing is changed
+    const lastFilters = React.useRef(null)
+    useEffect(() => {
+        if (debouncedQuery.trim() !== '') {
+            const newFilters = detectSearchType(debouncedQuery)
+            if (JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)) {
+                handleSearch(debouncedQuery)
+                lastFilters.current = newFilters
+            }
+            //handleSearch(debouncedQuery)
+        } else {
+            clearFilters()
+            lastFilters.current = null
+        }
+    }, [debouncedQuery])
+
+    // useEffect for search/pagination
+    useEffect(() => {
+        const params = new URLSearchParams(location.search)
+        const query = params.get('q') || ''
+        const page = parseInt(params.get('page'), 10) || 1
+
+        if (query) {
+            // Populate search, set page and trigger debounce effect
+            setSearchQuery(query)
+            setCurrentPage(page)
+            setDebouncedQuery(query)
+        }
+    }, [location.search])
+
+
+
+
+    // Build helper function to detect if its a jobid/username/date/etc
+    const detectSearchType = (query) => {
+        if (!query) return null
+
+        const trimmed = query.trim()
+
+        // Check if jobId
+        if (trimmed.startsWith('job:')) {
+            const jobIdValue = trimmed.slice(4).trim()
+            if(!jobIdValue) return null
+            if (/^\d+$/.test(jobIdValue)) {
+                return { type: 'jobid', value: jobIdValue }
+            }
+            return null
+        }
+
+        // Check if date
+        if (trimmed.startsWith('date:')) {
+            let dateValue = trimmed.slice(5).trim()
+            if (!dateValue) return null
+
+            // YYYY
+            if (/^\d{4}$/.test(dateValue)) return { type: 'date', value: { type: 'year', value: dateValue } }
+
+            // YYYY-MM or YYYY-M
+            if (/^\d{4}-\d{1,2}$/.test(dateValue)) {
+                let [year, month] = dateValue.split('-')
+                month = month.padStart(2, '0')
+                return { type: 'date', value: { type: 'month', year, month } }
+            }
+
+            // YYYY-MM-DD or YYYY-M-D
+            if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateValue)) {
+                let [year, month, day] = dateValue.split('-')
+                month = month.padStart(2, '0')
+                day = day.padStart(2, '0')
+                return { type: 'date', value: { type: 'day', year, month, day } }
+            }
+            return null
+        }
+
+
+        // Check if username
+        if (trimmed.startsWith('user:')) {
+            const usernameValue = trimmed.slice(5).trim()
+            if(!usernameValue) return null
+            return { type: 'username', value: usernameValue }
+        }
+
+        // Return null if its none of the types above
+        return null
+    }
+
+
+
+    // Build function to handle the search and refetch logs
+    const handleSearch = async (query) => {
+        const trimmedQuery = query.trim()
+
+        // If the search bar is empty, show everything
+        if (!trimmedQuery) {
+            clearFilters()
+            //setFilters({ jobId: '', dateFrom: '', dateTo: '', userId: '' })
+            //setCurrentPage(1)
+            //fetchLogs(1, { jobId: '', dateFrom: '', dateTo: '', userId: '' })
+            //fetchSummaryData()
+            return
+        }
+
+        const result = detectSearchType(trimmedQuery)
+
+        // If invalid search input, do not show anything
+        if (!result) {
+            //clearFilters()
+            setLogs([])
+            setGroupedLogs([])
+            setTotalCount(0)
+            setSummary({
+                totalActions: 0,
+                newJobs: 0,
+                updatedJobs: 0,
+                recentActivity: []
+            })
+            //setFilters({ jobId: '', dateFrom: '', dateTo: '', userId: '' })
+            setLoading(false)
+            return
+        }
+
+        const newFilters = { jobId: '', dateFrom: '', dateTo: '', userId: '' }
+        // handle the filter types
+        switch (result.type) {
+            // handle jobid
+            case 'jobid':
+                newFilters.jobId = result.value
+                break
+            // handle username
+            case 'username':
+                const { data: userData, error: userError } = await supabase
+                    .from('Users')
+                    .select('UUID')
+                    .ilike('username', `${result.value}%`)
+                // handle empty data or error
+                if (userError || !userData || userData.length === 0) {
+                    //clearFilters()
+                    setLogs([])
+                    setGroupedLogs([])
+                    setTotalCount(0)
+                    setSummary({
+                        totalActions: 0,
+                        newJobs: 0,
+                        updatedJobs: 0,
+                        recentActivity: []
+                    })
+                    setLoading(false)
+                    return
+                }
+                // Turn objects into ID list and store it
+                const userIds = userData.map(u => u.UUID)
+                newFilters.userId = userIds
+                break
+            // handle date
+            case 'date':
+                const dateObj = result.value
+                // YYYY
+                if (dateObj.type === 'year') {
+                    newFilters.dateFrom = `${dateObj.value}-01-01`
+                    newFilters.dateTo = `${dateObj.value}-12-31`
+                }
+                // YYYY-MM
+                if (dateObj.type === 'month') {
+                    const lastDay = new Date(Number(dateObj.year), Number(dateObj.month), 0).getDate()
+                    newFilters.dateFrom = `${dateObj.year}-${dateObj.month}-01`
+                    newFilters.dateTo = `${dateObj.year}-${dateObj.month}-${lastDay}`
+                }
+                // YYYY-MM-DD
+                if (dateObj.type === 'day') {
+                    newFilters.dateFrom = `${dateObj.year}-${dateObj.month}-${dateObj.day}`
+                    newFilters.dateTo   = `${dateObj.year}-${dateObj.month}-${dateObj.day}`
+                }
+                break
+        }
+
+        setFilters(newFilters)
+        setCurrentPage(1)
+
+        // Update the URL without causing a reload
+        navigate({
+            pathname: '/history',
+            search: `?q=${encodeURIComponent(trimmedQuery)}&page=1`
+        }, { replace: true })
+
+
+        // Fetch logs ONLY if filters are valid
+        if (newFilters.jobId || newFilters.userId || (newFilters.dateFrom && newFilters.dateTo)) {
+            await fetchLogs(1, newFilters)
+            await fetchSummaryData(newFilters)
+        } 
+        else {
+            //clearFilters()
+            setLogs([])
+            setGroupedLogs([])
+            setTotalCount(0)
+            setSummary({
+                totalActions: 0,
+                newJobs: 0,
+                updatedJobs: 0,
+                recentActivity: []
+            })
+            setLoading(false)
+        }
+    }
+
 
     // Fetch job history logs
     const fetchLogs = async (page = 1, currentFilters = filters) => {
         setLoading(true)
         setError(null)
 
+        // capture fetchid and increment
+        const fetchId = ++latestFetchID.current
+
         try {
+            let logsData
             if (viewMode === 'grouped') {
                 // Fetch grouped view - only most recent change per job
-                await fetchGroupedLogs(page, currentFilters)
+                logsData = await fetchGroupedLogs(page, currentFilters)
             } else {
                 // Fetch flat view - all history records
-                await fetchFlatLogs(page, currentFilters)
+                logsData = await fetchFlatLogs(page, currentFilters)
+            }
+            // only update state if the fetch is the current one
+            if(fetchId === latestFetchID.current) {
+                if (viewMode === 'grouped') setGroupedLogs(logsData.logs)
+                else setLogs(logsData.logs)
+                setTotalCount(logsData.totalCount || 0)
+                setLoading(false)
             }
         } catch (err) {
             setError('An error occurred while loading data')
@@ -72,8 +318,8 @@ const ViewHistory = () => {
                 jobIdsQuery = jobIdsQuery.lte('change_time', currentFilters.dateTo + 'T23:59:59')
             }
 
-            if (currentFilters.userId && currentFilters.userId.trim()) {
-                jobIdsQuery = jobIdsQuery.eq('changed_by_user_id', currentFilters.userId.trim())
+            if (currentFilters.userId && currentFilters.userId.length > 0) {
+                jobIdsQuery = jobIdsQuery.in('changed_by_user_id', currentFilters.userId)
             }
 
             const { data: allJobIds, error: jobIdsError } = await jobIdsQuery
@@ -111,8 +357,8 @@ const ViewHistory = () => {
                     query = query.lte('change_time', currentFilters.dateTo + 'T23:59:59')
                 }
 
-                if (currentFilters.userId && currentFilters.userId.trim()) {
-                    query = query.eq('changed_by_user_id', currentFilters.userId.trim())
+                if (currentFilters.userId && currentFilters.userId.length > 0) {
+                    query = query.in('changed_by_user_id', currentFilters.userId)
                 }
 
                 const { data, error } = await query
@@ -126,9 +372,10 @@ const ViewHistory = () => {
             groupedData.sort((a, b) => new Date(b.change_time) - new Date(a.change_time))
 
             const formattedLogs = groupedData.map(formatJobHistoryRecord)
-            setGroupedLogs(formattedLogs)
-            setTotalCount(totalUniqueJobs)
-            setLoading(false)
+            //setGroupedLogs(formattedLogs)
+            //setTotalCount(totalUniqueJobs)
+            //setLoading(false)
+            return {logs: formattedLogs, totalCount: totalUniqueJobs}
         } catch (err) {
             setError('An error occurred while loading grouped data')
             console.error(err)
@@ -158,8 +405,8 @@ const ViewHistory = () => {
                 query = query.lte('change_time', currentFilters.dateTo + 'T23:59:59')
             }
 
-            if (currentFilters.userId && currentFilters.userId.trim()) {
-                query = query.eq('changed_by_user_id', currentFilters.userId.trim())
+            if (currentFilters.userId && currentFilters.userId.length > 0) {
+                query = query.in('changed_by_user_id', currentFilters.userId)
             }
 
             // Apply pagination
@@ -175,9 +422,10 @@ const ViewHistory = () => {
             }
 
             const formattedLogs = data ? data.map(formatJobHistoryRecord) : []
-            setLogs(formattedLogs)
-            setTotalCount(count || 0)
-            setLoading(false)
+            //setLogs(formattedLogs)
+            //setTotalCount(count || 0)
+            //setLoading(false)
+            return { logs: formattedLogs, totalCount: count || 0}
         } catch (err) {
             setError('An error occurred while loading flat data')
             console.error(err)
@@ -186,18 +434,26 @@ const ViewHistory = () => {
     }
 
     // Fetch summary data
-    const fetchSummaryData = async () => {
+    const fetchSummaryData = async (currentFilters = filters) => {
         try {
             let query = supabase
                 .from('JobsHistory')
                 .select('*')
 
-            if (filters.dateFrom) {
-                query = query.gte('change_time', filters.dateFrom)
+            // Filter for job id
+            if (currentFilters.jobId && currentFilters.jobId.trim()) {
+                query = query.eq('job_id', currentFilters.jobId.trim())
             }
 
-            if (filters.dateTo) {
-                query = query.lte('change_time', filters.dateTo + 'T23:59:59')
+            if (currentFilters.dateFrom) {
+                query = query.gte('change_time', currentFilters.dateFrom)
+            }
+
+            if (currentFilters.dateTo) {
+                query = query.lte('change_time', currentFilters.dateTo + 'T23:59:59')
+            }
+            if (currentFilters.userId && currentFilters.userId.length > 0) {
+                query = query.in('changed_by_user_id', currentFilters.userId)
             }
 
             const { data, error: summaryError } = await query
@@ -234,24 +490,32 @@ const ViewHistory = () => {
         fetchSummaryData()
     }
 
-    const clearFilters = () => {
+    const clearFilters = async () => {
         const clearedFilters = { jobId: '', dateFrom: '', dateTo: '', userId: '' }
         setFilters(clearedFilters)
         setCurrentPage(1)
-        fetchLogs(1, clearedFilters)
-        fetchSummaryData()
+        await fetchLogs(1, clearedFilters)
+        await fetchSummaryData(clearedFilters)
     }
 
     // Handle pagination
-    const handlePageChange = (newPage) => {
+    const handlePageChange =  async (newPage) => {
         setCurrentPage(newPage)
-        fetchLogs(newPage)
+        await fetchLogs(newPage)
+
+        // Update URL with search and page num without causing a reload on page
+        const params = new URLSearchParams(location.search)
+        params.set('page',newPage)
+        navigate({
+            pathname: '/history',
+            search: params.toString()
+        }, {replace: true})
     }
 
     // Refresh data
-    const handleRefresh = () => {
-        fetchLogs(currentPage)
-        fetchSummaryData()
+    const handleRefresh = async () => {
+        await fetchLogs(currentPage)
+        await fetchSummaryData()
     }
 
     // Toggle view mode
@@ -268,6 +532,43 @@ const ViewHistory = () => {
     // Close history popout
     const closeHistoryPopout = () => {
         setSelectedJobId(null)
+    }
+
+    // Open edit job modal
+    const openEditJobModal = async (jobId) => {
+        try {
+            // Fetch the current job data
+            const { data, error } = await supabase
+                .from('Jobs')
+                .select('*')
+                .eq('id', jobId)
+                .single()
+
+            if (error) {
+                console.error('Error fetching job for edit:', error)
+                return
+            }
+
+            if (data) {
+                setSelectedJobForEdit(data)
+                setShowEditModal(true)
+            }
+        } catch (err) {
+            console.error('Exception fetching job:', err)
+        }
+    }
+
+    // Close edit job modal
+    const closeEditJobModal = () => {
+        setShowEditModal(false)
+        setSelectedJobForEdit(null)
+    }
+
+    // Handle job save from modal
+    const handleJobSave = (updatedJob) => {
+        // Refresh the history view
+        fetchLogs(currentPage)
+        closeEditJobModal()
     }
 
     // Toggle expanded row
@@ -354,14 +655,49 @@ ${log.new_state}`
                 >
                     <IoArrowBack className='w-6 h-6' />
                 </button>
-
-                <div className='w-full text-center'>
+                {/*Title text*/}
+                <div className='flex-grow text-center'>
                     <span className='text-white text-2xl font-medium'>
                         Job Board History & Changes
                     </span>
                 </div>
+                {/* Search Bar */}
+                <div className='flex-grow mx-4 relative overflow-visible'>
+                    <input
+                        type='text'
+                        placeholder='Search (user:name, job:21, date:2025, date:2025-10-15)'
+                        className='w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                            if(e.key === 'Enter') {
+                                // Enter triggers the same behavior as letting debounce elapse
+                                e.preventDefault()
+                                setDebouncedQuery(searchQuery)
+                            }
+                        }}
+                    />
+                    {/* Loading spinner */}
+                    {loading && (
+                        <div className='absolute right-10 top-1/2 -translate-y-1/2 animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4'></div>
+                    )}
+                    {/*Clear filter button*/}
+                    {searchQuery && (
+                        <button
+                            onClick={() => {
+                                setSearchQuery('')
+                                clearFilters()
+                            }}
+                            className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1'
+                        >
+                            <IoClose className='w-5 h-5' />
+                        </button>
+                    )}
+                </div>
 
-                <div className='absolute right-4 flex gap-2'>
+
+                {/* icons */}
+                <div className='flex gap-2 mr-4'>
                     <button
                         onClick={toggleViewMode}
                         className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
@@ -369,13 +705,16 @@ ${log.new_state}`
                     >
                         <IoListOutline className='w-5 h-5' />
                     </button>
-                    <button
+                    
+                    {/*<button
                         onClick={() => setShowFilters(!showFilters)}
                         className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
                         title='Toggle Filters'
                     >
+                    
                         <IoFilter className='w-5 h-5' />
                     </button>
+                    */}
                     <button
                         onClick={handleRefresh}
                         className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
@@ -422,7 +761,7 @@ ${log.new_state}`
             </div>
 
             {/* Filters */}
-            {showFilters && (
+            {/*{showFilters && (
                 <div className='bg-white rounded-lg shadow p-4 mb-4'>
                     <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
                         <div>
@@ -470,12 +809,14 @@ ${log.new_state}`
                     </div>
                 </div>
             )}
+                */}
 
             {/* Loading State */}
             {loading && (
-                <div className='flex justify-center items-center py-12'>
-                    <div className='text-lg text-gray-600'>Loading history...</div>
-                </div>
+                <div className='flex flex-col items-center gap-2 text-gray-600'>
+                    <div className='w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin'></div>
+                <div>Loading history...</div>
+            </div>
             )}
 
             {/* Error State */}
@@ -609,16 +950,30 @@ ${log.new_state}`
                                                 </div>
                                             </td>
                                             <td className='px-6 py-4 whitespace-nowrap text-sm'>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        copyToClipboard(getFullContentForCopy(log), log.id)
-                                                    }}
-                                                    className='text-mebablue-dark hover:text-mebablue-hover'
-                                                    title='Copy full details'
-                                                >
-                                                    <IoCopy className='w-4 h-4' />
-                                                </button>
+                                                <div className='flex gap-2'>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            openEditJobModal(log.job_id)
+                                                        }}
+                                                        className='text-blue-600 hover:text-blue-800'
+                                                        title='Edit Job'
+                                                    >
+                                                        <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' />
+                                                        </svg>
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            copyToClipboard(getFullContentForCopy(log), log.id)
+                                                        }}
+                                                        className='text-mebablue-dark hover:text-mebablue-hover'
+                                                        title='Copy full details'
+                                                    >
+                                                        <IoCopy className='w-4 h-4' />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                         {viewMode === 'flat' && expandedRows.has(log.id) && (
@@ -798,6 +1153,15 @@ ${log.new_state}`
                     jobId={selectedJobId}
                     onClose={closeHistoryPopout}
                     initialData={groupedLogs.find(log => log.job_id === selectedJobId)}
+                />
+            )}
+
+            {/* Edit Job Modal */}
+            {showEditModal && selectedJobForEdit && (
+                <EditJobModal
+                    jobData={selectedJobForEdit}
+                    onClose={closeEditJobModal}
+                    onSave={handleJobSave}
                 />
             )}
         </div>
