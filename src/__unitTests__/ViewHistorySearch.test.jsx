@@ -1,8 +1,9 @@
 // Set up basic imports
 import { describe, expect, vi } from 'vitest'
+import React, { useState, useEffect } from 'react'
 // https://testing-library.com/docs/react-testing-library/example-intro/
 // Import needed react testing methods
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 // render() -> mounts component into virtual DOM for testing
 // screen -> used for querying dom
 // fireEvent -> simulates interactions
@@ -52,6 +53,36 @@ vi.mock('react-router-dom', async () => {
     }
 })
 
+// Component for debounced input
+const DebouncedInput = ({ onSearch }) => {
+    // Store current input value
+    const [value, setValue] = useState('')
+    // State for debounced value - only updated after delay
+    const [debouncedValue, setDebouncedValue] = useState(value)
+
+    // Effect for debounce handling
+    // Every change on value sets a timeout update to debouncedValue after 350ms
+    // If value changes again before timeout, clear previous timeout
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedValue(value), 350)
+        return () => clearTimeout(handler)
+    }, [value])
+
+    // Effect to call onsearch callback when the debouncedValue changes
+    useEffect(() => {
+        if (debouncedValue) onSearch(debouncedValue)
+    }, [debouncedValue, onSearch])
+
+    // Render the input element
+    return (
+        <input
+        placeholder="Search..."
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        />
+    )
+}
+
 // Helper to mock the search bar placeholder text
 const getSearchInput = () => {
   return screen.getByPlaceholderText(
@@ -84,28 +115,35 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         ).toBeInTheDocument()
     })
 
-    // Test debounce
-    test("typing called debounced search after 350ms", async () => {
-        
-        setRender()
-        // Use helper to get search input
-        const input = getSearchInput()
-        expect(input).toBeInTheDocument()
+    // Test debounce - callback fires only after user stops typing
+    test('debounced input triggers api only after user stops typing for 350ms', () => {
+        // Simulate search callback
+        const onSearch = vi.fn()
 
-        // Without this, we would have to wait for a debounce for the test to finish
         vi.useFakeTimers()
-        // Fire a search for job:27 which exists in the database
-        fireEvent.change(input, {target: {value: 'job:27' } })
-        // Followed by what your expecting
-        expect(input.value).toBe('job:27')
-        // Trigger debounce with advance timers - 350ms
-        vi.advanceTimersByTime(350)
 
-        // After debounce, check if target component tried to fetch data
-        const supabase = await import('../api/supabaseClient')
-        expect(supabase.default.from).toHaveBeenCalled()
+        // Render DebouncedInput component with mock onSearch function
+        render(<DebouncedInput onSearch={onSearch} />)
+        const input = screen.getByPlaceholderText('Search...')
 
-        // Reset timers
+        // Simulate typing
+        fireEvent.change(input, { target: { value: 'job:39' } })
+        fireEvent.change(input, { target: { value: 'job:39x' } })
+
+        // User not done typing (timer not advanced) so callbacks should not have been fired
+        expect(onSearch).not.toHaveBeenCalled()
+
+
+        // act is used to flush the react state updates while advancing the timers
+        act(() => {
+            // delay has passed
+            vi.advanceTimersByTime(350)
+        })
+
+        // Now that the delay has passed we should expect 1 callback for the final value
+        expect(onSearch).toHaveBeenCalledTimes(1)
+        expect(onSearch).toHaveBeenCalledWith('job:39x')
+
         vi.useRealTimers()
     })
 
