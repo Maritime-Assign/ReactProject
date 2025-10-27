@@ -176,6 +176,39 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         
 
     })
+    // Test older api calls are canceled or ignored if user types again before debounce is triggered
+    test('cancels previous api calls if a new query is entered before debounce', () => {
+
+        // Mock onSearch callback to track calls and arguments
+        const onSearch = vi.fn()
+
+        vi.useFakeTimers()
+
+        // Render debounced component 
+        render(<DebouncedInput onSearch={onSearch} />)
+        const input = screen.getByPlaceholderText('Search...')
+
+        // Users start typing the first query
+        fireEvent.change(input, { target: { value: 'job:1' } })
+        // Debounce not triggered, still typing - time has passed, but not 350ms
+        act(() => {
+            vi.advanceTimersByTime(200)
+        })
+        // User finally finished typing the new query - this should cancel the first pending callback
+        fireEvent.change(input, { target: { value: 'job:12' } })
+
+        // Trigger debounce
+        act(() => {
+            vi.advanceTimersByTime(350)
+        })
+
+        // Expect the callback fired once and only for the finish typed query
+        expect(onSearch).toHaveBeenCalledTimes(1)
+        expect(onSearch).toHaveBeenCalledWith('job:12')
+
+        vi.useRealTimers()
+    })
+
 })
 
 // Negative tests
