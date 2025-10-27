@@ -109,9 +109,9 @@ const stateFlush_timerIncrement = (time) => {
 
 
 // Positive tests
-describe("ViewHistory Search Bar: Positive Test", () => {
+describe("ViewHistory Search Bar: Positive Tests", () => {
     // Test search input rendering
-    test("Search bar placeholder text is rendered", () => {
+    test("search bar placeholder text is rendered", () => {
         // Render the ViewHistory component inside Memory Router
         setRender()
 
@@ -141,8 +141,6 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         // User not done typing (timer not advanced) so callbacks should not have been fired
         expect(onSearch).not.toHaveBeenCalled()
 
-
-        // act is used to flush the react state updates while advancing the timers
         stateFlush_timerIncrement(350)
 
         // Now that the delay has passed we should expect 1 callback for the final value
@@ -152,7 +150,7 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         vi.useRealTimers()
     })
 
-    // Empty search should not call the api - Same conceptual workflow as positive test
+    // Empty search should not call the api
     test("empty search input triggers backend call to fetch all data",  async () => {
         
         setRender()
@@ -204,7 +202,7 @@ describe("ViewHistory Search Bar: Positive Test", () => {
     })
 
     // Test clearing the input resets the results to the unfiltered state and that the clear button functional does the same
-    test('clearing the input resets results to unfiltered state', async () => {
+    test('clearing the input or pressing the clear button resets results to unfiltered state', async () => {
         
         const supabase = await import('../api/supabaseClient')
         supabase.default.from.mockClear()
@@ -251,7 +249,7 @@ describe("ViewHistory Search Bar: Positive Test", () => {
 })
 
 // Negative tests
-describe("ViewHistory Search bar: Negative tests", () => {
+describe("ViewHistory Search bar: Negative Tests", () => {
 
     // Test invalid input - incorrect filter does not make back end calls and renders empty state
     test("invalid input does not trigger back end calls", async () => {
