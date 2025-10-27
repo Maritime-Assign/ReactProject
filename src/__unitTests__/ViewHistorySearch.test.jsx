@@ -99,6 +99,14 @@ const setRender = () => {
     )
 }
 
+// Helper to flush React state and advance timer
+const stateFlush_timerIncrement = (time) => {
+    act(() => {
+        vi.advanceTimersByTime(time)
+    })
+}
+
+
 
 // Positive tests
 describe("ViewHistory Search Bar: Positive Test", () => {
@@ -135,10 +143,7 @@ describe("ViewHistory Search Bar: Positive Test", () => {
 
 
         // act is used to flush the react state updates while advancing the timers
-        act(() => {
-            // delay has passed
-            vi.advanceTimersByTime(350)
-        })
+        stateFlush_timerIncrement(350)
 
         // Now that the delay has passed we should expect 1 callback for the final value
         expect(onSearch).toHaveBeenCalledTimes(1)
@@ -159,7 +164,7 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         // Simulate empty string inputted
         fireEvent.change(input, {target: {value: ''}})
         // Trigger debounce
-        vi.advanceTimersByTime(350)
+        stateFlush_timerIncrement(350)
 
         
         const supabase = await import('../api/supabaseClient')
@@ -169,13 +174,6 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         vi.useRealTimers()
     })
 
-    // Test rendering of search results 
-    test("search results are correctly displayed on page", async () => {
-
-        
-        
-
-    })
     // Test older api calls are canceled or ignored if user types again before debounce is triggered
     test('cancels previous api calls if a new query is entered before debounce', () => {
 
@@ -191,16 +189,12 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         // Users start typing the first query
         fireEvent.change(input, { target: { value: 'job:1' } })
         // Debounce not triggered, still typing - time has passed, but not 350ms
-        act(() => {
-            vi.advanceTimersByTime(200)
-        })
+        stateFlush_timerIncrement(200)
         // User finally finished typing the new query - this should cancel the first pending callback
         fireEvent.change(input, { target: { value: 'job:12' } })
 
         // Trigger debounce
-        act(() => {
-            vi.advanceTimersByTime(350)
-        })
+        stateFlush_timerIncrement(350)
 
         // Expect the callback fired once and only for the finish typed query
         expect(onSearch).toHaveBeenCalledTimes(1)
@@ -223,16 +217,12 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         // Simulate a valid filtered search
         fireEvent.change(input, { target: { value: 'job:27' } })
         // Trigger debounce
-        await act(async () => {
-            vi.advanceTimersByTime(350)
-        })
+        stateFlush_timerIncrement(350)
 
         // Input is cleared
         fireEvent.change(input, { target: { value: '' } })
         // Debounce triggered again
-        await act(async () => {
-            vi.advanceTimersByTime(350)
-        })
+        stateFlush_timerIncrement(350)
 
         // Expect back end call to fetch all entries
         expect(supabase.default.from).toHaveBeenCalled()
@@ -244,17 +234,13 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         fireEvent.change(input, {target:{value: 'job:27'}})
 
         // Trigger debounce
-        await act(async () => {
-            vi.advanceTimersByTime(350)
-        })
+        stateFlush_timerIncrement(350)
 
         // Target clear button and fire
         const clearButton = screen.getByTestId('clearButton')
         fireEvent.click(clearButton)
         // Trigger debounce
-        await act(async () =>{
-            vi.advanceTimersByTime(350)
-        })
+        stateFlush_timerIncrement(350)
 
         // Expect another call to back end, total 2
         expect(supabase.default.from).toHaveBeenCalled(2)
@@ -281,7 +267,7 @@ describe("ViewHistory Search bar: Negative tests", () => {
 
         vi.useFakeTimers()
         fireEvent.change(input, { target: { value: 'invalid:|||'}})
-        vi.advanceTimersByTime(350)
+        stateFlush_timerIncrement(350)
 
         // Expect no back end calls
         expect(supabase.default.from).not.toHaveBeenCalled()
