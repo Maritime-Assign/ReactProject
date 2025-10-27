@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { UserAuth } from '../context/AuthContext'
+import { UserAuth } from '../auth/AuthContext'
 import { updateJob } from '../utils/jobHistoryOptimized'
 import supabase from '../api/supabaseClient'
 
 const EditJobModal = ({ jobData, onClose, onSave }) => {
     const { user } = UserAuth()
-    
+
     // Form state for all editable fields
     const [formData, setFormData] = useState({
         shipName: jobData?.shipName || '',
@@ -20,7 +20,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
         company: jobData?.company || '',
         billet: jobData?.billet || '',
         type: jobData?.type || '',
-        crewRelieved: jobData?.crewRelieved || ''
+        crewRelieved: jobData?.crewRelieved || '',
     })
 
     const [message, setMessage] = useState('')
@@ -46,19 +46,19 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                 company: jobData.company || '',
                 billet: jobData.billet || '',
                 type: jobData.type || '',
-                crewRelieved: jobData.crewRelieved || ''
+                crewRelieved: jobData.crewRelieved || '',
             })
         }
     }, [jobData])
 
     const handleInputChange = (field, value) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [field]: value
+            [field]: value,
         }))
         // Clear error for this field when user starts typing
         if (errors[field]) {
-            setErrors(prev => ({ ...prev, [field]: '' }))
+            setErrors((prev) => ({ ...prev, [field]: '' }))
         }
     }
 
@@ -67,56 +67,61 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
 
         // Ship name required and cannot exceed 50 characters
         if (!formData.shipName.trim()) {
-            newErrors.shipName = "Ship name is required."
+            newErrors.shipName = 'Ship name is required.'
         } else if (formData.shipName.length > 50) {
-            newErrors.shipName = "Ship name cannot exceed 50 characters."
+            newErrors.shipName = 'Ship name cannot exceed 50 characters.'
         }
 
         // Location required and can't exceed 50 chars
         if (!formData.location) {
-            newErrors.location = "Location is required."
+            newErrors.location = 'Location is required.'
         } else if (formData.location && formData.location.length > 50) {
-            newErrors.location = "Location cannot exceed 50 characters."
+            newErrors.location = 'Location cannot exceed 50 characters.'
         }
 
         // Days required and must be non-negative & numeric
-        if (formData.days === "" || formData.days === null || formData.days === undefined) {
-            newErrors.days = "Number of days required."
+        if (
+            formData.days === '' ||
+            formData.days === null ||
+            formData.days === undefined
+        ) {
+            newErrors.days = 'Number of days required.'
         } else if (formData.days && isNaN(formData.days)) {
-            newErrors.days = "Please enter a number"
+            newErrors.days = 'Please enter a number'
         } else if (formData.days < 0) {
-            newErrors.days = "No negative input allowed"
+            newErrors.days = 'No negative input allowed'
         }
 
         // dateCalled and joinDate required
         if (!formData.dateCalled) {
-            newErrors.dateCalled = "Date called is required."
+            newErrors.dateCalled = 'Date called is required.'
         }
 
         if (!formData.joinDate) {
-            newErrors.joinDate = "Join Date is required"
+            newErrors.joinDate = 'Join Date is required'
         }
 
         // Company required and cannot exceed 50 chars
         if (!formData.company) {
-            newErrors.company = "Company is required"
+            newErrors.company = 'Company is required'
         } else if (formData.company && formData.company.length > 50) {
-            newErrors.company = "Company cannot exceed 50 characters."
+            newErrors.company = 'Company cannot exceed 50 characters.'
         }
 
         // Crew relieved cannot exceed 100 chars
         if (formData.crewRelieved && formData.crewRelieved.length > 100) {
-            newErrors.crewRelieved = "Crew Relieved cannot exceed 100 characters."
+            newErrors.crewRelieved =
+                'Crew Relieved cannot exceed 100 characters.'
         }
 
         // Billet is required
         if (!formData.billet) {
-            newErrors.billet = "Please select a billet"
+            newErrors.billet = 'Please select a billet'
         }
 
         // Type required
         if (!formData.type) {
-            newErrors.type = "Please select type."
+            newErrors.type = 'Please select type.'
         }
 
         setErrors(newErrors)
@@ -143,20 +148,20 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
         }
 
         setSaving(true)
-        
+
         try {
             // Update the job
             const result = await updateJob(jobData.id, formData)
-            
+
             if (result.success) {
                 setMessage('Job updated successfully!')
                 setMessageType('success')
-                
+
                 // Call onSave callback with updated data
                 if (onSave) {
                     onSave(result.data)
                 }
-                
+
                 // Close modal after a brief delay
                 setTimeout(() => {
                     onClose()
@@ -189,7 +194,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
         }
 
         setArchiving(true)
-        
+
         try {
             // Update job to set archivedJob to true
             const { data, error } = await supabase
@@ -206,12 +211,12 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
             } else {
                 setMessage('Job archived successfully!')
                 setMessageType('success')
-                
+
                 // Call onSave callback with updated data
                 if (onSave) {
                     onSave(data)
                 }
-                
+
                 // Close modal after a brief delay
                 setTimeout(() => {
                     onClose()
@@ -238,36 +243,47 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         Edit Job
                     </span>
                 </div>
-                
+
                 {/* Tile Content container*/}
                 <div className='flex flex-col w-full h-full px-4 mx-auto py-4'>
                     {/* Row 1: Ship Name, regions, Halls, Status 3 Col Grid*/}
                     <div className='grid grid-cols-3 gap-2 py-2 font-semibold text-white'>
                         <div>
                             <input
-                                type="text"
+                                type='text'
                                 value={formData.shipName}
-                                onChange={(e) => handleInputChange('shipName', e.target.value)}
-                                placeholder="Ship Name"
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'shipName',
+                                        e.target.value
+                                    )
+                                }
+                                placeholder='Ship Name'
                                 className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white placeholder-gray-300 w-full'
                             />
                             {errors.shipName && (
-                                <span className="text-red-400 text-xs block mt-1">{errors.shipName}</span>
+                                <span className='text-red-400 text-xs block mt-1'>
+                                    {errors.shipName}
+                                </span>
                             )}
                         </div>
                         <div className='grid grid-cols-2 gap-1'>
                             <input
-                                type="text"
+                                type='text'
                                 value={formData.region}
-                                onChange={(e) => handleInputChange('region', e.target.value)}
-                                placeholder="Region"
+                                onChange={(e) =>
+                                    handleInputChange('region', e.target.value)
+                                }
+                                placeholder='Region'
                                 className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white placeholder-gray-300 text-sm'
                             />
                             <input
-                                type="text"
+                                type='text'
                                 value={formData.hall}
-                                onChange={(e) => handleInputChange('hall', e.target.value)}
-                                placeholder="Hall"
+                                onChange={(e) =>
+                                    handleInputChange('hall', e.target.value)
+                                }
+                                placeholder='Hall'
                                 className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white placeholder-gray-300 text-sm'
                             />
                         </div>
@@ -280,122 +296,168 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                             }}
                             className={`${statusColor} px-2 py-1 rounded-md text-white text-center`}
                         >
-                            <option value="Open">Open</option>
-                            <option value="Filled">Filled</option>
+                            <option value='Open'>Open</option>
+                            <option value='Filled'>Filled</option>
                         </select>
                     </div>
-                    
+
                     {/* Row 2: Notes */}
                     <div className='bg-mebablue-light rounded-md py-2 px-4 text-sm font-medium flex-col flex text-white items-center w-full mx-auto'>
-                        <span className='font-semibold'>Requirements/Notes:</span>
+                        <span className='font-semibold'>
+                            Requirements/Notes:
+                        </span>
                         <textarea
                             value={formData.notes}
-                            onChange={(e) => handleInputChange('notes', e.target.value)}
-                            placeholder="Enter notes/requirements"
+                            onChange={(e) =>
+                                handleInputChange('notes', e.target.value)
+                            }
+                            placeholder='Enter notes/requirements'
                             maxLength={250}
                             rows={2}
-                            className="bg-mebablue-light py-1 rounded-md text-white outline-none w-full mx-auto placeholder-gray-300"
+                            className='bg-mebablue-light py-1 rounded-md text-white outline-none w-full mx-auto placeholder-gray-300'
                         />
                     </div>
-                    
+
                     {/* Row 3: Details 4 col Grid */}
                     <div className='grid grid-cols-4 gap-2 font-medium text-sm py-2 w-full mx-auto'>
                         <div className='col-span-2'>
                             <input
-                                type="text"
+                                type='text'
                                 value={formData.location}
-                                onChange={(e) => handleInputChange('location', e.target.value)}
-                                placeholder="Location"
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'location',
+                                        e.target.value
+                                    )
+                                }
+                                placeholder='Location'
                                 className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white placeholder-gray-300 w-full'
                             />
                             {errors.location && (
-                                <span className="text-red-400 text-xs block mt-1">{errors.location}</span>
+                                <span className='text-red-400 text-xs block mt-1'>
+                                    {errors.location}
+                                </span>
                             )}
                         </div>
                         <div className='col-span-2'>
                             <input
-                                type="number"
+                                type='number'
                                 value={formData.days}
-                                onChange={(e) => handleInputChange('days', e.target.value)}
-                                placeholder="Days"
-                                min="0"
+                                onChange={(e) =>
+                                    handleInputChange('days', e.target.value)
+                                }
+                                placeholder='Days'
+                                min='0'
                                 className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white placeholder-gray-300 w-full'
                             />
                             {errors.days && (
-                                <span className="text-red-400 text-xs block mt-1">{errors.days}</span>
+                                <span className='text-red-400 text-xs block mt-1'>
+                                    {errors.days}
+                                </span>
                             )}
                         </div>
                         <div className='col-span-2'>
                             <input
-                                type="date"
+                                type='date'
                                 value={formData.dateCalled}
-                                onChange={(e) => handleInputChange('dateCalled', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'dateCalled',
+                                        e.target.value
+                                    )
+                                }
                                 className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
                             />
                             {errors.dateCalled && (
-                                <span className="text-red-400 text-xs block mt-1">{errors.dateCalled}</span>
+                                <span className='text-red-400 text-xs block mt-1'>
+                                    {errors.dateCalled}
+                                </span>
                             )}
                         </div>
                         <div className='col-span-2'>
                             <input
-                                type="date"
+                                type='date'
                                 value={formData.joinDate}
-                                onChange={(e) => handleInputChange('joinDate', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'joinDate',
+                                        e.target.value
+                                    )
+                                }
                                 className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
                             />
                             {errors.joinDate && (
-                                <span className="text-red-400 text-xs block mt-1">{errors.joinDate}</span>
+                                <span className='text-red-400 text-xs block mt-1'>
+                                    {errors.joinDate}
+                                </span>
                             )}
                         </div>
                         <div className='col-span-2'>
                             <input
-                                type="text"
+                                type='text'
                                 value={formData.company}
-                                onChange={(e) => handleInputChange('company', e.target.value)}
-                                placeholder="Company"
+                                onChange={(e) =>
+                                    handleInputChange('company', e.target.value)
+                                }
+                                placeholder='Company'
                                 className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white placeholder-gray-300 w-full'
                             />
                             {errors.company && (
-                                <span className="text-red-400 text-xs block mt-1">{errors.company}</span>
+                                <span className='text-red-400 text-xs block mt-1'>
+                                    {errors.company}
+                                </span>
                             )}
                         </div>
                         <div className='col-span-1'>
                             <select
                                 value={formData.billet}
-                                onChange={(e) => handleInputChange('billet', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange('billet', e.target.value)
+                                }
                                 className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
                             >
-                                <option value="">Billet</option>
-                                <option value="1A/E">1A/E</option>
-                                <option value="2A/E">2A/E</option>
-                                <option value="3M">3M</option>
-                                <option value="CM">CM</option>
-                                <option value="Relief">Relief</option>
+                                <option value=''>Billet</option>
+                                <option value='1A/E'>1A/E</option>
+                                <option value='2A/E'>2A/E</option>
+                                <option value='3M'>3M</option>
+                                <option value='CM'>CM</option>
+                                <option value='Relief'>Relief</option>
                             </select>
                             {errors.billet && (
-                                <span className="text-red-400 text-xs block mt-1">{errors.billet}</span>
+                                <span className='text-red-400 text-xs block mt-1'>
+                                    {errors.billet}
+                                </span>
                             )}
                         </div>
                         <div className='col-span-1'>
                             <select
                                 value={formData.type}
-                                onChange={(e) => handleInputChange('type', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange('type', e.target.value)
+                                }
                                 className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
                             >
-                                <option value="">Type</option>
-                                <option value="Permanent">Permanent</option>
-                                <option value="Relief">Relief</option>
-                                <option value="Temp">Temp</option>
+                                <option value=''>Type</option>
+                                <option value='Permanent'>Permanent</option>
+                                <option value='Relief'>Relief</option>
+                                <option value='Temp'>Temp</option>
                             </select>
                             {errors.type && (
-                                <span className="text-red-400 text-xs block mt-1">{errors.type}</span>
+                                <span className='text-red-400 text-xs block mt-1'>
+                                    {errors.type}
+                                </span>
                             )}
                         </div>
                         <input
-                            type="text"
+                            type='text'
                             value={formData.crewRelieved}
-                            onChange={(e) => handleInputChange('crewRelieved', e.target.value)}
-                            placeholder="Crew Relieved"
+                            onChange={(e) =>
+                                handleInputChange(
+                                    'crewRelieved',
+                                    e.target.value
+                                )
+                            }
+                            placeholder='Crew Relieved'
                             maxLength={100}
                             className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-4 placeholder-gray-300'
                         />
@@ -403,7 +465,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex justify-between gap-4 p-4 bg-mebablue-hover sticky bottom-0">
+                <div className='flex justify-between gap-4 p-4 bg-mebablue-hover sticky bottom-0'>
                     <button
                         className='bg-red-500 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 hover:bg-red-600'
                         onClick={() => setShowConfirmArchive(true)}
@@ -411,7 +473,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                     >
                         Remove Job
                     </button>
-                    <div className="flex gap-4">
+                    <div className='flex gap-4'>
                         <button
                             className='bg-gray-500 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 hover:bg-gray-600'
                             onClick={onClose}
@@ -427,7 +489,11 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                             }`}
                             onClick={save}
                             disabled={saving || !user || archiving}
-                            title={!user ? 'You must be logged in to edit jobs' : ''}
+                            title={
+                                !user
+                                    ? 'You must be logged in to edit jobs'
+                                    : ''
+                            }
                         >
                             {saving ? 'Saving...' : 'Save'}
                         </button>
@@ -437,22 +503,34 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                 {/* Message Popup */}
                 {message && (
                     <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
-                        <div className={`p-6 rounded-md shadow-lg max-w-sm w-full border ${
-                            messageType === 'success'
-                                ? 'bg-green-100 border-green-300'
-                                : 'bg-red-100 border-red-300'
-                        }`}>
-                            <h2 className={`text-xl font-semibold ${
-                                messageType === 'success' ? 'text-green-800' : 'text-red-800'
-                            }`}>
-                                {messageType === 'success' ? 'Success!' : 'Error'}
+                        <div
+                            className={`p-6 rounded-md shadow-lg max-w-sm w-full border ${
+                                messageType === 'success'
+                                    ? 'bg-green-100 border-green-300'
+                                    : 'bg-red-100 border-red-300'
+                            }`}
+                        >
+                            <h2
+                                className={`text-xl font-semibold ${
+                                    messageType === 'success'
+                                        ? 'text-green-800'
+                                        : 'text-red-800'
+                                }`}
+                            >
+                                {messageType === 'success'
+                                    ? 'Success!'
+                                    : 'Error'}
                             </h2>
-                            <p className={`mt-2 ${
-                                messageType === 'success' ? 'text-green-700' : 'text-red-700'
-                            }`}>
+                            <p
+                                className={`mt-2 ${
+                                    messageType === 'success'
+                                        ? 'text-green-700'
+                                        : 'text-red-700'
+                                }`}
+                            >
                                 {message}
                             </p>
-                            <div className="mt-6 flex justify-center w-full">
+                            <div className='mt-6 flex justify-center w-full'>
                                 <button
                                     onClick={() => setMessage('')}
                                     className={`py-2 px-4 rounded-md text-white ${
@@ -472,11 +550,15 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                 {showConfirmArchive && (
                     <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
                         <div className='bg-white p-6 rounded-md shadow-lg max-w-sm w-full border border-orange-300'>
-                            <h2 className='text-xl font-semibold text-orange-800'>Confirm Archive</h2>
+                            <h2 className='text-xl font-semibold text-orange-800'>
+                                Confirm Archive
+                            </h2>
                             <p className='mt-2 text-gray-700'>
-                                Are you sure you want to archive this job? It will be hidden from the FSBoard and Manage Jobs pages, but will remain visible in Job History.
+                                Are you sure you want to archive this job? It
+                                will be hidden from the FSBoard and Manage Jobs
+                                pages, but will remain visible in Job History.
                             </p>
-                            <div className="mt-6 flex justify-end gap-4">
+                            <div className='mt-6 flex justify-end gap-4'>
                                 <button
                                     onClick={() => setShowConfirmArchive(false)}
                                     className='bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600'
