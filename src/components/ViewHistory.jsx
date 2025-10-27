@@ -605,6 +605,29 @@ ${log.new_state}`
 
     const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
+    // Check if a job is closed, a job is considered closed if it's not explicitly open
+    const isJobClosed = (log) => {
+        const s = log?.newStateFormatted || {}
+        return typeof s.open === "boolean" ? s.open === false : true
+    }
+
+    // Function to edit a job's status to open, refresh the page on call
+    const reopenJob = async (jobId) => {
+        const { error } = await supabase
+            .from('Jobs')
+            .update({ open: true })
+            .eq('id', jobId);
+
+        if (error) {
+            console.error(`Failed to reopen job ${jobId}:`, error);
+        } else {
+            console.log(`Job ${jobId} reopened (open = true).`);
+            await handleRefresh();
+        }
+    };
+        
+
+
     return (
         <div className='w-full pt-4 flex flex-col max-w-[1280px] mx-auto font-mont'>
             {/* Header */}
@@ -910,6 +933,17 @@ ${log.new_state}`
                                                 </div>
                                             </td>
                                             <td className='px-6 py-4 whitespace-nowrap text-sm'>
+                                                {isJobClosed(log) && (<button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        reopenJob(log.job_id)
+                                                    }}
+                                                    className='text-mebablue-dark hover:text-mebablue-hover'
+                                                    title='Reopen job'
+                                                    >
+                                                    <IoRefresh className='w-4 h-4' />
+                                                </button>
+                                                )}
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()
