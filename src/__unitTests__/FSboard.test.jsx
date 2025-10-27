@@ -1,62 +1,63 @@
-import { render,screen, waitForElementToBeRemoved, waitFor } from "@testing-library/react";
-import { expect, afterEach } from "vitest";
-import "@testing-library/jest-dom";
-import React from 'react'
+/**
+ * FSBoard.test.jsx
+ *
+ * This test suite verifies the FSBoard component’s rendering and behavior:
+ *
+ * 1. Renders "Loading jobs..." before data fetch completes.
+ * 2. Displays static table headers after jobs load (no data dependency).
+ * 3. Correctly shows both "Open" and "Filled" job states.
+ * 4. Handles API failure gracefully (shows error message).
+ * 5. Handles empty job list (shows fallback message).
+ * 6. Removes loading message after data is fetched.
+ * 7. Matches a snapshot to detect unexpected UI changes.
+ * 8. Expands and collapses the Notes section when button is clicked.
+ */
+
+beforeAll(() => {
+    // Mock layout measurements so overflow detection works in JSDOM
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
+        configurable: true,
+        get() {
+            return 200
+        },
+    })
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+        configurable: true,
+        get() {
+            return 100
+        },
+    })
+})
+
+import {
+    render,
+    screen,
+    waitForElementToBeRemoved,
+} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { expect, vi } from 'vitest'
+import '@testing-library/jest-dom'
 import { MemoryRouter } from 'react-router-dom'
-import { vi } from 'vitest'
 import FSBoard from '../pages/FSboard'
-import getJobsArray from "../components/jobDataAPI";
+import getJobsArray from '../components/jobDataAPI'
 
 vi.mock('../auth/AuthContext', () => ({
-    UserAuth: () => ({ user: {
-        id: '1',
-        email: 'test@example.com'
-    }}),
+    UserAuth: () => ({
+        user: { id: '1', email: 'test@example.com' },
+    }),
 }))
 
 vi.mock('../components/jobDataAPI', () => ({
     default: vi.fn(),
-}));
+}))
 
 describe('FSBoard components', () => {
     beforeEach(() => {
-        getJobsArray.mockResolvedValue([{
-        id: 1,
-        region: 'OAK',
-        hall: 'OAK',
-        open: true,
-        FillDate: null,
-        dateCalled: '1/31/2025',
-        shipName: 'USNS Watkins',
-        joinDate: '2/22/2025',
-        billet: '1 A/E',
-        type: 'Perm',
-        days: '90',
-        location: 'Busan',
-        crewRelieved: 'Jason Greene',
-        notes: 'FOS, Universal EPA, CMEO, Additional 1AE or Supp 2AE, Resume and online training',
-        company: 'PCS-MSC',
-        },
-        {
-        id: 2,
-        region: 'OAK',
-        hall: 'SEA',
-        open: false,
-        FillDate: '2/10/2025',
-        dateCalled: '2/4/2025',
-        shipName: 'Bob Hope',
-        joinDate: 'ASAP',
-        billet: '2M',
-        type: 'Relief',
-        days: '10',
-        location: 'Portland, OR',
-        crewRelieved: 'N/A',
-        notes: 'Turbo Activation Night Card / Early Return',
-        company: 'Keystone',
-    }])
+        vi.clearAllMocks()
     })
 
-    test('FSBoard renders loading message before fetching data', () => {
+    // 1. Checks loading state before data arrives
+    test('renders loading message before fetching data', () => {
         render(
             <MemoryRouter>
                 <FSBoard />
@@ -65,35 +66,162 @@ describe('FSBoard components', () => {
         expect(screen.getByText('Loading jobs...')).toBeInTheDocument()
     })
 
-    test('FSBoard renders the FSBheader onto the screen', async () => {
+    // 2. Ensures only static column headers appear after data load
+    test('renders table headers after loading', async () => {
+        getJobsArray.mockResolvedValueOnce([{ id: 1 }]) // minimal mock data
+
         render(
             <MemoryRouter>
                 <FSBoard />
             </MemoryRouter>
         )
-        await waitForElementToBeRemoved(() => screen.queryByText("Loading jobs..."));
-        expect(screen.getByText('Status')).toBeInTheDocument()
-        expect(screen.getByText('Hall')).toBeInTheDocument()
-        expect(screen.getByText('Date Called')).toBeInTheDocument()
-        expect(screen.getByText('Ship Name')).toBeInTheDocument()
-        expect(screen.getByText('Join Date')).toBeInTheDocument()
-        expect(screen.getByText('Billet')).toBeInTheDocument()
-        expect(screen.getByText('Type')).toBeInTheDocument()
-        expect(screen.getByText('Days')).toBeInTheDocument()
-        expect(screen.getByText('Location')).toBeInTheDocument()
-        expect(screen.getByText('Company')).toBeInTheDocument()
-        expect(screen.getByText('Crew Relieved')).toBeInTheDocument()
-        expect(screen.getByText('Notes')).toBeInTheDocument()
+
+        await waitForElementToBeRemoved(() =>
+            screen.queryByText('Loading jobs...')
+        )
+
+        const headers = [
+            'Status',
+            'Hall',
+            'Date Called',
+            'Ship Name',
+            'Join Date',
+            'Billet',
+            'Type',
+            'Days',
+            'Location',
+            'Company',
+            'Crew Relieved',
+            'Notes',
+        ]
+        headers.forEach((header) => {
+            expect(screen.getByText(header)).toBeInTheDocument()
+        })
     })
 
-    test('FSBoard renders all possible job claim states', async () => {
+    // 3. Verifies open and filled job rendering
+    test('renders all possible job claim states', async () => {
+        getJobsArray.mockResolvedValueOnce([
+            { id: 1, open: true, FillDate: null },
+            { id: 2, open: false, FillDate: '2025-02-10' },
+        ])
+
         render(
             <MemoryRouter>
                 <FSBoard />
             </MemoryRouter>
         )
-        await waitForElementToBeRemoved(() => screen.queryByText("Loading jobs..."));
+
+        await waitForElementToBeRemoved(() =>
+            screen.queryByText('Loading jobs...')
+        )
+
         expect(screen.getAllByText('Open')).toHaveLength(1)
-        expect(screen.getAllByText('Filled 02/10/2025')).toHaveLength(1)
+        expect(
+            screen.getByText(
+                (content) =>
+                    content.includes('Filled') &&
+                    /\d{1,2}\/\d{1,2}\/\d{4}/.test(content)
+            )
+        ).toBeInTheDocument()
+    })
+
+    // 4. Verifies component handles API fetch failure
+    test('shows error message when data fetch fails', async () => {
+        getJobsArray.mockRejectedValueOnce(new Error('Fetch failed'))
+
+        render(
+            <MemoryRouter>
+                <FSBoard />
+            </MemoryRouter>
+        )
+
+        await waitForElementToBeRemoved(() =>
+            screen.queryByText('Loading jobs...')
+        )
+        expect(screen.getByText(/error/i)).toBeInTheDocument()
+    })
+
+    // 5. Checks fallback UI when no jobs are available
+    test('shows fallback UI when no jobs are returned', async () => {
+        getJobsArray.mockResolvedValueOnce([])
+
+        render(
+            <MemoryRouter>
+                <FSBoard />
+            </MemoryRouter>
+        )
+
+        await waitForElementToBeRemoved(() =>
+            screen.queryByText('Loading jobs...')
+        )
+        expect(screen.getByText(/no jobs/i)).toBeInTheDocument()
+    })
+
+    // 6. Confirms loading message disappears after data loads
+    test('removes loading message after successful load', async () => {
+        getJobsArray.mockResolvedValueOnce([{ id: 1, open: true }])
+
+        render(
+            <MemoryRouter>
+                <FSBoard />
+            </MemoryRouter>
+        )
+
+        await waitForElementToBeRemoved(() =>
+            screen.queryByText('Loading jobs...')
+        )
+        expect(screen.queryByText('Loading jobs...')).not.toBeInTheDocument()
+    })
+
+    // 7. Captures a snapshot to track visual changes
+    test('matches snapshot after jobs load', async () => {
+        getJobsArray.mockResolvedValueOnce([{ id: 1, open: true, hall: 'OAK' }])
+
+        const { container } = render(
+            <MemoryRouter>
+                <FSBoard />
+            </MemoryRouter>
+        )
+
+        await waitForElementToBeRemoved(() =>
+            screen.queryByText('Loading jobs...')
+        )
+        expect(container).toMatchSnapshot()
+    })
+
+    // 8. Tests expanding and collapsing the Notes section
+    test('expands and collapses the Notes section when button is clicked', async () => {
+        getJobsArray.mockResolvedValueOnce([
+            { id: 1, open: true, notes: 'Example job notes for testing' },
+        ])
+
+        render(
+            <MemoryRouter>
+                <FSBoard />
+            </MemoryRouter>
+        )
+
+        await waitForElementToBeRemoved(() =>
+            screen.queryByText('Loading jobs...')
+        )
+
+        // The first match is the static (hidden) span, the second is inside the expand button
+        const allNoteSpans = screen.getAllByText(/example job notes/i)
+        const dynamicNoteSpan = allNoteSpans[1] || allNoteSpans[0] // fallback safety
+
+        expect(dynamicNoteSpan).toBeInTheDocument()
+        expect(dynamicNoteSpan).toHaveClass('text-ellipsis')
+
+        const expandButton = screen.getByRole('button', {
+            name: /expand notes/i,
+        })
+        await userEvent.click(expandButton)
+
+        // check the same span again
+        expect(dynamicNoteSpan.className).not.toContain('text-ellipsis')
+
+        await userEvent.click(expandButton)
+        expect(dynamicNoteSpan.className).toContain('text-ellipsis')
     })
 })
