@@ -209,7 +209,7 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         vi.useRealTimers()
     })
 
-    // Test clearing the input resets the results to the unfiltered state
+    // Test clearing the input resets the results to the unfiltered state and that the clear button functional does the same
     test('clearing the input resets results to unfiltered state', async () => {
         
         const supabase = await import('../api/supabaseClient')
@@ -237,6 +237,29 @@ describe("ViewHistory Search Bar: Positive Test", () => {
         // Expect back end call to fetch all entries
         expect(supabase.default.from).toHaveBeenCalled()
 
+        // Try the same for the clear button
+        // Note: clear button only appears when there is text to clear
+
+        // Add something into the searchQuery
+        fireEvent.change(input, {target:{value: 'job:27'}})
+
+        // Trigger debounce
+        await act(async () => {
+            vi.advanceTimersByTime(350)
+        })
+
+        // Target clear button and fire
+        const clearButton = screen.getByTestId('clearButton')
+        fireEvent.click(clearButton)
+        // Trigger debounce
+        await act(async () =>{
+            vi.advanceTimersByTime(350)
+        })
+
+        // Expect another call to back end, total 2
+        expect(supabase.default.from).toHaveBeenCalled(2)
+        
+        
         vi.useRealTimers()
     })
 })
