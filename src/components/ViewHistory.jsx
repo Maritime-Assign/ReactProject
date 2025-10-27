@@ -644,6 +644,7 @@ ${log.new_state}`
                     {/*Clear filter button*/}
                     {searchQuery && (
                         <button
+                            data-testid = "clearButton"
                             onClick={() => {
                                 setSearchQuery('')
                                 clearFilters()
