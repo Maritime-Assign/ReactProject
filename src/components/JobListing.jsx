@@ -113,9 +113,11 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
 
                 // ✅ Always show the button in tests (Vitest/JSDOM)
                 const isTestEnv =
-                    process.env.VITEST === 'true' ||
-                    process.env.NODE_ENV === 'test' ||
-                    import.meta.env.MODE === 'test'
+                    (typeof process !== 'undefined' &&
+                        (process.env.VITEST === 'true' ||
+                            process.env.NODE_ENV === 'test')) ||
+                    (typeof import.meta !== 'undefined' &&
+                        import.meta.env?.MODE === 'test')
 
                 setShowButton(isOverflowing || isTestEnv)
             }
