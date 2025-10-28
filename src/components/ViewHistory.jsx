@@ -651,6 +651,29 @@ ${log.new_state}`
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
+    // Check if a job is closed, a job is considered closed if it's not explicitly open
+    const isJobClosed = (log) => {
+        const s = log?.newStateFormatted || {}
+        return typeof s.open === "boolean" ? s.open === false : true
+    }
+
+    // Function to edit a job's status to open, refresh the page on call
+    const reopenJob = async (jobId) => {
+        const { error } = await supabase
+            .from('Jobs')
+            .update({ open: true })
+            .eq('id', jobId);
+
+        if (error) {
+            console.error(`Failed to reopen job ${jobId}:`, error);
+        } else {
+            console.log(`Job ${jobId} reopened (open = true).`);
+            await handleRefresh();
+        }
+    };
+        
+
+
   // Modal open/close handlers for closed jobs
   const openClosedModal = () => {
     setClosedPage(1) // reset modal page
@@ -933,51 +956,57 @@ ${log.new_state}`
     }
   }, [])
 
-  return (
-    <div className="w-full pt-4 flex flex-col max-w-[1280px] mx-auto font-mont">
-      {/* Header */}
-      <div className="flex py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center mb-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300"
-        >
-          <IoArrowBack className="w-6 h-6" />
-        </button>
-        {/*Title text*/}
-        <div className="flex-grow text-center">
-          <span className="text-white text-2xl font-medium">Job Board History & Changes</span>
-        </div>
-        {/* Search Bar */}
-        <div className="flex-grow mx-4 relative overflow-visible">
-          <input
-            type="text"
-            placeholder="Search (user:name, job:21, date:2025, date:2025-10-15)"
-            className="w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                // Enter triggers the same behavior as letting debounce elapse
-                e.preventDefault()
-                setDebouncedQuery(searchQuery)
-              }
-            }}
-          />
-          {/* Loading spinner */}
-          {loading && <div className="absolute right-10 top-1/2 -translate-y-1/2 animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4"></div>}
-          {/*Clear filter button*/}
-          {searchQuery && (
-            <button
-              onClick={() => {
-                setSearchQuery('')
-                clearFilters()
-              }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1"
-            >
-              <IoClose className="w-5 h-5" />
-            </button>
-          )}
-        </div>
+    return (
+        <div className='w-full pt-4 flex flex-col max-w-[1280px] mx-auto font-mont'>
+            {/* Header */}
+            <div className='flex py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center mb-4'>
+                <button
+                    onClick={() => navigate(-1)}
+                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
+                >
+                    <IoArrowBack className='w-6 h-6' />
+                </button>
+                {/*Title text*/}
+                <div className='flex-grow text-center'>
+                    <span className='text-white text-2xl font-medium'>
+                        Job Board History & Changes
+                    </span>
+                </div>
+                {/* Search Bar */}
+                <div className='flex-grow mx-4 relative overflow-visible'>
+                    <input
+                        type='text'
+                        placeholder='Search (user:name, job:21, date:2025, date:2025-10-15)'
+                        className='w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                            if(e.key === 'Enter') {
+                                // Enter triggers the same behavior as letting debounce elapse
+                                e.preventDefault()
+                                setDebouncedQuery(searchQuery)
+                            }
+                        }}
+                    />
+                    {/* Loading spinner */}
+                    {loading && (
+                        <div className='absolute right-10 top-1/2 -translate-y-1/2 animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4'></div>
+                    )}
+                    {/*Clear filter button*/}
+                    {searchQuery && (
+                        <button
+                            data-testid = "clearButton"
+                            onClick={() => {
+                                setSearchQuery('')
+                                clearFilters()
+                            }}
+                            className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1'
+                        >
+                            <IoClose className='w-5 h-5' />
+                        </button>
+                    )}
+                </div>
+
 
         {/* icons */}
         <div className="flex gap-2 mr-4">
@@ -1058,157 +1087,203 @@ ${log.new_state}`
         </div>
       )}
 
-      {/* Job History Table */}
-      {!loading && !error && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8"></th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Details</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Changes Summary</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {(viewMode === 'grouped' ? groupedLogs : logs).map((log) => (
-                  <React.Fragment key={log.id}>
-                    <tr
-                      className={`hover:bg-gray-50 ${viewMode === 'grouped' ? 'cursor-pointer' : ''}`}
-                      onClick={() => viewMode === 'grouped' && openHistoryPopout(log.job_id, log)}
-                    >
-                      <td className="px-2 py-4 text-center">
-                        {viewMode === 'grouped' ? (
-                          <IoChevronDown className="w-5 h-5 text-gray-400" />
-                        ) : (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              toggleRowExpansion(log.id)
-                            }}
-                            className="text-gray-400 hover:text-gray-600"
-                          >
-                            {expandedRows.has(log.id) ? <IoChevronUp className="w-5 h-5" /> : <IoChevronDown className="w-5 h-5" />}
-                          </button>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.formattedDate}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.changed_by_user_id || 'Unknown User'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{log.job_id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            log.isNewJob ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                          }`}
-                        >
-                          {log.isNewJob ? 'Created' : 'Updated'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="font-medium">Job #{log.job_id}</div>
-                        <div className="text-gray-500">{viewMode === 'grouped' ? 'Click to view full history' : 'View details in expanded view'}</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        <div className="max-w-md">
-                          {(() => {
-                            const changes = getJobStateComparison(log.previousStateFormatted, log.newStateFormatted)
-                            const displayChanges = changes.slice(0, 3)
-                            const remainingCount = changes.length - 3
-
-                            return (
-                              <div className="space-y-1">
-                                {displayChanges.map((change, idx) => (
-                                  <div key={idx} className="flex items-center gap-2 text-xs">
-                                    <span
-                                      className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                        change.changeType === 'added' ? 'bg-green-100 text-green-700' : change.changeType === 'removed' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
-                                      }`}
-                                    >
-                                      {change.field}
-                                    </span>
-                                    <span className="text-gray-400">→</span>
-                                    <span className="truncate max-w-[200px]" title={String(change.newValue || 'None')}>
-                                      {String(change.newValue || 'None')}
-                                    </span>
-                                  </div>
-                                ))}
-                                {remainingCount > 0 && (
-                                  <div className="text-xs text-gray-400 italic">+{remainingCount} more change{remainingCount !== 1 ? 's' : ''}</div>
-                                )}
-                              </div>
-                            )
-                          })()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            copyToClipboard(getFullContentForCopy(log), log.id)
-                          }}
-                          className="text-mebablue-dark hover:text-mebablue-hover"
-                          title="Copy full details"
-                        >
-                          <IoCopy className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                    {viewMode === 'flat' && expandedRows.has(log.id) && (
-                      <tr>
-                        <td colSpan="8" className="px-6 py-4 bg-gray-50">
-                          <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                              <h4 className="text-lg font-semibold text-gray-900">Change Summary</h4>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  copyToClipboard(getFullContentForCopy(log), log.id)
-                                }}
-                                className="bg-mebablue-dark text-white px-3 py-1 rounded text-sm hover:bg-mebablue-hover flex items-center gap-2"
-                              >
-                                <IoCopy className="w-4 h-4" />
-                                Copy All
-                              </button>
-                            </div>
-
-                            {/* Spreadsheet-style Field Changes Table */}
-                            <div className="mb-4">
-                              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                  <thead className="bg-gray-100">
-                                    <tr>
-                                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Field</th>
-                                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Previous Value</th>
-                                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase w-24">Change</th>
-                                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">New Value</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="bg-white divide-y divide-gray-200">
-                                    {getJobStateComparison(log.previousStateFormatted, log.newStateFormatted).map((change, index) => (
-                                      <tr key={index} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{change.field}</td>
-                                        <td className="px-4 py-3 text-sm text-gray-700">{change.oldValue || <span className="text-gray-400 italic">None</span>}</td>
-                                        <td className="px-4 py-3 text-center">
-                                          <span
-                                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                              change.changeType === 'added' ? 'bg-green-100 text-green-800' : change.changeType === 'removed' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
-                                            }`}
-                                          >
-                                            {change.changeType === 'added' ? '+ Added' : change.changeType === 'removed' ? '- Removed' : '↻ Modified'}
-                                          </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-700">{change.newValue || <span className="text-gray-400 italic">None</span>}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
+            {/* Job History Table */}
+            {!loading && !error && (
+                <div className='bg-white rounded-lg shadow overflow-hidden'>
+                    <div className='overflow-x-auto'>
+                        <table className='min-w-full divide-y divide-gray-200'>
+                            <thead className='bg-gray-50'>
+                                <tr>
+                                    <th className='px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8'>
+                                        
+                                    </th>
+                                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                                        Date & Time
+                                    </th>
+                                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                                        User
+                                    </th>
+                                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                                        Job ID
+                                    </th>
+                                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                                        Action
+                                    </th>
+                                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                                        Job Details
+                                    </th>
+                                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                                        Changes Summary
+                                    </th>
+                                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className='bg-white divide-y divide-gray-200'>
+                                {(viewMode === 'grouped' ? groupedLogs : logs).map((log) => (
+                                    <React.Fragment key={log.id}>
+                                        <tr
+                                            className={`hover:bg-gray-50 ${viewMode === 'grouped' ? 'cursor-pointer' : ''}`}
+                                            onClick={() => viewMode === 'grouped' && openHistoryPopout(log.job_id, log)}
+                                        >
+                                            <td className='px-2 py-4 text-center'>
+                                                {viewMode === 'grouped' ? (
+                                                    <IoChevronDown className='w-5 h-5 text-gray-400' />
+                                                ) : (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            toggleRowExpansion(log.id)
+                                                        }}
+                                                        className='text-gray-400 hover:text-gray-600'
+                                                    >
+                                                        {expandedRows.has(log.id) ?
+                                                            <IoChevronUp className='w-5 h-5' /> :
+                                                            <IoChevronDown className='w-5 h-5' />
+                                                        }
+                                                    </button>
+                                                )}
+                                            </td>
+                                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
+                                                {log.formattedDate}
+                                            </td>
+                                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
+                                                {log.changed_by_user_id || 'Unknown User'}
+                                            </td>
+                                            <td className='px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900'>
+                                                {log.job_id}
+                                            </td>
+                                            <td className='px-6 py-4 whitespace-nowrap'>
+                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                    log.isNewJob ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                                                }`}>
+                                                    {log.isNewJob ? 'Created' : 'Updated'}
+                                                </span>
+                                            </td>
+                                            <td className='px-6 py-4 text-sm text-gray-900'>
+                                                <div className='font-medium'>Job #{log.job_id}</div>
+                                                <div className='text-gray-500'>
+                                                    {viewMode === 'grouped' ? 'Click to view full history' : 'View details in expanded view'}
+                                                </div>
+                                            </td>
+                                            <td className='px-6 py-4 text-sm text-gray-500'>
+                                                <div className='max-w-md'>
+                                                    {(() => {
+                                                        const changes = getJobStateComparison(log.previousStateFormatted, log.newStateFormatted)
+                                                        const displayChanges = changes.slice(0, 3)
+                                                        const remainingCount = changes.length - 3
+                                                        
+                                                        return (
+                                                            <div className='space-y-1'>
+                                                                {displayChanges.map((change, idx) => (
+                                                                    <div key={idx} className='flex items-center gap-2 text-xs'>
+                                                                        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                                                            change.changeType === 'added' ? 'bg-green-100 text-green-700' :
+                                                                            change.changeType === 'removed' ? 'bg-red-100 text-red-700' :
+                                                                            'bg-blue-100 text-blue-700'
+                                                                        }`}>
+                                                                            {change.field}
+                                                                        </span>
+                                                                        <span className='text-gray-400'>→</span>
+                                                                        <span className='truncate max-w-[200px]' title={String(change.newValue || 'None')}>
+                                                                            {String(change.newValue || 'None')}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                                {remainingCount > 0 && (
+                                                                    <div className='text-xs text-gray-400 italic'>
+                                                                        +{remainingCount} more change{remainingCount !== 1 ? 's' : ''}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )
+                                                    })()}
+                                                </div>
+                                            </td>
+                                            <td className='px-6 py-4 whitespace-nowrap text-sm'>
+                                                {isJobClosed(log) && (<button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        reopenJob(log.job_id)
+                                                    }}
+                                                    className='text-mebablue-dark hover:text-mebablue-hover'
+                                                    title='Reopen job'
+                                                    >
+                                                    <IoRefresh className='w-4 h-4' />
+                                                </button>
+                                                )}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        copyToClipboard(getFullContentForCopy(log), log.id)
+                                                    }}
+                                                    className='text-mebablue-dark hover:text-mebablue-hover'
+                                                    title='Copy full details'
+                                                >
+                                                    <IoCopy className='w-4 h-4' />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {viewMode === 'flat' && expandedRows.has(log.id) && (
+                                            <tr>
+                                                <td colSpan="8" className='px-6 py-4 bg-gray-50'>
+                                                    <div className='space-y-4'>
+                                                        <div className='flex justify-between items-center'>
+                                                            <h4 className='text-lg font-semibold text-gray-900'>Change Summary</h4>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation()
+                                                                    copyToClipboard(getFullContentForCopy(log), log.id)
+                                                                }}
+                                                                className='bg-mebablue-dark text-white px-3 py-1 rounded text-sm hover:bg-mebablue-hover flex items-center gap-2'
+                                                            >
+                                                                <IoCopy className='w-4 h-4' />
+                                                                Copy All
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        {/* Spreadsheet-style Field Changes Table */}
+                                                        <div className="mb-4">
+                                                            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                                                <table className="min-w-full divide-y divide-gray-200">
+                                                                    <thead className="bg-gray-100">
+                                                                        <tr>
+                                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Field</th>
+                                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Previous Value</th>
+                                                                            <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase w-24">Change</th>
+                                                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">New Value</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody className="bg-white divide-y divide-gray-200">
+                                                                        {getJobStateComparison(log.previousStateFormatted, log.newStateFormatted).map((change, index) => (
+                                                                            <tr key={index} className="hover:bg-gray-50">
+                                                                                <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
+                                                                                    {change.field}
+                                                                                </td>
+                                                                                <td className="px-4 py-3 text-sm text-gray-700">
+                                                                                    {change.oldValue || <span className="text-gray-400 italic">None</span>}
+                                                                                </td>
+                                                                                <td className="px-4 py-3 text-center">
+                                                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                                                        change.changeType === 'added' ? 'bg-green-100 text-green-800' :
+                                                                                        change.changeType === 'removed' ? 'bg-red-100 text-red-800' :
+                                                                                        'bg-blue-100 text-blue-800'
+                                                                                    }`}>
+                                                                                        {change.changeType === 'added' ? '+ Added' :
+                                                                                         change.changeType === 'removed' ? '- Removed' :
+                                                                                         '↻ Modified'}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="px-4 py-3 text-sm text-gray-700">
+                                                                                    {change.newValue || <span className="text-gray-400 italic">None</span>}
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
 
                             {/* Complete Job Snapshot */}
                             <div className="mt-4">
