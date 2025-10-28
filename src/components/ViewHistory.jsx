@@ -933,51 +933,57 @@ ${log.new_state}`
     }
   }, [])
 
-  return (
-    <div className="w-full pt-4 flex flex-col max-w-[1280px] mx-auto font-mont">
-      {/* Header */}
-      <div className="flex py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center mb-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300"
-        >
-          <IoArrowBack className="w-6 h-6" />
-        </button>
-        {/*Title text*/}
-        <div className="flex-grow text-center">
-          <span className="text-white text-2xl font-medium">Job Board History & Changes</span>
-        </div>
-        {/* Search Bar */}
-        <div className="flex-grow mx-4 relative overflow-visible">
-          <input
-            type="text"
-            placeholder="Search (user:name, job:21, date:2025, date:2025-10-15)"
-            className="w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                // Enter triggers the same behavior as letting debounce elapse
-                e.preventDefault()
-                setDebouncedQuery(searchQuery)
-              }
-            }}
-          />
-          {/* Loading spinner */}
-          {loading && <div className="absolute right-10 top-1/2 -translate-y-1/2 animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4"></div>}
-          {/*Clear filter button*/}
-          {searchQuery && (
-            <button
-              onClick={() => {
-                setSearchQuery('')
-                clearFilters()
-              }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1"
-            >
-              <IoClose className="w-5 h-5" />
-            </button>
-          )}
-        </div>
+    return (
+        <div className='w-full pt-4 flex flex-col max-w-[1280px] mx-auto font-mont'>
+            {/* Header */}
+            <div className='flex py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center mb-4'>
+                <button
+                    onClick={() => navigate(-1)}
+                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
+                >
+                    <IoArrowBack className='w-6 h-6' />
+                </button>
+                {/*Title text*/}
+                <div className='flex-grow text-center'>
+                    <span className='text-white text-2xl font-medium'>
+                        Job Board History & Changes
+                    </span>
+                </div>
+                {/* Search Bar */}
+                <div className='flex-grow mx-4 relative overflow-visible'>
+                    <input
+                        type='text'
+                        placeholder='Search (user:name, job:21, date:2025, date:2025-10-15)'
+                        className='w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                            if(e.key === 'Enter') {
+                                // Enter triggers the same behavior as letting debounce elapse
+                                e.preventDefault()
+                                setDebouncedQuery(searchQuery)
+                            }
+                        }}
+                    />
+                    {/* Loading spinner */}
+                    {loading && (
+                        <div className='absolute right-10 top-1/2 -translate-y-1/2 animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4'></div>
+                    )}
+                    {/*Clear filter button*/}
+                    {searchQuery && (
+                        <button
+                            data-testid = "clearButton"
+                            onClick={() => {
+                                setSearchQuery('')
+                                clearFilters()
+                            }}
+                            className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1'
+                        >
+                            <IoClose className='w-5 h-5' />
+                        </button>
+                    )}
+                </div>
+
 
         {/* icons */}
         <div className="flex gap-2 mr-4">
