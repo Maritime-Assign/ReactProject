@@ -45,6 +45,9 @@ const createOnSubmit = (user) => async (values, actions) => {
             crewRelieved: values.crewRelieved || null,
             notes: values.notes || null,
             open: values.status === 'Open', // Convert status to boolean - table uses 'open' not 'status'
+            passThru: values.passThru || false,
+            nightCardEarlyReturn: values.nightCardEarlyReturn || false,
+            msc: values.msc || false,
         }
 
         // Debug: Log the exact data being sent
@@ -102,6 +105,9 @@ const AddJob = () => {
             company: '',
             crewRelieved: '',
             notes: '',
+            passThru: false,
+            nightCardEarlyReturn: false,
+            msc: false,
         },
         validationSchema: jobValidationSchema, // bring in Schema from jobValidationSchema.jsx in data dir
         onSubmit: createOnSubmit(user),
@@ -370,7 +376,60 @@ const AddJob = () => {
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
                             />
+                            {/* ✅ Job Flags (stacked vertically in right column) */}
+<div className='flex flex-col items-start mt-4 space-y-2'>
+  <label className='flex items-center space-x-2'>
+    <input
+      type='checkbox'
+      name='passThru'
+      checked={values.passThru}
+      onChange={(e) =>
+        handleChange({
+          target: { name: e.target.name, value: e.target.checked },
+        })
+      }
+      className='h-4 w-4 accent-mebablue-dark'
+    />
+    <span className='text-mebablue-dark font-medium'>Pass-Thru</span>
+  </label>
+
+  <label className='flex items-center space-x-2'>
+    <input
+      type='checkbox'
+      name='nightCardEarlyReturn'
+      checked={values.nightCardEarlyReturn}
+      onChange={(e) =>
+        handleChange({
+          target: { name: e.target.name, value: e.target.checked },
+        })
+      }
+      className='h-4 w-4 accent-mebablue-dark'
+    />
+    <span className='text-mebablue-dark font-medium'>
+      Night Card Early Return
+    </span>
+  </label>
+
+  <label className='flex items-center space-x-2'>
+    <input
+      type='checkbox'
+      name='msc'
+      checked={values.msc}
+      onChange={(e) =>
+        handleChange({
+          target: { name: e.target.name, value: e.target.checked },
+        })
+      }
+      className='h-4 w-4 accent-mebablue-dark'
+    />
+    <span className='text-mebablue-dark font-medium'>MSC</span>
+  </label>
+</div>
+
+
                         </div>
+
+
                         <div className='col-span-2 flex flex-col items-center'>
                             <FormInput
                                 multiline
@@ -392,11 +451,10 @@ const AddJob = () => {
                     {/* Status Messages */}
                     {status && (
                         <div
-                            className={`mt-4 p-3 rounded-md text-center ${
-                                status.error
-                                    ? 'bg-red-100 border border-red-400 text-red-700'
-                                    : 'bg-green-100 border border-green-400 text-green-700'
-                            }`}
+                            className={`mt-4 p-3 rounded-md text-center ${status.error
+                                ? 'bg-red-100 border border-red-400 text-red-700'
+                                : 'bg-green-100 border border-green-400 text-green-700'
+                                }`}
                         >
                             {status.error || status.success}
                         </div>

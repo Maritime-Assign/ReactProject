@@ -33,12 +33,18 @@ function ViewBoard() {
         const region = (job.region || '').toLowerCase()
         const hall = (job.hall || '').toLowerCase()
         const joinDate = (job.joinDate || '').toString().toLowerCase()
+        const passThru = job.passThru ? 'passthru pass' : ''
+        const nightCard = job.nightCardEarlyReturn ? 'night card nightcard early return' : ''
+        const msc = job.msc ? 'msc' : ''
 
         return (
             vessel.includes(term) ||
             region.includes(term) ||
             hall.includes(term) ||
-            joinDate.includes(term)
+            joinDate.includes(term) ||
+            passThru.includes(term) ||
+            nightCard.includes(term) ||
+            msc.includes(term)
         )
     })
 

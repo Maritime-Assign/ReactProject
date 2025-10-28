@@ -25,6 +25,9 @@ const EditJob = () => {
         billet: jobData?.billet || '',
         type: jobData?.type || '',
         crewRelieved: jobData?.crewRelieved || '',
+        passThru: jobData?.passThru || false,
+        nightCardEarlyReturn: jobData.nightCardEarlyReturn || false,
+        msc: jobData?.msc || false,
     })
 
     const [status, setStatus] = useState(formData.open)
@@ -50,6 +53,9 @@ const EditJob = () => {
                 billet: jobData.billet || '',
                 type: jobData.type || '',
                 crewRelieved: jobData.crewRelieved || '',
+                passThru: jobData.passThru || false,
+                nightCardEarlyReturn: jobData.nightCardEarlyReturn || false,
+                msc: jobData.msc || false,
             })
         }
     }, [jobData])
@@ -257,6 +263,45 @@ const EditJob = () => {
                         placeholder='Crew Relieved'
                         className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-2 placeholder-gray-300'
                     />
+                    {/* ✅ Job Flags (stacked, left-aligned) */}
+                    <div className='flex flex-col w-full mt-2 space-y-2 col-span-2'>
+                        <label className='flex items-center space-x-2'>
+                            <input
+                                type='checkbox'
+                                checked={formData.passThru}
+                                onChange={(e) =>
+                                    handleInputChange('passThru', e.target.checked)
+                                }
+                                className='h-4 w-4 accent-mebablue-dark'
+                            />
+                            <span className='text-white font-medium'>Pass-Thru</span>
+                        </label>
+
+                        <label className='flex items-center space-x-2'>
+                            <input
+                                type='checkbox'
+                                checked={formData.nightCardEarlyReturn}
+                                onChange={(e) =>
+                                    handleInputChange('nightCardEarlyReturn', e.target.checked)
+                                }
+                                className='h-4 w-4 accent-mebablue-dark'
+                            />
+                            <span className='text-white font-medium'>Night Card Early Return</span>
+                        </label>
+
+                        <label className='flex items-center space-x-2'>
+                            <input
+                                type='checkbox'
+                                checked={formData.msc}
+                                onChange={(e) =>
+                                    handleInputChange('msc', e.target.checked)
+                                }
+                                className='h-4 w-4 accent-mebablue-dark'
+                            />
+                            <span className='text-white font-medium'>MSC</span>
+                        </label>
+                    </div>
+
                 </div>
             </div>
 
@@ -270,11 +315,10 @@ const EditJob = () => {
                 </Link>
                 {/* Save button will pop up a status message window */}
                 <button
-                    className={`py-2 px-4 rounded-md focus:outline-none focus:ring-2 text-white ${
-                        saving || !user
+                    className={`py-2 px-4 rounded-md focus:outline-none focus:ring-2 text-white ${saving || !user
                             ? 'bg-gray-400 cursor-not-allowed'
                             : 'bg-green-500 hover:bg-green-600 focus:ring-green-500'
-                    }`}
+                        }`}
                     onClick={save}
                     disabled={saving || !user}
                     title={!user ? 'You must be logged in to edit jobs' : ''}
@@ -287,38 +331,34 @@ const EditJob = () => {
             {window && (
                 <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
                     <div
-                        className={`p-6 rounded-md shadow-lg max-w-sm w-full border ${
-                            messageType === 'success'
+                        className={`p-6 rounded-md shadow-lg max-w-sm w-full border ${messageType === 'success'
                                 ? 'bg-green-100 border-green-300'
                                 : 'bg-red-100 border-red-300'
-                        }`}
+                            }`}
                     >
                         <h2
-                            className={`text-xl font-semibold ${
-                                messageType === 'success'
+                            className={`text-xl font-semibold ${messageType === 'success'
                                     ? 'text-green-800'
                                     : 'text-red-800'
-                            }`}
+                                }`}
                         >
                             {messageType === 'success' ? 'Success!' : 'Error'}
                         </h2>
                         <p
-                            className={`mt-2 ${
-                                messageType === 'success'
+                            className={`mt-2 ${messageType === 'success'
                                     ? 'text-green-700'
                                     : 'text-red-700'
-                            }`}
+                                }`}
                         >
                             {message}
                         </p>
                         <div className='mt-6 flex justify-center w-full'>
                             <button
                                 onClick={closeWindow}
-                                className={`py-2 px-4 rounded-md text-white ${
-                                    messageType === 'success'
+                                className={`py-2 px-4 rounded-md text-white ${messageType === 'success'
                                         ? 'bg-green-600 hover:bg-green-700'
                                         : 'bg-red-600 hover:bg-red-700'
-                                }`}
+                                    }`}
                             >
                                 Close
                             </button>
