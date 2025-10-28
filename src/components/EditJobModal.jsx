@@ -21,6 +21,9 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
         billet: jobData?.billet || '',
         type: jobData?.type || '',
         crewRelieved: jobData?.crewRelieved || '',
+        passThru: jobData?.passThru || false,
+        nightCardEarlyReturn: jobData?.nightCardEarlyReturn || false,
+        msc: jobData?.msc || false,
     })
 
     const [message, setMessage] = useState('')
@@ -33,6 +36,13 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
     // Update form data when jobData changes
     useEffect(() => {
         if (jobData) {
+            const formatDate = (value) => {
+                if (!value) return ''
+                const d = new Date(value)
+                if (isNaN(d)) return ''
+                return d.toISOString().split('T')[0] // yyyy-MM-dd
+            }
+
             setFormData({
                 shipName: jobData.shipName || '',
                 region: jobData.region || '',
@@ -40,13 +50,16 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                 open: jobData.open || false,
                 notes: jobData.notes || '',
                 location: jobData.location || '',
-                days: jobData.days || '',
-                dateCalled: jobData.dateCalled || '',
-                joinDate: jobData.joinDate || '',
+                days: jobData.days ?? '',
+                dateCalled: formatDate(jobData.dateCalled),
+                joinDate: formatDate(jobData.joinDate),
                 company: jobData.company || '',
                 billet: jobData.billet || '',
                 type: jobData.type || '',
                 crewRelieved: jobData.crewRelieved || '',
+                passThru: jobData.passThru || false,
+                nightCardEarlyReturn: jobData.nightCardEarlyReturn || false,
+                msc: jobData.msc || false,
             })
         }
     }, [jobData])
@@ -462,6 +475,48 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                             className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-4 placeholder-gray-300'
                         />
                     </div>
+                </div>
+
+                {/* Job Flags */}
+                <div className='flex flex-col w-full mt-2 space-y-1 text-white text-sm font-medium col-span-4 px-4'>
+                    <label className='flex items-center space-x-2'>
+                        <input
+                            type='checkbox'
+                            checked={formData.passThru}
+                            onChange={(e) =>
+                                handleInputChange('passThru', e.target.checked)
+                            }
+                            className='h-4 w-4 accent-mebablue-dark'
+                        />
+                        <span>Pass-Thru</span>
+                    </label>
+
+                    <label className='flex items-center space-x-2'>
+                        <input
+                            type='checkbox'
+                            checked={formData.nightCardEarlyReturn}
+                            onChange={(e) =>
+                                handleInputChange(
+                                    'nightCardEarlyReturn',
+                                    e.target.checked
+                                )
+                            }
+                            className='h-4 w-4 accent-mebablue-dark'
+                        />
+                        <span>Night Card Early Return</span>
+                    </label>
+
+                    <label className='flex items-center space-x-2'>
+                        <input
+                            type='checkbox'
+                            checked={formData.msc}
+                            onChange={(e) =>
+                                handleInputChange('msc', e.target.checked)
+                            }
+                            className='h-4 w-4 accent-mebablue-dark'
+                        />
+                        <span>MSC</span>
+                    </label>
                 </div>
 
                 {/* Action Buttons */}
