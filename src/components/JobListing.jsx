@@ -242,6 +242,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                                     : 'whitespace-nowrap text-ellipsis'
                             }`}
                             style={{ transition: 'white-space 0.2s' }}
+                            data-testid='notesContent'
                         >
                             {props.notes}
                         </span>

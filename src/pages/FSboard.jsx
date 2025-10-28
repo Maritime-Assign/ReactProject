@@ -98,7 +98,7 @@ const FSboard = () => {
                     ))}
 
                     {passThruJobs.length > 0 && (
-                        <div className='flex items-center bg-red-200 p-3 text-[13px] justify-center font-mont font-semibold border-b border-slate-300'>
+                        <div className='flex items-center bg-red-200 p-2 text-[13px] justify-center font-mont font-semibold border-b border-slate-300'>
                             Pass Thru{' '}
                             <ArrowDown size={16} className='mx-4 text-black' />
                         </div>
