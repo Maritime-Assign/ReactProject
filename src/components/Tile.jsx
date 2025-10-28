@@ -18,31 +18,30 @@ const Tile = ({ job, onJobUpdate }) => {
         }
     }
 
-
     return (
         <>
-            <div className="flex flex-col bg-mebablue-hover w-full h-full rounded-md">
+            <div className='flex flex-col bg-mebablue-hover w-full rounded-md'>
                 {/* top bar */}
-                <div className="bg-mebablue-dark w-full h-8 flex rounded-t-md justify-end gap-2 px-2">
+                <div className='bg-mebablue-dark w-full flex items-center justify-end gap-2 px-2 rounded-t-md'>
                     <button
                         onClick={() => setShowModal(true)}
-                        className="bg-mebablue-light rounded-md text-sm my-auto px-2 text-white font-medium hover:bg-mebablue-hover font-mont"
+                        className='bg-mebablue-light rounded-md text-sm px-3 py-1 text-white font-medium hover:bg-mebablue-hover font-mont'
                     >
                         Edit Job
                     </button>
                 </div>
 
                 {/* content */}
-                <div className="flex flex-col w-full h-full px-2 justify-center">
+                <div className='flex flex-col w-full h-full px-2 py-2 justify-center'>
                     {/* Row 1 */}
-                    <div className="grid grid-cols-4 gap-2 py-2 font-medium text-white font-mont">
-                        <span className="bg-mebablue-light rounded-md px-2 py-1 text-center">
+                    <div className='grid grid-cols-4 gap-2 py-2 font-medium text-white font-mont items-center'>
+                        <span className='bg-mebablue-light rounded-md px-2 py-1 text-center'>
                             {job.shipName}
                         </span>
-                        <span className="bg-mebablue-light px-2 py-1 rounded-md text-center">
+                        <span className='bg-mebablue-light px-2 py-1 rounded-md text-center'>
                             {job.region}
                         </span>
-                        <span className="bg-mebablue-light px-2 py-1 rounded-md text-center">
+                        <span className='bg-mebablue-light px-2 py-1 rounded-md text-center'>
                             {job.hall}
                         </span>
                         <span
@@ -53,13 +52,15 @@ const Tile = ({ job, onJobUpdate }) => {
                     </div>
 
                     {/* Row 2: Notes */}
-                    <div className="bg-mebablue-light rounded-md py-2 px-4 text-sm font-medium flex-col flex text-white">
-                        <span className="font-medium font-mont">Requirements/Notes:</span>
-                        <span className="font-mont">- {job.notes}</span>
+                    <div className='bg-mebablue-light rounded-md py-2 px-4 text-sm font-medium flex-col flex text-white'>
+                        <span className='font-medium font-mont'>
+                            Requirements/Notes:
+                        </span>
+                        <span className='font-mont'>- {job.notes}</span>
                     </div>
 
                     {/* Row 3: Details */}
-                    <div className="grid grid-cols-4 gap-2 font-medium text-sm py-2">
+                    <div className='grid grid-cols-4 gap-2 font-medium text-sm py-2'>
                         <div className={`${boxStyle()} col-span-2`}>
                             Location: {job.location}
                         </div>
@@ -90,74 +91,24 @@ const Tile = ({ job, onJobUpdate }) => {
                         </div>
                     </div>
                     {/* ✅ Job Flags: stacked, left-aligned checkboxes when editing */}
-                    {isEditing ? (
-                        <div className="flex flex-col w-full mt-2 space-y-1 text-white text-sm col-span-4">
-                            <label className="flex items-center space-x-2">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.passThru}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            passThru: e.target.checked,
-                                        }))
-                                    }
-                                    className="h-4 w-4 accent-mebablue-dark"
-                                />
-                                <span>Pass-Thru</span>
-                            </label>
-
-                            <label className="flex items-center space-x-2">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.nightCardEarlyReturn}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            nightCardEarlyReturn: e.target.checked,
-                                        }))
-                                    }
-                                    className="h-4 w-4 accent-mebablue-dark"
-                                />
-                                <span>Night Card Early Return</span>
-                            </label>
-
-                            <label className="flex items-center space-x-2">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.msc}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            msc: e.target.checked,
-                                        }))
-                                    }
-                                    className="h-4 w-4 accent-mebablue-dark"
-                                />
-                                <span>MSC</span>
-                            </label>
-                        </div>
-                    ) : (
-                        // ✅ Show badges when not editing
-                        <div className="flex flex-wrap gap-2 mt-2 col-span-4">
-                            {job.passThru && (
-                                <span className="bg-green-600 text-white px-2 py-0.5 rounded text-xs">
-                                    Pass-Thru
-                                </span>
-                            )}
-                            {job.nightCardEarlyReturn && (
-                                <span className="bg-yellow-500 text-white px-2 py-0.5 rounded text-xs">
-                                    Night Card Early Return
-                                </span>
-                            )}
-                            {job.msc && (
-                                <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-xs">
-                                    MSC
-                                </span>
-                            )}
-                        </div>
-                    )}
-
+                    {/* Job Flags Display */}
+                    <div className='gap-2 flex items-center justify-center'>
+                        {job.passThru && (
+                            <span className='bg-green-600 text-white px-2 py-0.5 rounded text-xs col-span-1 text-center'>
+                                Pass-Thru
+                            </span>
+                        )}
+                        {job.nightCardEarlyReturn && (
+                            <span className='bg-yellow-500 text-white px-2 py-0.5 rounded text-xs col-span-1'>
+                                Night Card Early Return
+                            </span>
+                        )}
+                        {job.msc && (
+                            <span className='bg-blue-600 text-white px-2 py-0.5 rounded text-xs col-span-1'>
+                                MSC
+                            </span>
+                        )}
+                    </div>
                 </div>
             </div>
 
