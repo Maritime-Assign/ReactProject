@@ -10,7 +10,6 @@ import {
     IoCopy,
     IoListOutline,
 } from 'react-icons/io5'
-import { BiSort } from 'react-icons/bi'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
     formatJobHistoryRecord,
@@ -783,6 +782,27 @@ ${log.new_state}`
 
     const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
+    // Check if a job is closed, a job is considered closed if it's not explicitly open
+    const isJobClosed = (log) => {
+        const s = log?.newStateFormatted || {}
+        return typeof s.open === 'boolean' ? s.open === false : true
+    }
+
+    // Function to edit a job's status to open, refresh the page on call
+    const reopenJob = async (jobId) => {
+        const { error } = await supabase
+            .from('Jobs')
+            .update({ open: true })
+            .eq('id', jobId)
+
+        if (error) {
+            console.error(`Failed to reopen job ${jobId}:`, error)
+        } else {
+            console.log(`Job ${jobId} reopened (open = true).`)
+            await handleRefresh()
+        }
+    }
+
     // Modal open/close handlers for closed jobs
     const openClosedModal = () => {
         setClosedPage(1) // reset modal page
@@ -1138,13 +1158,13 @@ ${log.new_state}`
                     <IoArrowBack className='w-6 h-6' />
                 </button>
                 {/*Title text*/}
-                <div className='flex-grow text-center'>
+                <div className='grow text-center'>
                     <span className='text-white text-2xl font-medium'>
                         Job Board History & Changes
                     </span>
                 </div>
                 {/* Search Bar */}
-                <div className='flex-grow mx-4 relative overflow-visible'>
+                <div className='grow mx-4 relative overflow-visible'>
                     <input
                         type='text'
                         placeholder='Search (user:name, job:21, date:2025, date:2025-10-15)'
@@ -1166,6 +1186,7 @@ ${log.new_state}`
                     {/*Clear filter button*/}
                     {searchQuery && (
                         <button
+                            data-testid='clearButton'
                             onClick={() => {
                                 setSearchQuery('')
                                 clearFilters()
@@ -1284,7 +1305,7 @@ ${log.new_state}`
             {!loading && !error && (
                 <div className='bg-white rounded-lg shadow overflow-hidden'>
                     <div className='overflow-x-auto'>
-                        <table className='min-w-full divide-y divide-gray-200'>
+                        <table className='min-w-full divide-y divide-gray-200 table-fixed'>
                             <thead className='bg-gray-50'>
                                 <tr>
                                     <th className='px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8'></th>
@@ -1306,7 +1327,7 @@ ${log.new_state}`
                                     <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                                         Changes Summary
                                     </th>
-                                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[120px]'>
                                         Actions
                                     </th>
                                 </tr>
@@ -1354,17 +1375,17 @@ ${log.new_state}`
                                                     </button>
                                                 )}
                                             </td>
-                                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
+                                            <td className='px-6 py-4 text-sm text-gray-900 truncate max-w-[140px]'>
                                                 {log.formattedDate}
                                             </td>
-                                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
+                                            <td className='px-6 py-4 text-sm text-gray-900 truncate max-w-[140px]'>
                                                 {log.changed_by_user_id ||
                                                     'Unknown User'}
                                             </td>
-                                            <td className='px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900'>
+                                            <td className='px-6 py-4 text-sm font-mono text-gray-900 truncate max-w-[80px]'>
                                                 {log.job_id}
                                             </td>
-                                            <td className='px-6 py-4 whitespace-nowrap'>
+                                            <td className='px-6 py-4 text-sm text-gray-900 truncate max-w-[180px] break-words'>
                                                 <span
                                                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                                         log.isNewJob
@@ -1377,7 +1398,7 @@ ${log.new_state}`
                                                         : 'Updated'}
                                                 </span>
                                             </td>
-                                            <td className='px-6 py-4 text-sm text-gray-900'>
+                                            <td className='px-6 py-4 text-sm text-gray-500 break-words max-w-[250px]'>
                                                 <div className='font-medium'>
                                                     Job #{log.job_id}
                                                 </div>
@@ -1387,127 +1408,140 @@ ${log.new_state}`
                                                         : 'View details in expanded view'}
                                                 </div>
                                             </td>
-                                            <td className='px-6 py-4 text-sm text-gray-500'>
-                                                <div className='max-w-md'>
-                                                    {(() => {
-                                                        const changes =
-                                                            getJobStateComparison(
-                                                                log.previousStateFormatted,
-                                                                log.newStateFormatted
-                                                            )
-                                                        const displayChanges =
-                                                            changes.slice(0, 3)
-                                                        const remainingCount =
-                                                            changes.length - 3
 
-                                                        return (
-                                                            <div className='space-y-1'>
-                                                                {displayChanges.map(
-                                                                    (
-                                                                        change,
-                                                                        idx
-                                                                    ) => (
-                                                                        <div
-                                                                            key={
-                                                                                idx
-                                                                            }
-                                                                            className='flex items-center gap-2 text-xs'
-                                                                        >
-                                                                            <span
-                                                                                className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                                                                    change.changeType ===
-                                                                                    'added'
-                                                                                        ? 'bg-green-100 text-green-700'
-                                                                                        : change.changeType ===
-                                                                                          'removed'
-                                                                                        ? 'bg-red-100 text-red-700'
-                                                                                        : 'bg-blue-100 text-blue-700'
-                                                                                }`}
-                                                                            >
-                                                                                {
-                                                                                    change.field
-                                                                                }
-                                                                            </span>
-                                                                            <span className='text-gray-400'>
-                                                                                →
-                                                                            </span>
-                                                                            <span
-                                                                                className='truncate max-w-[200px]'
-                                                                                title={String(
-                                                                                    change.newValue ||
-                                                                                        'None'
-                                                                                )}
-                                                                            >
-                                                                                {String(
-                                                                                    change.newValue ||
-                                                                                        'None'
-                                                                                )}
-                                                                            </span>
-                                                                        </div>
-                                                                    )
-                                                                )}
-                                                                {remainingCount >
-                                                                    0 && (
-                                                                    <div className='text-xs text-gray-400 italic'>
-                                                                        +
-                                                                        {
-                                                                            remainingCount
-                                                                        }{' '}
-                                                                        more
-                                                                        change
-                                                                        {remainingCount !==
-                                                                        1
-                                                                            ? 's'
-                                                                            : ''}
-                                                                    </div>
-                                                                )}
-                                                            </div>
+                                            {/* Changes Summary */}
+                                            <td className='px-6 py-4 text-sm text-gray-900 truncate max-w-[250px]'>
+                                                {(() => {
+                                                    const changes =
+                                                        getJobStateComparison(
+                                                            log.previousStateFormatted,
+                                                            log.newStateFormatted
                                                         )
-                                                    })()}
-                                                </div>
+                                                    const displayChanges =
+                                                        changes.slice(0, 3)
+                                                    const remainingCount =
+                                                        changes.length - 3
+
+                                                    return (
+                                                        <div className='space-y-1'>
+                                                            {displayChanges.map(
+                                                                (
+                                                                    change,
+                                                                    idx
+                                                                ) => (
+                                                                    <div
+                                                                        key={
+                                                                            idx
+                                                                        }
+                                                                        className='flex items-center gap-2 text-xs'
+                                                                    >
+                                                                        <span
+                                                                            className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                                                                change.changeType ===
+                                                                                'added'
+                                                                                    ? 'bg-green-100 text-green-700'
+                                                                                    : change.changeType ===
+                                                                                      'removed'
+                                                                                    ? 'bg-red-100 text-red-700'
+                                                                                    : 'bg-blue-100 text-blue-700'
+                                                                            }`}
+                                                                        >
+                                                                            {
+                                                                                change.field
+                                                                            }
+                                                                        </span>
+                                                                        <span className='text-gray-400'>
+                                                                            →
+                                                                        </span>
+                                                                        <span
+                                                                            className='truncate max-w-[200px]'
+                                                                            title={String(
+                                                                                change.newValue ||
+                                                                                    'None'
+                                                                            )}
+                                                                        >
+                                                                            {String(
+                                                                                change.newValue ||
+                                                                                    'None'
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
+                                                                )
+                                                            )}
+                                                            {remainingCount >
+                                                                0 && (
+                                                                <div className='text-xs text-gray-400 italic'>
+                                                                    +
+                                                                    {
+                                                                        remainingCount
+                                                                    }{' '}
+                                                                    more change
+                                                                    {remainingCount !==
+                                                                    1
+                                                                        ? 's'
+                                                                        : ''}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )
+                                                })()}
                                             </td>
-                                            <td className='px-6 py-4 whitespace-nowrap text-sm'>
-                                                <div className='flex gap-2'>
+
+                                            {/* Actions */}
+                                            <td className='px-6 py-4 whitespace-nowrap text-sm text-right w-[120px]'>
+                                                {isJobClosed(log) && (
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation()
-                                                            openEditJobModal(
+                                                            reopenJob(
                                                                 log.job_id
                                                             )
                                                         }}
-                                                        className='text-blue-600 hover:text-blue-800'
-                                                        title='Edit Job'
-                                                    >
-                                                        <svg
-                                                            className='w-4 h-4'
-                                                            fill='none'
-                                                            stroke='currentColor'
-                                                            viewBox='0 0 24 24'
-                                                        >
-                                                            <path
-                                                                strokeLinecap='round'
-                                                                strokeLinejoin='round'
-                                                                strokeWidth={2}
-                                                                d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            copyToClipboard(
-                                                                getFullContentForCopy(
-                                                                    log
-                                                                ),
-                                                                log.id
-                                                            )
-                                                        }}
                                                         className='text-mebablue-dark hover:text-mebablue-hover'
-                                                        title='Copy full details'
+                                                        title='Reopen job'
                                                     >
-                                                        <IoCopy className='w-4 h-4' />
+                                                        <IoRefresh className='w-4 h-4' />
                                                     </button>
-                                                </div>
+                                                )}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        openEditJobModal(
+                                                            log.job_id
+                                                        )
+                                                    }}
+                                                    className='text-blue-600 hover:text-blue-800'
+                                                    title='Edit Job'
+                                                >
+                                                    <svg
+                                                        className='w-4 h-4'
+                                                        fill='none'
+                                                        stroke='currentColor'
+                                                        viewBox='0 0 24 24'
+                                                    >
+                                                        <path
+                                                            strokeLinecap='round'
+                                                            strokeLinejoin='round'
+                                                            strokeWidth={2}
+                                                            d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
+                                                        />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        copyToClipboard(
+                                                            getFullContentForCopy(
+                                                                log
+                                                            ),
+                                                            log.id
+                                                        )
+                                                    }}
+                                                    className='text-mebablue-dark hover:text-mebablue-hover'
+                                                    title='Copy full details'
+                                                >
+                                                    <IoCopy className='w-4 h-4' />
+                                                </button>
                                             </td>
                                         </tr>
                                         {viewMode === 'flat' &&
@@ -2097,6 +2131,7 @@ ${log.new_state}`
                                                                                                                         {
                                                                                                                             c.field
                                                                                                                         }
+
                                                                                                                         :{' '}
                                                                                                                         {String(
                                                                                                                             c.newValue ??

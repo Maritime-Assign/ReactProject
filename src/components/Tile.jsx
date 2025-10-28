@@ -89,6 +89,75 @@ const Tile = ({ job, onJobUpdate }) => {
                             Crew Relieved: {job.crewRelieved}
                         </div>
                     </div>
+                    {/* ✅ Job Flags: stacked, left-aligned checkboxes when editing */}
+                    {isEditing ? (
+                        <div className="flex flex-col w-full mt-2 space-y-1 text-white text-sm col-span-4">
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.passThru}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            passThru: e.target.checked,
+                                        }))
+                                    }
+                                    className="h-4 w-4 accent-mebablue-dark"
+                                />
+                                <span>Pass-Thru</span>
+                            </label>
+
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.nightCardEarlyReturn}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            nightCardEarlyReturn: e.target.checked,
+                                        }))
+                                    }
+                                    className="h-4 w-4 accent-mebablue-dark"
+                                />
+                                <span>Night Card Early Return</span>
+                            </label>
+
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.msc}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            msc: e.target.checked,
+                                        }))
+                                    }
+                                    className="h-4 w-4 accent-mebablue-dark"
+                                />
+                                <span>MSC</span>
+                            </label>
+                        </div>
+                    ) : (
+                        // ✅ Show badges when not editing
+                        <div className="flex flex-wrap gap-2 mt-2 col-span-4">
+                            {job.passThru && (
+                                <span className="bg-green-600 text-white px-2 py-0.5 rounded text-xs">
+                                    Pass-Thru
+                                </span>
+                            )}
+                            {job.nightCardEarlyReturn && (
+                                <span className="bg-yellow-500 text-white px-2 py-0.5 rounded text-xs">
+                                    Night Card Early Return
+                                </span>
+                            )}
+                            {job.msc && (
+                                <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-xs">
+                                    MSC
+                                </span>
+                            )}
+                        </div>
+                    )}
+
                 </div>
             </div>
 
