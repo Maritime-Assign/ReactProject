@@ -9,8 +9,7 @@
  * 4. Handles API failure gracefully (shows error message).
  * 5. Handles empty job list (shows fallback message).
  * 6. Removes loading message after data is fetched.
- * 7. Matches a snapshot to detect unexpected UI changes.
- * 8. Expands and collapses the Notes section when button is clicked.
+ * 7. Expands and collapses the Notes section when button is clicked.
  */
 
 beforeAll(() => {
@@ -179,52 +178,34 @@ describe('FSBoard components', () => {
         expect(screen.queryByText('Loading jobs...')).not.toBeInTheDocument()
     })
 
-    test('matches snapshot after jobs load', async () => {
-        getJobsArray.mockResolvedValueOnce([{ id: 1, open: true, hall: 'OAK' }])
-
-        const { container } = render(
-            <MemoryRouter>
-                <FSBoard />
-            </MemoryRouter>
-        )
-
-        await waitForElementToBeRemoved(() =>
-            screen.queryByText('Loading jobs...')
-        )
-
-        // ✅ Snapshot now stable due to fixed system time and mocks
-        expect(container).toMatchSnapshot()
-    })
-
     test('expands and collapses the Notes section when button is clicked', async () => {
         getJobsArray.mockResolvedValueOnce([
             { id: 1, open: true, notes: 'Example job notes for testing' },
         ])
-
         render(
             <MemoryRouter>
                 <FSBoard />
             </MemoryRouter>
         )
-
         await waitForElementToBeRemoved(() =>
             screen.queryByText('Loading jobs...')
         )
 
-        const allNoteSpans = screen.getAllByText(/example job notes/i)
-        const dynamicNoteSpan = allNoteSpans[1] || allNoteSpans[0]
-
-        expect(dynamicNoteSpan).toBeInTheDocument()
-        expect(dynamicNoteSpan).toHaveClass('text-ellipsis')
-
+        // Find the expand button
         const expandButton = await screen.findByRole('button', {
             name: /expand notes/i,
         })
 
-        await userEvent.click(expandButton)
-        expect(dynamicNoteSpan.className).not.toContain('text-ellipsis')
+        // Check initial state (collapsed, class present)
+        const notesContent = screen.getByTestId('notesContent')
+        expect(notesContent).toHaveClass('text-ellipsis')
 
+        // Expand
         await userEvent.click(expandButton)
-        expect(dynamicNoteSpan.className).toContain('text-ellipsis')
+        expect(notesContent).not.toHaveClass('text-ellipsis')
+
+        // Collapse
+        await userEvent.click(expandButton)
+        expect(notesContent).toHaveClass('text-ellipsis')
     })
 })

@@ -2,7 +2,7 @@ import supabase from '../api/supabaseClient'
 import { useEffect, useRef, useState } from 'react'
 import { UserAuth } from '../auth/AuthContext.jsx'
 import { updateJobWithHistory } from '../utils/jobHistory'
-import { ChevronDown } from 'lucide-react'
+import { Plus, Minus } from 'lucide-react'
 
 const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
     const { user, role } = UserAuth()
@@ -194,7 +194,11 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                 <span>{props.location}</span>
             </div>
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
-                <span>{props.company}</span>
+                <span
+                    className={props.msc ? `bg-blue-300 px-3 py-2 rounded` : ``}
+                >
+                    {props.company}
+                </span>
             </div>
             <div className={`col-span-3 ${cellStyle} ${rowClass}`}>
                 <span>{props.crewRelieved}</span>
@@ -202,7 +206,9 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
             <div className={`relative col-span-4 ${cellStyle} ${rowClass}`}>
                 <span
                     ref={spanRef}
-                    className='mx-3 p-2 whitespace-nowrap text-ellipsis overflow-hidden transition-all'
+                    className={`mx-3 p-2 whitespace-nowrap text-ellipsis overflow-hidden transition-all ${
+                        props.nightCard ? `bg-mebagold rounded px-3` : ``
+                    }`}
                     style={{
                         display: showButton ? 'none' : 'inline',
                         visibility: showButton ? 'hidden' : 'visible',
@@ -217,10 +223,13 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                         type='button'
                         onClick={() => setExpandedNotes(!expandedNotes)}
                         className={`flex justify-between items-start w-full mx-3 p-2 rounded hover:bg-indigo-200 hover:cursor-pointer transition-all ${
-                            expandedNotes
-                                ? 'absolute z-50 bg-white shadow-lg border border-mebagold'
-                                : 'relative'
-                        }`}
+                            props.nightCard ? `bg-mebagold rounded px-3` : ``
+                        }
+                            ${
+                                expandedNotes
+                                    ? 'absolute z-50 bg-white shadow-lg border border-mebagold'
+                                    : 'relative'
+                            }`}
                         style={{
                             transition:
                                 'transform 0.2s, background-color 0.2s, box-shadow 0.2s, border 0.2s',
@@ -233,15 +242,24 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                                     : 'whitespace-nowrap text-ellipsis'
                             }`}
                             style={{ transition: 'white-space 0.2s' }}
+                            data-testid='notesContent'
                         >
                             {props.notes}
                         </span>
-                        <ChevronDown
-                            className={`ml-2 transition-transform duration-200 ${
-                                expandedNotes ? 'rotate-180' : 'rotate-0'
-                            }`}
-                            size={16}
-                        />
+                        <div className='relative w-4 h-4 ml-2'>
+                            <Plus
+                                className={`absolute inset-0 transition-opacity duration-200 ${
+                                    expandedNotes ? 'opacity-0' : 'opacity-100'
+                                }`}
+                                size={16}
+                            />
+                            <Minus
+                                className={`absolute inset-0 transition-opacity duration-200 ${
+                                    expandedNotes ? 'opacity-100' : 'opacity-0'
+                                }`}
+                                size={16}
+                            />
+                        </div>
                     </button>
                 )}
             </div>
