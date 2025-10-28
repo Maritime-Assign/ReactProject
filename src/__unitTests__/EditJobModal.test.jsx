@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 
 // Mock AuthContext
-vi.mock('../context/AuthContext', () => ({
+vi.mock('../auth/AuthContext', () => ({
     UserAuth: () => ({ user: { id: '1', email: 'test@example.com' } }),
 }))
 
@@ -17,12 +17,12 @@ vi.mock('../api/supabaseClient', () => ({
             update: vi.fn(() => ({
                 eq: vi.fn(() => ({
                     select: vi.fn(() => ({
-                        single: vi.fn()
-                    }))
-                }))
-            }))
-        }))
-    }
+                        single: vi.fn(),
+                    })),
+                })),
+            })),
+        })),
+    },
 }))
 
 import EditJobModal from '../components/EditJobModal'
@@ -42,7 +42,7 @@ describe('EditJobModal Component', () => {
         company: 'Test Company',
         billet: '1A/E',
         type: 'Permanent',
-        crewRelieved: 'Test Crew'
+        crewRelieved: 'Test Crew',
     }
 
     const mockOnClose = vi.fn()
@@ -50,22 +50,22 @@ describe('EditJobModal Component', () => {
 
     test('renders the modal without crashing', () => {
         render(
-            <EditJobModal 
-                jobData={mockJobData} 
-                onClose={mockOnClose} 
-                onSave={mockOnSave} 
+            <EditJobModal
+                jobData={mockJobData}
+                onClose={mockOnClose}
+                onSave={mockOnSave}
             />
         )
-        
+
         expect(screen.getByText(/Edit Job/i)).toBeInTheDocument()
     })
 
     test('renders all form input fields', () => {
         render(
-            <EditJobModal 
-                jobData={mockJobData} 
-                onClose={mockOnClose} 
-                onSave={mockOnSave} 
+            <EditJobModal
+                jobData={mockJobData}
+                onClose={mockOnClose}
+                onSave={mockOnSave}
             />
         )
 
@@ -85,10 +85,10 @@ describe('EditJobModal Component', () => {
 
     test('renders action buttons', () => {
         render(
-            <EditJobModal 
-                jobData={mockJobData} 
-                onClose={mockOnClose} 
-                onSave={mockOnSave} 
+            <EditJobModal
+                jobData={mockJobData}
+                onClose={mockOnClose}
+                onSave={mockOnSave}
             />
         )
 
@@ -107,10 +107,10 @@ describe('EditJobModal Component', () => {
 
     test('renders dropdown selects for billet and type', () => {
         render(
-            <EditJobModal 
-                jobData={mockJobData} 
-                onClose={mockOnClose} 
-                onSave={mockOnSave} 
+            <EditJobModal
+                jobData={mockJobData}
+                onClose={mockOnClose}
+                onSave={mockOnSave}
             />
         )
 
@@ -120,14 +120,16 @@ describe('EditJobModal Component', () => {
 
     test('renders notes textarea', () => {
         render(
-            <EditJobModal 
-                jobData={mockJobData} 
-                onClose={mockOnClose} 
-                onSave={mockOnSave} 
+            <EditJobModal
+                jobData={mockJobData}
+                onClose={mockOnClose}
+                onSave={mockOnSave}
             />
         )
 
-        const notesTextarea = screen.getByPlaceholderText(/Enter notes\/requirements/i)
+        const notesTextarea = screen.getByPlaceholderText(
+            /Enter notes\/requirements/i
+        )
         expect(notesTextarea).toBeInTheDocument()
         expect(notesTextarea).toHaveValue(mockJobData.notes)
     })
