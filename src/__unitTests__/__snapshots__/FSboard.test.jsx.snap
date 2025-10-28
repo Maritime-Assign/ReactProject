@@ -101,13 +101,13 @@ exports[`FSBoard components > matches snapshot after jobs load 1`] = `
       </div>
     </div>
     <div
-      class="grid grid-cols-27 w-full text-[8px] md:text-[0.8125rem] font-mont font-semibold border-slate-300 border-b overflow-visible min-h-12 md:min-h-14"
+      class="grid grid-cols-27 w-full text-[8px] md:text-[0.8125rem] font-mont font-semibold border-slate-300 border-b overflow-visible h-12 md:h-14.5"
     >
       <div
-        class="col-span-2 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-2 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <button
-          class="inline-flex items-center justify-center px-1 md:px-4 py-2 rounded bg-gradient-to-r from-green-500 to-green-600
+          class="inline-flex items-center justify-center px-1 md:px-3 py-1 rounded bg-gradient-to-r from-green-500 to-green-600
                                      text-white hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed
                                        transition-all duration-200 ease-out font-medium text-[10px] md:text-sm hover:cursor-pointer"
         >
@@ -115,64 +115,64 @@ exports[`FSBoard components > matches snapshot after jobs load 1`] = `
         </button>
       </div>
       <div
-        class="col-span-1 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-1 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span />
       </div>
       <div
-        class="col-span-1 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-1 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span>
           OAK
         </span>
       </div>
       <div
-        class="col-span-2 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-2 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span />
       </div>
       <div
-        class="col-span-3 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-3 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span />
       </div>
       <div
-        class="col-span-2 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-2 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span />
       </div>
       <div
-        class="col-span-1 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-1 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span />
       </div>
       <div
-        class="col-span-2 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-2 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span />
       </div>
       <div
-        class="col-span-1 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-1 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span />
       </div>
       <div
-        class="col-span-3 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-3 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span />
       </div>
       <div
-        class="col-span-2 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-2 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span />
       </div>
       <div
-        class="col-span-3 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="col-span-3 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span />
       </div>
       <div
-        class="relative col-span-4 px-1 py-2 items-center justify-center flex h-full bg-slate-200"
+        class="relative col-span-4 px-1 items-center justify-center flex h-full bg-slate-200"
       >
         <span
           class="mx-3 p-2 whitespace-nowrap text-ellipsis overflow-hidden transition-all"

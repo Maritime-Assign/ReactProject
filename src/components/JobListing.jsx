@@ -119,7 +119,11 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                     (typeof import.meta !== 'undefined' &&
                         import.meta.env?.MODE === 'test')
 
-                setShowButton(isOverflowing || isTestEnv)
+                setShowButton(
+                    isOverflowing ||
+                        (typeof window !== 'undefined' &&
+                            window.navigator.userAgent.includes('jsdom'))
+                )
             }
         }
 

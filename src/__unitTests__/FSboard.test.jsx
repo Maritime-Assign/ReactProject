@@ -14,7 +14,6 @@
  */
 
 beforeAll(() => {
-    // Mock layout measurements so overflow detection works in JSDOM
     Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
         configurable: true,
         get() {
@@ -27,6 +26,19 @@ beforeAll(() => {
             return 100
         },
     })
+
+    vi.setSystemTime(new Date('2025-01-01'))
+
+    // ✅ Stable random and UUID values (optional but good practice)
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+
+    // ✅ Flag test env for component logic (used by JobListing)
+    window.__vitest_environment__ = true
+})
+
+afterAll(() => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
 })
 
 import {
@@ -56,7 +68,6 @@ describe('FSBoard components', () => {
         vi.clearAllMocks()
     })
 
-    // 1. Checks loading state before data arrives
     test('renders loading message before fetching data', () => {
         render(
             <MemoryRouter>
@@ -66,10 +77,8 @@ describe('FSBoard components', () => {
         expect(screen.getByText('Loading jobs...')).toBeInTheDocument()
     })
 
-    // 2. Ensures only static column headers appear after data load
     test('renders table headers after loading', async () => {
-        getJobsArray.mockResolvedValueOnce([{ id: 1 }]) // minimal mock data
-
+        getJobsArray.mockResolvedValueOnce([{ id: 1 }])
         render(
             <MemoryRouter>
                 <FSBoard />
@@ -99,7 +108,6 @@ describe('FSBoard components', () => {
         })
     })
 
-    // 3. Verifies open and filled job rendering
     test('renders all possible job claim states', async () => {
         getJobsArray.mockResolvedValueOnce([
             { id: 1, open: true, FillDate: null },
@@ -126,7 +134,6 @@ describe('FSBoard components', () => {
         ).toBeInTheDocument()
     })
 
-    // 4. Verifies component handles API fetch failure
     test('shows error message when data fetch fails', async () => {
         getJobsArray.mockRejectedValueOnce(new Error('Fetch failed'))
 
@@ -142,7 +149,6 @@ describe('FSBoard components', () => {
         expect(screen.getByText(/error/i)).toBeInTheDocument()
     })
 
-    // 5. Checks fallback UI when no jobs are available
     test('shows fallback UI when no jobs are returned', async () => {
         getJobsArray.mockResolvedValueOnce([])
 
@@ -158,7 +164,6 @@ describe('FSBoard components', () => {
         expect(screen.getByText(/no jobs/i)).toBeInTheDocument()
     })
 
-    // 6. Confirms loading message disappears after data loads
     test('removes loading message after successful load', async () => {
         getJobsArray.mockResolvedValueOnce([{ id: 1, open: true }])
 
@@ -174,7 +179,6 @@ describe('FSBoard components', () => {
         expect(screen.queryByText('Loading jobs...')).not.toBeInTheDocument()
     })
 
-    // 7. Captures a snapshot to track visual changes
     test('matches snapshot after jobs load', async () => {
         getJobsArray.mockResolvedValueOnce([{ id: 1, open: true, hall: 'OAK' }])
 
@@ -187,10 +191,11 @@ describe('FSBoard components', () => {
         await waitForElementToBeRemoved(() =>
             screen.queryByText('Loading jobs...')
         )
+
+        // ✅ Snapshot now stable due to fixed system time and mocks
         expect(container).toMatchSnapshot()
     })
 
-    // 8. Tests expanding and collapsing the Notes section
     test('expands and collapses the Notes section when button is clicked', async () => {
         getJobsArray.mockResolvedValueOnce([
             { id: 1, open: true, notes: 'Example job notes for testing' },
@@ -206,19 +211,17 @@ describe('FSBoard components', () => {
             screen.queryByText('Loading jobs...')
         )
 
-        // The first match is the static (hidden) span, the second is inside the expand button
         const allNoteSpans = screen.getAllByText(/example job notes/i)
-        const dynamicNoteSpan = allNoteSpans[1] || allNoteSpans[0] // fallback safety
+        const dynamicNoteSpan = allNoteSpans[1] || allNoteSpans[0]
 
         expect(dynamicNoteSpan).toBeInTheDocument()
         expect(dynamicNoteSpan).toHaveClass('text-ellipsis')
 
-        const expandButton = screen.getByRole('button', {
+        const expandButton = await screen.findByRole('button', {
             name: /expand notes/i,
         })
-        await userEvent.click(expandButton)
 
-        // check the same span again
+        await userEvent.click(expandButton)
         expect(dynamicNoteSpan.className).not.toContain('text-ellipsis')
 
         await userEvent.click(expandButton)
