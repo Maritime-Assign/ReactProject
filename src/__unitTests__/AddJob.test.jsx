@@ -68,11 +68,11 @@ describe('Add new job page', () => {
         // Click submit without filling required fields
         await user.click(screen.getByRole('button', { name: /submit/i }))
 
-        // ✅ Expect multiple "Required" validation errors
+        // Expect multiple "Required" validation errors
         const errors = await screen.findAllByText(/required/i)
         expect(errors.length).toBeGreaterThan(0)
 
-        // ✅ Toggle the three checkboxes
+        // Toggle the three checkboxes
         const passThruBox = screen.getByLabelText(/Pass-Thru/i)
         const nightCardBox = screen.getByLabelText(/Night Card Early Return/i)
         const mscBox = screen.getByLabelText(/MSC/i)
