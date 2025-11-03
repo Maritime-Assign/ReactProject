@@ -245,7 +245,7 @@ const ViewHistory = () => {
                 newFilters.userId = userIds
                 break
             }
-            // handle date
+            // Format date into what backend expects
             case 'date': {
                 const dateObj = result.value
                 // YYYY
@@ -1178,7 +1178,7 @@ ${log.new_state}`
                 <div className='grow mx-4 relative overflow-visible'>
                     <input
                         type='text'
-                        placeholder='Search (user:name, job:21, date:2025, date:2025-10-15)'
+                        placeholder='Search username, job id, date, ship name'
                         className='w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -1190,23 +1190,25 @@ ${log.new_state}`
                             }
                         }}
                     />
-                    {/* Loading spinner */}
-                    {loading && (
-                        <div className='absolute right-10 top-1/2 -translate-y-1/2 animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4'></div>
-                    )}
-                    {/*Clear filter button*/}
-                    {searchQuery && (
-                        <button
+                    {/* Spinner | Clear button */}
+                    <div className='absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center'>
+                        {loading ? (
+                            <div 
+                                className='animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4'>
+                            </div>
+                        ) : searchQuery ? (
+                            <button
                             data-testid='clearButton'
                             onClick={() => {
                                 setSearchQuery('')
                                 clearFilters()
                             }}
-                            className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1'
-                        >
-                            <IoClose className='w-5 h-5' />
-                        </button>
-                    )}
+                            className='text-gray-400 hover:text-gray-600 bg-white rounded-full p-1'
+                            >
+                            <IoClose className='w-4 h-4' />
+                            </button>
+                        ) : null}
+                    </div>
                 </div>
 
                 {/* icons */}
