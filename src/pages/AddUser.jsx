@@ -23,11 +23,11 @@ const userValidationSchema = yup.object().shape({
         .required('Required')
         .min(2, 'First Name must be at least 2 characters')
         .max(50, 'First Name must be 50 characters or less'),
-    lName: yup
+    abbreviation: yup
         .string()
+        .transform(v => (v ? v.toUpperCase() : v))
         .required('Required')
-        .min(2, 'Last Name must be at least 2 characters')
-        .max(50, 'Last Name must be 50 characters or less'),
+        .matches(/^[A-Z]{3}$/, 'Abbreviation must be exactly 3 letters'),
     username: yup
         .string()
         .required('Required')
@@ -81,6 +81,14 @@ const onSubmit = async (values, actions) => {
         const getSessionRes = await supabase.auth.getSession()
         const adminSession = getSessionRes?.data?.session || null
 
+        const abbreviationUC = (values.abbreviation || '').toUpperCase()
+        console.log('DEBUG send payload:', {
+        fName: values.fName,
+        role: values.role,
+        username: values.username,
+        abbreviation: abbreviationUC,
+        })
+
         // Sign up user in Supabase Auth with metadata
         const { data: authData, error: signUpError } =
             await supabase.auth.signUp({
@@ -89,12 +97,16 @@ const onSubmit = async (values, actions) => {
                 options: {
                     data: {
                         first_name: values.fName,
-                        last_name: values.lName,
+                        abbreviation: abbreviationUC,
                         role: values.role.toLowerCase(),
                         username: values.username,
                     },
                 },
             })
+
+            console.log('signUp authData:', authData)
+            console.log('signUp user_metadata:', authData?.user?.user_metadata)
+
 
         if (signUpError) {
             console.error('Supabase signUp error:', signUpError)
@@ -142,13 +154,14 @@ const AddUser = () => {
         touched,
         status,
         setStatus,
+        setFieldValue,
     } = useFormik({
         initialValues: {
             username: '',
             password: '',
             role: '',
             fName: '',
-            lName: '',
+            abbreviation: '',
         },
         validationSchema: userValidationSchema, // schema used to validate entries using Formik
         onSubmit,
@@ -207,24 +220,6 @@ const AddUser = () => {
                         />
                         <FormInput
                             type='text'
-                            label='Last Name'
-                            name='lName'
-                            value={values.lName}
-                            placeholder='Enter Last Name'
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            className={
-                                errors.lName && touched.lName
-                                    ? 'textError'
-                                    : 'textBase'
-                            }
-                            errors={errors.lName}
-                            touched={touched.lName}
-                            submitCount={submitCount}
-                            setFieldError={setFieldError}
-                        />
-                        <FormInput
-                            type='text'
                             label='Username'
                             name='username'
                             value={values.username}
@@ -238,6 +233,28 @@ const AddUser = () => {
                             }
                             errors={errors.username}
                             touched={touched.username}
+                            submitCount={submitCount}
+                            setFieldError={setFieldError}
+                        />
+                        <FormInput
+                            type='text'
+                            label='Abbreviation'
+                            name='abbreviation'
+                            value={values.abbreviation}
+                            placeholder='Enter 3 character capitalized abbreviation'
+                            onChange={e => {
+                                const cleaned = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3)
+                                setFieldValue('abbreviation', cleaned)
+                            }}
+                            onBlur={handleBlur}
+                            maxLength={3}
+                            className={
+                                errors.abbreviation && touched.abbreviation
+                                    ? 'textError'
+                                    : 'textBase'
+                            }
+                            errors={errors.abbreviation}
+                            touched={touched.abbreviation}
                             submitCount={submitCount}
                             setFieldError={setFieldError}
                         />
@@ -294,10 +311,16 @@ const AddUser = () => {
                         )}
                     </div>
                     
+                    {(values.abbreviation.length > 0 || submitCount > 0) && values.abbreviation.length !== 3 && (
+                        <div className='text-red-600 text-sm' role="alert" aria-live="polite">
+                            Abbreviation must be exactly 3 uppercase letters
+                        </div>
+                    )}
+
                     {/* Submit button */}
                     <div className='flex flex-row space-x-4 mt-4 justify-center'>
                         <button
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || values.abbreviation.length !== 3}
                             type='submit'
                             className={
                                 isSubmitting

@@ -18,13 +18,16 @@ const EditUser = () => {
         username: state.username,
         password: '',
         role: state.role || '',
+        abbreviation: state.abbreviation,
     })
 
+    const [abbrevError, setAbbrevError] = useState('')
     
     async function updateUser() {
         const updatedUser = {
             username: user.username,
-            role: user.role
+            role: user.role,
+            abbreviation: user.abbreviation,
         }
 
         const { data, error } = await supabase
@@ -85,6 +88,12 @@ const EditUser = () => {
         setUser({ ...user, role: e.target.value })
     }
 
+    function updateAbbrev(e) {
+        const raw = e.target.value.toUpperCase()
+    setUser(u => ({ ...u, abbreviation: raw }))
+    setAbbrevError(raw.length === 3 ? '' : 'Must be exactly 3 letters')
+    }
+
 
     //Does nothing for now; Implement Supabase functionality when user data format is finalized
     function submitEdits(e) {
@@ -95,7 +104,10 @@ const EditUser = () => {
             setIsModalOpen(true)
             return
         }
-
+        if (user.abbreviation.length !== 3) {
+            alert('Abbreviation must be exactly 3 letters')
+            return
+        }
         updateUser()
     }
 
@@ -107,7 +119,7 @@ const EditUser = () => {
             {/*Front end mockup for editing a user's info*/}
             <form onSubmit={submitEdits}>
                 {/*User's name section*/}
-                <div className='grid grid-cols-3 p-4 gap-2'>
+                <div className='grid grid-cols-[320px_1fr] grid-rows-2 p-4 gap-2'>
                     <div>
                         <span className='text-xl text-[#242762] text-semibold'>
                             Username
@@ -134,6 +146,23 @@ const EditUser = () => {
                                 onChange={updatePassword}
                                 className='w-[300px] h-[48px] text-center bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                             />
+                        </div>
+                    </div>
+                    <div>
+                        <span className='text-xl text-[#242762] text-semibold'>
+                            Abbreviation
+                        </span>
+                        <div className='flex content-center py-3 gap-3'>
+                            <input
+                                type='text'
+                                placeholder='Enter 3 character abbreviation here'
+                                value={user.abbreviation}
+                                onChange={updateAbbrev}
+                                className='w-[300px] h-[48px] text-center bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                            />
+                            {abbrevError && (
+                                <p className='text-sm text-red-500'>{abbrevError}</p>
+                            )}
                         </div>
                     </div>
                 </div>
