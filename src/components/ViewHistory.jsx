@@ -149,19 +149,33 @@ const ViewHistory = () => {
             }
         }
 
-        // Handle MM/DD | M/D
-        if (/^\d{1,2}\/\d{1,2}$/.test(trimmed)) {
-            const [month, day] = trimmed.split('/')
+        // Handle MM/DD | M/D | MM/DD/ | M/D/
+        if (/^\d{1,2}\/\d{1,2}\/?$/.test(trimmed)) {
+            const parts = trimmed.split('/')
+            const month = parts[0].padStart(2, '0')
+            const day = parts[1] ? parts[1].padStart(2, '0') : null
             // Assume user wants to see current year first if not a full date query
             const year = new Date().getFullYear()
-            return { 
-                type: 'date', 
-                value: { 
-                    type: 'day', 
-                    year, 
-                    month: month.padStart(2, '0'), 
-                    day: day.padStart(2, '0') 
-                } 
+                
+            if (!day) {
+                return {
+                    type: 'date',
+                    value: {
+                        type: 'month',
+                        year,
+                        month,
+                    },
+                }
+            }
+
+            return {
+                type: 'date',
+                value: {
+                    type: 'day',
+                    year,
+                    month,
+                    day,
+                },
             }
         }
 
