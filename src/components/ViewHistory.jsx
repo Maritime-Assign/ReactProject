@@ -193,9 +193,8 @@ const ViewHistory = () => {
             }
         }
 
-        // For now, if not numeric then username
-        // Later: ship name
-        return { type: 'username', value: trimmed }
+        // Name can be ship name or user name
+        return { type: 'name', value: trimmed }
     }
 
     // Build function to handle the search and refetch logs
@@ -233,30 +232,45 @@ const ViewHistory = () => {
             case 'jobid':
                 newFilters.jobId = result.value
                 break
-            // handle username
-            case 'username': {
+            // Handle name - ship name or user name
+            case 'name': {
+                // Check if name is a valid user
                 const { data: userData, error: userError } = await supabase
                     .from('Users')
                     .select('UUID')
                     .ilike('username', `${result.value}%`)
-                // handle empty data or error
-                if (userError || !userData || userData.length === 0) {
-                    setLogs([])
-                    setGroupedLogs([])
-                    setTotalCount(0)
-                    setSummary({
-                        totalActions: 0,
-                        newJobs: 0,
-                        updatedJobs: 0,
-                        recentActivity: [],
-                        closedJobs: 0,
-                    })
-                    setLoading(false)
-                    return
+
+                if (userData && userData.length > 0) {
+                    // Turn objects into ID list and store it
+                    const userIds = userData.map((u) => u.UUID)
+                    newFilters.userId = userIds
+                } 
+                else {
+                    // user name does not match then ship name
+                    const { data: jobsByShip, error: shipError } = await supabase
+                        .from('Jobs')
+                        .select('id')
+                        .ilike('shipName', `%${result.value}%`)
+
+                    if (jobsByShip && jobsByShip.length > 0) {
+                        newFilters.jobId = jobsByShip.map((j) => j.id)
+                    } 
+                    else {
+                        // If name is not a ship name or a user name then show nothing
+                        setLogs([])
+                        setGroupedLogs([])
+                        setTotalCount(0)
+                        setSummary({
+                            totalActions: 0,
+                            newJobs: 0,
+                            updatedJobs: 0,
+                            recentActivity: [],
+                            closedJobs: 0,
+                        })
+                        setLoading(false)
+                        return
+                    }
                 }
-                // Turn objects into ID list and store it
-                const userIds = userData.map((u) => u.UUID)
-                newFilters.userId = userIds
                 break
             }
             // Format date into what backend expects
@@ -383,18 +397,23 @@ const ViewHistory = () => {
 
     // Fetch grouped logs (most recent change per job_id)
     const fetchGroupedLogs = async (page = 1, currentFilters = filters) => {
+        setLoading(true)
+        setError(null)
+
         try {
             const offset = (page - 1) * ITEMS_PER_PAGE
 
             // First, get all job_ids that match the filters
             let jobIdsQuery = supabase.from('JobsHistory').select('job_id')
 
-            // Apply filters
-            if (currentFilters.jobId && currentFilters.jobId.trim()) {
-                jobIdsQuery = jobIdsQuery.eq(
-                    'job_id',
-                    currentFilters.jobId.trim()
-                )
+            // Apply filters - check if job id is array or string
+            if (currentFilters.jobId) {
+                if (Array.isArray(currentFilters.jobId) && currentFilters.jobId.length > 0) {
+                    jobIdsQuery = jobIdsQuery.in('job_id', currentFilters.jobId)
+                } 
+                else if (typeof currentFilters.jobId === 'string' && currentFilters.jobId.trim()) {
+                    jobIdsQuery = jobIdsQuery.eq('job_id', currentFilters.jobId.trim())
+                }
             }
 
             if (currentFilters.dateFrom) {
@@ -424,7 +443,7 @@ const ViewHistory = () => {
                 setError(`Failed to load job IDs: ${jobIdsError.message}`)
                 console.error('Job IDs error:', jobIdsError)
                 setLoading(false)
-                return
+                return { logs: [], totalCount: 0 }
             }
 
             // Get unique job IDs
@@ -481,11 +500,14 @@ const ViewHistory = () => {
             )
 
             const formattedLogs = groupedData.map(formatJobHistoryRecord)
+            setLoading(false)
             return { logs: formattedLogs, totalCount: totalUniqueJobs }
-        } catch (err) {
+        } 
+        catch (err) {
             setError('An error occurred while loading grouped data')
             console.error(err)
             setLoading(false)
+            return { logs: [], totalCount: 0 }
         }
     }
 
@@ -498,9 +520,15 @@ const ViewHistory = () => {
                 .select(`*`, { count: 'exact' })
                 .order('change_time', { ascending: false })
 
-            // Apply filters
-            if (currentFilters.jobId && currentFilters.jobId.trim()) {
-                query = query.eq('job_id', currentFilters.jobId.trim())
+            // Apply filters - check if job id is array or string and handle both
+
+            if (currentFilters.jobId) {
+                if (Array.isArray(currentFilters.jobId) && currentFilters.jobId.length > 0) {
+                    query = query.in('job_id', currentFilters.jobId)
+                } 
+                else if (typeof currentFilters.jobId === 'string' && currentFilters.jobId.trim()) {
+                    query = query.eq('job_id', currentFilters.jobId.trim())
+                }
             }
 
             if (currentFilters.dateFrom) {
@@ -544,9 +572,13 @@ const ViewHistory = () => {
         try {
             let query = supabase.from('JobsHistory').select('*')
 
-            // Filter for job id
-            if (currentFilters.jobId && currentFilters.jobId.trim()) {
-                query = query.eq('job_id', currentFilters.jobId.trim())
+            // Filter for job id - check if array or string and handle both
+            if (currentFilters.jobId) {
+                if (Array.isArray(currentFilters.jobId) && currentFilters.jobId.length > 0) {
+                    query = query.in('job_id', currentFilters.jobId)
+                } else if (typeof currentFilters.jobId === 'string' && currentFilters.jobId.trim()) {
+                    query = query.eq('job_id', currentFilters.jobId.trim())
+                }
             }
 
             if (currentFilters.dateFrom) {
