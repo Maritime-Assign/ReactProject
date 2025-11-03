@@ -75,17 +75,20 @@ const ViewHistory = () => {
     // Define searchQuery State
     const [searchQuery, setSearchQuery] = useState('')
     // Define state for debounce
-    const [debouncedQuery, setDebouncedQuery] = useState(searchQuery)
+    const [debouncedQuery, setDebouncedQuery] = useState('')
 
     // Used to prevent stale requests and manage search state
     // token request method
     const latestFetchID = React.useRef(0)
 
-    // Define debounce timer - 350 seems good
+    // Define debounce timer - 1000 better to account for slower typing speed so less api calls are made
+    // The goal is to make it simulate the time it would take to press enter on average query lengths.
+    // So far ship name would be the longest and most time intensive - It is also a core search query required
     useEffect(() => {
         const handler = setTimeout(() => {
+            const query = searchQuery.trim()
             setDebouncedQuery(searchQuery)
-        }, 350)
+        }, 1000)
 
         // clear prior timeout
         return () => clearTimeout(handler)
@@ -95,18 +98,17 @@ const ViewHistory = () => {
     // Track last applied filter and skip fetch when nothing is changed
     const lastFilters = React.useRef(null)
     useEffect(() => {
-        if (debouncedQuery.trim() !== '') {
-            const newFilters = detectSearchType(debouncedQuery)
-            if (
-                JSON.stringify(newFilters) !==
-                JSON.stringify(lastFilters.current)
-            ) {
-                handleSearch(debouncedQuery)
-                lastFilters.current = newFilters
-            }
-        } else {
+        const query = debouncedQuery.trim()
+        if(!query) {
             clearFilters()
             lastFilters.current = null
+            return
+        }
+
+        const newFilters = detectSearchType(query)
+        if (JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)) {
+            handleSearch(query)
+            lastFilters.current = newFilters
         }
     }, [debouncedQuery])
 
@@ -120,7 +122,6 @@ const ViewHistory = () => {
             // Populate search, set page and trigger debounce effect
             setSearchQuery(query)
             setCurrentPage(page)
-            setDebouncedQuery(query)
         }
     }, [location.search])
 
@@ -1247,13 +1248,6 @@ ${log.new_state}`
                         className='w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                // Enter triggers the same behavior as letting debounce elapse
-                                e.preventDefault()
-                                setDebouncedQuery(searchQuery)
-                            }
-                        }}
                     />
                     {/* Spinner | Clear button */}
                     <div className='absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center'>
@@ -1266,7 +1260,6 @@ ${log.new_state}`
                             data-testid='clearButton'
                             onClick={() => {
                                 setSearchQuery('')
-                                clearFilters()
                             }}
                             className='text-gray-400 hover:text-gray-600 bg-white rounded-full p-1'
                             >
