@@ -262,6 +262,25 @@ const ViewHistory = () => {
             // Format date into what backend expects
             case 'date': {
                 const dateObj = result.value
+                // Handle invalid dates first 27/, 9/99, etc
+                const month = parseInt(dateObj.month, 10)
+                const day = parseInt(dateObj.day, 10)
+                if ((month && (month < 1 || month > 12)) || (day && (day < 1 || day > 31))) {
+                    // Show no results instead of screen error
+                    setLogs([])
+                    setGroupedLogs([])
+                    setTotalCount(0)
+                    setSummary({
+                        totalActions: 0,
+                        newJobs: 0,
+                        updatedJobs: 0,
+                        recentActivity: [],
+                        closedJobs: 0,
+                    })
+                    setLoading(false)
+                    return
+                }
+                // Handle dates
                 // YYYY
                 if (dateObj.type === 'year') {
                     newFilters.dateFrom = `${dateObj.value}-01-01`
