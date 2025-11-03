@@ -911,6 +911,21 @@ ${log.new_state}`
         }
     }
 
+    // Function to edit a job's status to open, refresh the page on call
+    const reopenJobArchive = async (jobId) => {
+        const { error } = await supabase
+            .from('Jobs')
+            .update({ archivedJob: false })
+            .eq('id', jobId)
+
+        if (error) {
+            console.error(`Failed to unarchive job ${jobId}:`, error)
+        } else {
+            console.log(`Job ${jobId} unarchived (archivedJob = false).`)
+            await handleRefresh()
+        }
+    }
+
     // Modal open/close handlers for closed jobs
     const openClosedModal = () => {
         setClosedPage(1) // reset modal page
@@ -1598,7 +1613,11 @@ ${log.new_state}`
                                                             reopenJob(
                                                                 log.job_id
                                                             )
+                                                            reopenJobArchive(
+                                                                log.job_id
+                                                            )
                                                         }}
+                                                        
                                                         className='text-mebablue-dark hover:text-mebablue-hover'
                                                         title='Reopen job'
                                                     >
