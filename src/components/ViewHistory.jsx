@@ -127,60 +127,61 @@ const ViewHistory = () => {
     // Build helper function to detect if its a jobid/username/date/etc
     const detectSearchType = (query) => {
         if (!query) return null
-
         const trimmed = query.trim()
 
-        // Check if jobId
-        if (trimmed.startsWith('job:')) {
-            const jobIdValue = trimmed.slice(4).trim()
-            if (!jobIdValue) return null
-            if (/^\d+$/.test(jobIdValue)) {
-                return { type: 'jobid', value: jobIdValue }
-            }
-            return null
+        // If numeric assume job id first
+        if (/^\d+$/.test(trimmed)) {
+            return { type: 'jobid', value: trimmed }
         }
 
-        // Check if date
-        if (trimmed.startsWith('date:')) {
-            let dateValue = trimmed.slice(5).trim()
-            if (!dateValue) return null
-
-            // YYYY
-            if (/^\d{4}$/.test(dateValue))
-                return {
-                    type: 'date',
-                    value: { type: 'year', value: dateValue },
-                }
-
-            // YYYY-MM or YYYY-M
-            if (/^\d{4}-\d{1,2}$/.test(dateValue)) {
-                let [year, month] = dateValue.split('-')
-                month = month.padStart(2, '0')
-                return { type: 'date', value: { type: 'month', year, month } }
-            }
-
-            // YYYY-MM-DD or YYYY-M-D
-            if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateValue)) {
-                let [year, month, day] = dateValue.split('-')
-                month = month.padStart(2, '0')
-                day = day.padStart(2, '0')
-                return {
-                    type: 'date',
-                    value: { type: 'day', year, month, day },
+        // If "numeric/" then handle date formats
+        // Handle MM/DD/YYYY | M/D/YYYY
+        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) {
+            const [month, day, year] = trimmed.split('/')
+            return { 
+                type: 'date', 
+                value: { 
+                    type: 'day', 
+                    year, 
+                    month: month.padStart(2, '0'), 
+                    day: day.padStart(2, '0') 
                 }
             }
-            return null
         }
 
-        // Check if username
-        if (trimmed.startsWith('user:')) {
-            const usernameValue = trimmed.slice(5).trim()
-            if (!usernameValue) return null
-            return { type: 'username', value: usernameValue }
+        // Handle MM/DD | M/D
+        if (/^\d{1,2}\/\d{1,2}$/.test(trimmed)) {
+            const [month, day] = trimmed.split('/')
+            // Assume user wants to see current year first if not a full date query
+            const year = new Date().getFullYear()
+            return { 
+                type: 'date', 
+                value: { 
+                    type: 'day', 
+                    year, 
+                    month: month.padStart(2, '0'), 
+                    day: day.padStart(2, '0') 
+                } 
+            }
         }
 
-        // Return null if its none of the types above
-        return null
+        // Handle MM/ | M/
+        if (/^\d{1,2}\/$/.test(trimmed)) {
+            const month = trimmed.replace('/', '').padStart(2, '0')
+            const year = new Date().getFullYear()
+            return { 
+                type: 'date', 
+                value: { 
+                    type: 'month', 
+                    year, 
+                    month 
+                }
+            }
+        }
+
+        // For now, if not numeric then username
+        // Later: ship name
+        return { type: 'username', value: trimmed }
     }
 
     // Build function to handle the search and refetch logs
@@ -267,6 +268,16 @@ const ViewHistory = () => {
                     newFilters.dateFrom = `${dateObj.year}-${dateObj.month}-${dateObj.day}`
                     newFilters.dateTo = `${dateObj.year}-${dateObj.month}-${dateObj.day}`
                 }
+                // Partial date handling so supabase does not throw error from incomplete date
+                else if(dateObj.type === 'partial') {
+                    if (dateObj.month) {
+                        newFilters.dateFrom = `${dateObj.year || '0000'}-${dateObj.month}-01`;
+                    }
+                    if (dateObj.day) {
+                        newFilters.dateTo = `${dateObj.year || '9999'}-${dateObj.month}-${dateObj.day.padStart(2, '0')}`;
+                    }
+                }
+
                 break
             }
         }
