@@ -1504,24 +1504,43 @@ ${log.new_state}`
 
                                             {/* Actions */}
                                             <td className='px-6 py-4 whitespace-nowrap text-sm text-right w-[120px]'>
-                                                {isJobClosed(log) && (
-                                                    <button
+                                                {isJobClosed(log) && (() => {
+                                                    const jobId = log.job_id
+                                                    const isPendingMain = !!confirmPending[jobId]
+                                                    const isUpdatingMain = updatingJobs.has(String(jobId))
+
+                                                    return (
+                                                        <button
                                                         onClick={(e) => {
+                                                            // delegate to the shared handler that implements the 3s confirm window
+                                                            // handleOpenClick will call e.stopPropagation() itself but we keep this here
+                                                            // so clicks don't bubble if anything changes later.
                                                             e.stopPropagation()
-                                                            reopenJob(
-                                                                log.job_id
-                                                            )
-                                                            reopenJobArchive(
-                                                                log.job_id
-                                                            )
+                                                            handleOpenClick(e, jobId)
                                                         }}
-                                                        
-                                                        className='text-mebablue-dark hover:text-mebablue-hover'
-                                                        title='Reopen job'
-                                                    >
-                                                        <IoRefresh className='w-4 h-4' />
-                                                    </button>
-                                                )}
+                                                        // while waiting for confirmation the button turns grey (visual cue) but remains clickable
+                                                        className={`px-2 py-1 rounded text-sm focus:outline-none transition-colors ${
+                                                            isUpdatingMain
+                                                            ? 'bg-gray-400 cursor-wait text-white'
+                                                            : isPendingMain
+                                                            ? 'bg-gray-200 text-gray-500'    // grey while waiting for confirmation
+                                                            : 'text-mebablue-dark hover:text-mebablue-hover'
+                                                        }`}
+                                                        title={isPendingMain ? 'Click again to confirm' : 'Reopen job'}
+                                                        aria-pressed={isPendingMain}
+                                                        aria-label={isPendingMain ? `Confirm reopen job ${jobId}` : `Reopen job ${jobId}`}
+                                                        >
+                                                        {isUpdatingMain ? (
+                                                            'Opening...'
+                                                        ) : isPendingMain ? (
+                                                            'Confirm?'
+                                                        ) : (
+                                                            <IoRefresh className='w-4 h-4' />
+                                                        )}
+                                                        </button>
+                                                    )
+                                                    })()}
+
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()
