@@ -87,7 +87,16 @@ const ViewHistory = () => {
     useEffect(() => {
         const handler = setTimeout(() => {
             const query = searchQuery.trim()
-            setDebouncedQuery(searchQuery)
+            // Only clear filters if there is something to clear
+            if (query === '') {
+                if(lastFilters.current) {
+                    clearFilters()
+                    lastFilters.current = null
+                }
+            }
+            else {
+                setDebouncedQuery(query)
+            }
         }, 1000)
 
         // clear prior timeout
@@ -199,12 +208,31 @@ const ViewHistory = () => {
     }
 
     // Build function to handle the search and refetch logs
+    // If the search bar is empty, skip fetching data
+    // This prevents unnecessary api calls when clearing the input
     const handleSearch = async (query) => {
         const trimmedQuery = query.trim()
 
         // If the search bar is empty, show everything
         if (!trimmedQuery) {
-            clearFilters()
+            // Only fetch is current filters have values
+            if(filters.jobId || filters.userId || (filters.dateFrom && filters.dateTo)) {
+                await clearFilters()
+            }
+            else {
+                // Reset state without fetch
+                setLogs([])
+                setGroupedLogs([])
+                setTotalCount(0)
+                setSummary({
+                    totalActions: 0,
+                    newJobs: 0,
+                    updatedJobs: 0,
+                    recentActivity: [],
+                    closedJobs: 0,
+                })
+                setLoading(false)
+            }
             return
         }
 
@@ -679,16 +707,19 @@ const ViewHistory = () => {
     }
 
     const clearFilters = async () => {
-        const clearedFilters = {
-            jobId: '',
-            dateFrom: '',
-            dateTo: '',
-            userId: '',
+        // Only make api fetch call if there are valid filters to clear
+        if (filters.jobId || filters.userId || (filters.dateFrom && filters.dateTo)) {
+            const clearedFilters = {
+                jobId: '',
+                dateFrom: '',
+                dateTo: '',
+                userId: '',
+            }
+            setFilters(clearedFilters)
+            setCurrentPage(1)
+            await fetchLogs(1, clearedFilters)
+            await fetchSummaryData(clearedFilters)
         }
-        setFilters(clearedFilters)
-        setCurrentPage(1)
-        await fetchLogs(1, clearedFilters)
-        await fetchSummaryData(clearedFilters)
     }
 
     // Handle pagination

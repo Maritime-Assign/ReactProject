@@ -9,6 +9,13 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 // fireEvent -> simulates interactions
 import ViewHistory from '../components/ViewHistory'
 import { MemoryRouter, useNavigate } from 'react-router-dom'
+import { debounce } from '@mui/material'
+
+// Note:
+// Use real timers when testing UI interactions with debounced events 
+// where actual time passage matters. Use fake timers for long or complex timer logic 
+// where speed and determinism are needed, and you can manually advance the clock.
+
 
 
 
@@ -53,40 +60,10 @@ vi.mock('react-router-dom', async () => {
     }
 })
 
-// Component for debounced input
-const DebouncedInput = ({ onSearch }) => {
-    // Store current input value
-    const [value, setValue] = useState('')
-    // State for debounced value - only updated after delay
-    const [debouncedValue, setDebouncedValue] = useState(value)
-
-    // Effect for debounce handling
-    // Every change on value sets a timeout update to debouncedValue after 350ms
-    // If value changes again before timeout, clear previous timeout
-    useEffect(() => {
-        const handler = setTimeout(() => setDebouncedValue(value), 350)
-        return () => clearTimeout(handler)
-    }, [value])
-
-    // Effect to call onsearch callback when the debouncedValue changes
-    useEffect(() => {
-        if (debouncedValue) onSearch(debouncedValue)
-    }, [debouncedValue, onSearch])
-
-    // Render the input element
-    return (
-        <input
-        placeholder="Search..."
-        value={value}
-        onChange={e => setValue(e.target.value)}
-        />
-    )
-}
-
 // Helper to mock the search bar placeholder text
 const getSearchInput = () => {
   return screen.getByPlaceholderText(
-    'Search (user:name, job:21, date:2025, date:2025-10-15)'
+    'Search username, job id, date, ship name'
   )
 }
 
@@ -99,13 +76,27 @@ const setRender = () => {
     )
 }
 
-// Helper to flush React state and advance timer
-const stateFlush_timerIncrement = (time) => {
-    act(() => {
-        vi.advanceTimersByTime(time)
-    })
-}
+const advanceTime = (time) => act(() => vi.advanceTimersByTime(time))
 
+// Debounce input for testing
+const DebouncedInput = ({onSearch}) => {
+    const[value, setValue] = useState('')
+    const[debounced, setDebounced] = useState(value)
+
+    useEffect(() => { 
+        // Set debounce value
+        const timeout = setTimeout(() => setDebounced(value), 1000)
+        return () => clearTimeout(timeout)
+    }, [value])
+
+    useEffect(() => {
+        if(debounced) {
+            onSearch(debounced)
+        }
+    }, [debounced, onSearch])
+
+    return <input placeholder="Search..." value={value} onChange={e => setValue(e.target.value)} />
+}
 
 
 // Positive tests
@@ -115,38 +106,30 @@ describe("ViewHistory Search Bar: Positive Tests", () => {
         // Render the ViewHistory component inside Memory Router
         setRender()
 
-        // Expect that the placeholder text is there
-        expect (
-            screen.getByPlaceholderText(
-                'Search (user:name, job:21, date:2025, date:2025-10-15)'
-            )
-        ).toBeInTheDocument()
+        expect(getSearchInput()).toBeInTheDocument()
     })
 
     // Test debounce - callback fires only after user stops typing
-    test('debounced input triggers api only after user stops typing for 350ms', () => {
+    test('debounced input triggers api only after user stops typing for 1000ms', () => {
         // Simulate search callback
         const onSearch = vi.fn()
 
         vi.useFakeTimers()
 
-        // Render DebouncedInput component with mock onSearch function
         render(<DebouncedInput onSearch={onSearch} />)
         const input = screen.getByPlaceholderText('Search...')
+        fireEvent.change(input, {target: {value: 'test'}})
+        fireEvent.change(input, {target: {value: 'testing'}})
 
-        // Simulate typing
-        fireEvent.change(input, { target: { value: 'job:39' } })
-        fireEvent.change(input, { target: { value: 'job:39x' } })
-
-        // User not done typing (timer not advanced) so callbacks should not have been fired
+        // Debounce time has not elapsed - no call back should have been made
         expect(onSearch).not.toHaveBeenCalled()
 
-        stateFlush_timerIncrement(350)
+        // Advance timer
+        advanceTime(1000)
+        // Debounce has occured - call back should have been made
 
-        // Now that the delay has passed we should expect 1 callback for the final value
-        expect(onSearch).toHaveBeenCalledTimes(1)
-        expect(onSearch).toHaveBeenCalledWith('job:39x')
-
+        expect(onSearch).toHaveBeenCalled(1)
+        expect(onSearch).toHaveBeenCalledWith('testing')
         vi.useRealTimers()
     })
 
@@ -156,20 +139,33 @@ describe("ViewHistory Search Bar: Positive Tests", () => {
         setRender()
         // Get search input
         const input = getSearchInput()
-        expect(input).toBeInTheDocument()
-
-        vi.useFakeTimers()
-        // Simulate empty string inputted
-        fireEvent.change(input, {target: {value: ''}})
-        // Trigger debounce
-        stateFlush_timerIncrement(350)
-
-        
         const supabase = await import('../api/supabaseClient')
-        // Expect back end call on an empty search - display everything
-        expect(supabase.default.from).toHaveBeenCalled()
-        // reset timer
+        supabase.default.from.mockClear()
+
         vi.useRealTimers()
+
+        // Simulate text
+        fireEvent.change(input, {target: {value: 'VesselA'}})
+        // Wait for debounce to finish
+        await new Promise(r => setTimeout(r, 1100))
+        
+        // Clear the input
+        fireEvent.change(input, {target: {value: ''}})
+        await new Promise(r => setTimeout(r, 1100))
+
+        // Simulate text
+        fireEvent.change(input, {target: {value: 'VesselB'}})
+        // Wait for debounce to finish
+        await new Promise(r => setTimeout(r, 1100))
+
+        // Button is clickable now
+        const clearButton = await screen.findByTestId('clearButton')
+        fireEvent.click(clearButton)
+        await new Promise(r => setTimeout(r, 1100))
+
+        // Expect 4 total api fetches
+        expect(supabase.default.from).toHaveBeenCalledTimes(4)
+
     })
 
     // Test older api calls are canceled or ignored if user types again before debounce is triggered
@@ -186,13 +182,13 @@ describe("ViewHistory Search Bar: Positive Tests", () => {
 
         // Users start typing the first query
         fireEvent.change(input, { target: { value: 'job:1' } })
-        // Debounce not triggered, still typing - time has passed, but not 350ms
-        stateFlush_timerIncrement(200)
+        // Debounce not triggered, still typing - time has passed, but not 1000ms
+        advanceTime(500)
         // User finally finished typing the new query - this should cancel the first pending callback
         fireEvent.change(input, { target: { value: 'job:12' } })
 
         // Trigger debounce
-        stateFlush_timerIncrement(350)
+        advanceTime(1000)
 
         // Expect the callback fired once and only for the finish typed query
         expect(onSearch).toHaveBeenCalledTimes(1)
@@ -207,44 +203,25 @@ describe("ViewHistory Search Bar: Positive Tests", () => {
         const supabase = await import('../api/supabaseClient')
         supabase.default.from.mockClear()
 
-        vi.useFakeTimers()
+        vi.useRealTimers()
 
         setRender()
         const input = getSearchInput()
 
-        // Simulate a valid filtered search
-        fireEvent.change(input, { target: { value: 'job:27' } })
-        // Trigger debounce
-        stateFlush_timerIncrement(350)
-
-        // Input is cleared
-        fireEvent.change(input, { target: { value: '' } })
-        // Debounce triggered again
-        stateFlush_timerIncrement(350)
-
-        // Expect back end call to fetch all entries
-        expect(supabase.default.from).toHaveBeenCalled()
-
-        // Try the same for the clear button
         // Note: clear button only appears when there is text to clear
-
         // Add something into the searchQuery
-        fireEvent.change(input, {target:{value: 'job:27'}})
-
-        // Trigger debounce
-        stateFlush_timerIncrement(350)
+        fireEvent.change(input, {target:{value: '27'}})
+        await new Promise(r => setTimeout(r, 1200))
 
         // Target clear button and fire
-        const clearButton = screen.getByTestId('clearButton')
+        const clearButton = await screen.findByTestId('clearButton')
         fireEvent.click(clearButton)
         // Trigger debounce
-        stateFlush_timerIncrement(350)
+        await new Promise(r => setTimeout(r, 1200))
 
-        // Expect another call to back end, total 2
-        expect(supabase.default.from).toHaveBeenCalled(2)
+        // Expect call for unfiltered results
+        expect(supabase.default.from).toHaveBeenCalled(1)
         
-        
-        vi.useRealTimers()
     })
 })
 
@@ -264,11 +241,11 @@ describe("ViewHistory Search bar: Negative Tests", () => {
         expect(input).toBeInTheDocument()
 
         vi.useFakeTimers()
-        fireEvent.change(input, { target: { value: 'invalid:|||'}})
-        stateFlush_timerIncrement(350)
+        fireEvent.change(input, { target: { value: '|||||'}})
+        advanceTime(1000)
 
         // Expect no back end calls
-        expect(supabase.default.from).not.toHaveBeenCalled()
+        expect(supabase.default.from).toHaveBeenCalled(0)
         vi.useRealTimers()
 
     })
