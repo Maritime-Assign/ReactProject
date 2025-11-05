@@ -133,8 +133,8 @@ describe("ViewHistory Search Bar: Positive Tests", () => {
         vi.useRealTimers()
     })
 
-    // Empty search should not call the api
-    test("empty search input triggers backend call to fetch all data",  async () => {
+    // API should be called for typed queries and also fetch all data when input is cleared
+    test("clearing the search input triggers backend call to fetch all data",  async () => {
         
         setRender()
         // Get search input
