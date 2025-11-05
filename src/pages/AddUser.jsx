@@ -25,8 +25,8 @@ const userValidationSchema = yup.object().shape({
         .max(50, 'First Name must be 50 characters or less'),
     abbreviation: yup
         .string()
-        .transform(v => (v ? v.toUpperCase() : v))
         .required('Required')
+        .min(3, 'Abbreviation must be 3 characters')
         .matches(/^[A-Z]{3}$/, 'Abbreviation must be exactly 3 letters'),
     username: yup
         .string()
@@ -81,13 +81,6 @@ const onSubmit = async (values, actions) => {
         const getSessionRes = await supabase.auth.getSession()
         const adminSession = getSessionRes?.data?.session || null
 
-        const abbreviationUC = (values.abbreviation || '').toUpperCase()
-        console.log('DEBUG send payload:', {
-        fName: values.fName,
-        role: values.role,
-        username: values.username,
-        abbreviation: abbreviationUC,
-        })
 
         // Sign up user in Supabase Auth with metadata
         const { data: authData, error: signUpError } =
@@ -97,7 +90,7 @@ const onSubmit = async (values, actions) => {
                 options: {
                     data: {
                         first_name: values.fName,
-                        abbreviation: abbreviationUC,
+                        abbreviation: values.abbreviation.toUpperCase(),
                         role: values.role.toLowerCase(),
                         username: values.username,
                     },
@@ -311,16 +304,12 @@ const AddUser = () => {
                         )}
                     </div>
                     
-                    {(values.abbreviation.length > 0 || submitCount > 0) && values.abbreviation.length !== 3 && (
-                        <div className='text-red-600 text-sm' role="alert" aria-live="polite">
-                            Abbreviation must be exactly 3 uppercase letters
-                        </div>
-                    )}
+                    
 
                     {/* Submit button */}
                     <div className='flex flex-row space-x-4 mt-4 justify-center'>
                         <button
-                            disabled={isSubmitting || values.abbreviation.length !== 3}
+                            disabled={isSubmitting}
                             type='submit'
                             className={
                                 isSubmitting
