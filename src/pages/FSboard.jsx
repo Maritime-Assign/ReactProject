@@ -3,7 +3,6 @@ import FSBheader from '../components/FSBheader'
 import getJobsArray from '../components/jobDataAPI'
 import JobListing from '../components/JobListing'
 import { ArrowDown } from 'lucide-react'
-import { PropaneSharp } from '@mui/icons-material'
 
 const FSboard = () => {
     const [jobs, setJobs] = useState([]) // State to store the fetched jobs
