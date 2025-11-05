@@ -84,7 +84,7 @@ const UsersAndRoles = () => {
                     />
                 </div>
                 {/*Button that links to the add user page; Add link later*/}
-                <Link className='content-center'>
+                <Link className='content-center' to={'/add-user'}>
                     <button className="add-button" title="Add User">
                         <FaUserPlus/>
                     </button>
