@@ -1275,7 +1275,7 @@ ${log.new_state}`
                 <div className='grow mx-4 relative overflow-visible'>
                     <input
                         type='text'
-                        placeholder='Search username, job id, date, ship name'
+                        placeholder='Search by Username, Job ID, Date, or Vessel'
                         className='w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
