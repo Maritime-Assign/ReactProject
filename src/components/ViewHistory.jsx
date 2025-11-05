@@ -997,7 +997,7 @@ ${log.new_state}`
             // Perform supabase update: set open true
             const { data, error } = await supabase
                 .from('Jobs')
-                .update({ open: true, archivedJob: false })
+                .update({ open: true, archivedJob: false, claimedBy: null})
                 .eq('id', jobId)
             if (error) throw error
 
