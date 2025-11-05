@@ -1,10 +1,15 @@
+import { FaUser } from 'react-icons/fa6'
+
 const FSBheader = () => {
-    const cellStyle = 'py-1 font-mont'
+    const cellStyle = 'py-1 font-mont justify-center flex items-center'
 
     return (
         <div className='grid grid-cols-27 w-full text-center font-bold text-mebablue-dark text-[8px] md:text-sm border-b border-mebagold'>
-            <div className={`col-span-2 ${cellStyle}`}>
+            <div className={`col-span-1 ${cellStyle}`}>
                 <span>Status</span>
+            </div>
+            <div className={`col-span-1 ${cellStyle}`}>
+                <FaUser size={15} />
             </div>
             <div className={`col-span-1 ${cellStyle}`}>
                 <span>Region</span>
