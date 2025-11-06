@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { server } from '../mocks/server'
 import { http, HttpResponse } from 'msw'
 
-// Import mock data used by your MSW handlers
+// Import mock data using MSW handlers
 import { mockJobs } from '../mocks/handlers'
 
 // Mock the components to isolate FSboard logic
@@ -22,7 +22,6 @@ vi.mock('../components/JobListing', () => ({
 }))
 
 // --- GLOBAL MOCK SETUP FOR jobDataAPI ---
-// We must wrap the default export (getJobsArray) in a spy to use mockImplementationOnce
 const mockGetJobsArraySpy = vi.fn()
 
 vi.mock('../components/jobDataAPI', async (importOriginal) => {
@@ -36,7 +35,6 @@ vi.mock('../components/jobDataAPI', async (importOriginal) => {
         default: mockGetJobsArraySpy, // Inject the spy as the default export
     }
 })
-// --- END GLOBAL MOCK SETUP ---
 
 describe('FSboard Integration Test: Data Fetching', () => {
     beforeEach(() => {
@@ -77,12 +75,9 @@ describe('FSboard Integration Test: Data Fetching', () => {
     })
 
     it('should display an error message when the job API call fails', async () => {
-        // 1. Get the module object containing the spy
         const jobDataAPI = await import('../components/jobDataAPI')
         const { default: FSboard } = await import('../pages/FSboard')
 
-        // Optional: Override MSW to return an error, just in case the component ignores the mock,
-        // but the module mock is the primary driver here.
         const FULL_SUPABASE_URL =
             'https://niwgwqnkqpfjhxvcwjdt.supabase.co/rest/v1/Jobs'
         server.use(
@@ -91,14 +86,13 @@ describe('FSboard Integration Test: Data Fetching', () => {
             })
         )
 
-        // 2. MOCK THE SPY to reject with the SPECIFIC error we want to test
         jobDataAPI.default.mockImplementationOnce(() =>
             Promise.reject(new Error('Failed to load jobs'))
         )
 
         render(<FSboard />)
 
-        // 3. WAIT for the error state to render
+        // wait for the error state to render
         await waitFor(
             () => {
                 // This assertion now matches the exact message thrown by mockImplementationOnce
@@ -109,7 +103,7 @@ describe('FSboard Integration Test: Data Fetching', () => {
             { timeout: 3000 }
         )
 
-        // 4. ASSERT no jobs or loading message are present
+        // 4. no jobs or loading message are present
         expect(screen.queryByText(/Loading jobs.../i)).not.toBeInTheDocument()
         expect(screen.queryByTestId('job-listing')).not.toBeInTheDocument()
     })
