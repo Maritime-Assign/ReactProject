@@ -94,7 +94,7 @@ describe('FSBoard components', () => {
     test('renders all possible job claim states', async () => {
         getJobsArray.mockResolvedValueOnce([
             { id: 1, open: true, FillDate: null },
-            // Date '2025-02-10' shifts back to '02/09/25' due to toLocaleDateString/timezone
+
             { id: 2, open: false, FillDate: '2025-02-10' },
         ])
 
@@ -110,14 +110,12 @@ describe('FSBoard components', () => {
 
         expect(screen.getAllByText('Open')).toHaveLength(1)
 
-        // --- FINAL FIXED ASSERTION (Matching 02/09/25) ---
         expect(
             screen.getByText(
                 (content) =>
-                    content.includes('Filled') && content.includes('02/09/25') // Corrected date based on DOM output
+                    content.includes('Filled') && content.includes('02/09/25')
             )
         ).toBeInTheDocument()
-        // --- END FINAL FIXED ASSERTION ---
     })
 
     test('shows error message when data fetch fails', async () => {
