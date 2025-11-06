@@ -1,16 +1,14 @@
-/**
- * FSBoard.test.jsx
- *
- * This test suite verifies the FSBoard component’s rendering and behavior:
- *
- * 1. Renders "Loading jobs..." before data fetch completes.
- * 2. Displays static table headers after jobs load (no data dependency).
- * 3. Correctly shows both "Open" and "Filled" job states.
- * 4. Handles API failure gracefully (shows error message).
- * 5. Handles empty job list (shows fallback message).
- * 6. Removes loading message after data is fetched.
- * 7. Expands and collapses the Notes section when button is clicked.
- */
+import {
+    render,
+    screen,
+    waitForElementToBeRemoved,
+} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { expect, vi } from 'vitest'
+import '@testing-library/jest-dom'
+import { MemoryRouter } from 'react-router-dom'
+import FSBoard from '../pages/FSboard'
+import getJobsArray from '../components/jobDataAPI'
 
 beforeAll(() => {
     Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
@@ -28,10 +26,8 @@ beforeAll(() => {
 
     vi.setSystemTime(new Date('2025-01-01'))
 
-    // ✅ Stable random and UUID values (optional but good practice)
     vi.spyOn(Math, 'random').mockReturnValue(0.5)
 
-    // ✅ Flag test env for component logic (used by JobListing)
     window.__vitest_environment__ = true
 })
 
@@ -39,18 +35,6 @@ afterAll(() => {
     vi.useRealTimers()
     vi.restoreAllMocks()
 })
-
-import {
-    render,
-    screen,
-    waitForElementToBeRemoved,
-} from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { expect, vi } from 'vitest'
-import '@testing-library/jest-dom'
-import { MemoryRouter } from 'react-router-dom'
-import FSBoard from '../pages/FSboard'
-import getJobsArray from '../components/jobDataAPI'
 
 vi.mock('../auth/AuthContext', () => ({
     UserAuth: () => ({
@@ -110,6 +94,7 @@ describe('FSBoard components', () => {
     test('renders all possible job claim states', async () => {
         getJobsArray.mockResolvedValueOnce([
             { id: 1, open: true, FillDate: null },
+
             { id: 2, open: false, FillDate: '2025-02-10' },
         ])
 
@@ -124,11 +109,11 @@ describe('FSBoard components', () => {
         )
 
         expect(screen.getAllByText('Open')).toHaveLength(1)
+
         expect(
             screen.getByText(
                 (content) =>
-                    content.includes('Filled') &&
-                    /\d{1,2}\/\d{1,2}\/\d{4}/.test(content)
+                    content.includes('Filled') && content.includes('02/09/25')
             )
         ).toBeInTheDocument()
     })
@@ -191,21 +176,17 @@ describe('FSBoard components', () => {
             screen.queryByText('Loading jobs...')
         )
 
-        // Find the expand button
         const expandButton = await screen.findByRole('button', {
             name: /expand notes/i,
         })
 
-        // Check initial state (collapsed, class present)
         const notesContent = screen.getByTestId('notesContent')
-        expect(notesContent).toHaveClass('text-ellipsis')
+        expect(notesContent).toHaveClass('line-clamp-2')
 
-        // Expand
         await userEvent.click(expandButton)
-        expect(notesContent).not.toHaveClass('text-ellipsis')
+        expect(notesContent).not.toHaveClass('line-clamp-2')
 
-        // Collapse
         await userEvent.click(expandButton)
-        expect(notesContent).toHaveClass('text-ellipsis')
+        expect(notesContent).toHaveClass('line-clamp-2')
     })
 })
