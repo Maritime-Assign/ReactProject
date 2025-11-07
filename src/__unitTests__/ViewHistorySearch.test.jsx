@@ -63,7 +63,7 @@ vi.mock('react-router-dom', async () => {
 // Helper to mock the search bar placeholder text
 const getSearchInput = () => {
   return screen.getByPlaceholderText(
-    'Search username, job id, date, ship name'
+    'Search by Username, Job ID, Date, or Vessel'
   )
 }
 
