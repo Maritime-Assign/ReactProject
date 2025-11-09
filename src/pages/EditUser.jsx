@@ -1,4 +1,5 @@
-import supabase from '../api/supabaseAdmin'
+import supabaseAdmin from '../api/supabaseAdmin'
+import supabase from '../api/supabaseClient'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useFormStatus } from 'react-dom'
@@ -23,6 +24,13 @@ const EditUser = () => {
     const [abbrevError, setAbbrevError] = useState('')
     
     async function updateUser() {
+
+        // Checks if user requires super admin perms to edit
+        if (!(await isAdminEditable())) {
+            alert('This user can only be edited by a super admin')
+            return
+        }
+
         const updatedUser = {
             username: user.username,
             role: user.role,
@@ -46,8 +54,43 @@ const EditUser = () => {
         console.log(user);
     }
 
+    const isSuperAdmin = async () => {
+        // Get currently logged in user from auth table
+        const { data: { user }, error } = await supabase
+            .auth
+            .getUser()
+
+        // Get logged in user's entry from Users table and fetch
+        // superAdmin value
+        const { data: loggedUser } =  await supabase
+            .from('Users')
+            .select('UUID, superAdmin')
+            .eq('UUID', user.id)
+
+        // Array object is returned, user is accessed at index 0
+        return loggedUser[0].superAdmin
+    }
+
+    const isAdminEditable = async () => {
+        // Compares selected user's initial role
+        if (state.role === 'admin') {
+            // If logged in user is not admin then early return
+            if (!(await isSuperAdmin())) {
+                return false
+            }
+        }
+
+        return true
+    }
+
     const handleAdminPasswordSubmit = async () => {
-        const { data, error } = await supabase
+        // Checks if user requires super admin perms to edit
+        if (!(await isAdminEditable())) {
+            alert('This user can only be edited by a super admin')
+            return
+        }
+
+        const { data, error } = await supabaseAdmin
             .auth
             .admin
             .updateUserById(
@@ -56,10 +99,9 @@ const EditUser = () => {
             )
         
         if (error) {
-            alert('Failed to update user password')
+            alert(error.message)
+            return
         }
-
-        console.log(user)
 
         updateUser()
     }
@@ -70,6 +112,7 @@ const EditUser = () => {
     //Functions to handle edits of a user's info
     function updateUsername(e) {
         setUser({ ...user, username: e.target.value })
+        console.log(state.role)
     }
 
     function updatePassword(e) {
