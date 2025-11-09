@@ -2,7 +2,6 @@ import supabase from '../api/supabaseAdmin'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useFormStatus } from 'react-dom'
-import PasswordModal from '../components/PasswordModal/PasswordModal.jsx'
 
 const EditUser = () => {
     //Convert the data of a user and make it editable
@@ -46,11 +45,8 @@ const EditUser = () => {
         console.log(state.UUID);
         console.log(user);
     }
-    
-    //State for the admin password modal
-    const [isModalOpen, setIsModalOpen] = useState(false)
 
-    const handleAdminPasswordSubmit = async (password) => {
+    const handleAdminPasswordSubmit = async () => {
         const { data, error } = await supabase
             .auth
             .admin
@@ -60,16 +56,12 @@ const EditUser = () => {
             )
         
         if (error) {
-            alert('Failure to update user password')
+            alert('Failed to update user password')
         }
-        
-        setIsModalOpen(false)
 
         console.log(user)
 
         updateUser()
-
-        return true
     }
 
     //Enables the use of a pending state to represent a form being processed
@@ -100,14 +92,18 @@ const EditUser = () => {
         //Show a message to represent that the edits were submitted; REMOVE WHEN ACTUAL IMPLEMENTATION IS DONE
         e.preventDefault()
 
+        // Update admin password, updates user sequentially
+        // then early returns
         if (user.password) {
-            setIsModalOpen(true)
+            handleAdminPasswordSubmit();
             return
         }
+
         if (user.abbreviation.length !== 3) {
             alert('Abbreviation must be exactly 3 letters')
             return
         }
+
         updateUser()
     }
 
@@ -206,11 +202,6 @@ const EditUser = () => {
                     </button>
                 </div>
             </form>
-            <PasswordModal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              onSubmit={handleAdminPasswordSubmit}
-            />
         </div>
     )
 }
