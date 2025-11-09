@@ -106,6 +106,44 @@ const EditUser = () => {
         updateUser()
     }
 
+    const deleteUser = async () => {
+        const confirmation = confirm('Delete user?')
+
+        if (confirmation) {
+            // Early return if user is not a super admin
+            // Applies only to admin deletion
+            if (!(await isAdminEditable())) {
+                alert('This user can only be deleted by a super admin')
+                return
+            }
+
+            const { data: authData, error: authError } = await supabaseAdmin
+                .auth
+                .admin
+                .deleteUser(state.UUID)
+
+            if (authError) {
+                alert(authError.message)
+                return
+            }
+            // Delete entry in Users table as well
+            else {
+                const { data: usersData, error: usersError } = await supabase
+                    .from('Users')
+                    .delete()
+                    .eq('UUID', state.UUID)
+                    .select()
+
+                    if (usersError) {
+                        alert(usersError.message)
+                    }
+            }
+
+            navigate('/users-roles')
+            alert('User deleted successfully')
+        }
+    }
+
     //Enables the use of a pending state to represent a form being processed
     const { processing } = useFormStatus()
 
@@ -242,6 +280,13 @@ const EditUser = () => {
                     >
                         {/*The submit button label changes based on the status of the form submission*/}
                         {processing ? 'Submitting' : 'Submit Changes'}
+                    </button>
+                    <button 
+                        className='px-4 h-12 bg-mebablue-light rounded-md text-white hover:bg-mebablue-hover'
+                        type='button'
+                        onClick={deleteUser}
+                    >
+                        Delete User
                     </button>
                 </div>
             </form>
