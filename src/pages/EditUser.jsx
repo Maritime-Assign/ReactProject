@@ -122,6 +122,7 @@ const EditUser = () => {
                 .admin
                 .deleteUser(state.UUID)
 
+            // Early return to prevent uneven deletions on error
             if (authError) {
                 alert(authError.message)
                 return
