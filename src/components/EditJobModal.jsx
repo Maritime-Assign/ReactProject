@@ -17,7 +17,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
 
     function visible(items = []) {
         return items
-            .filter((i) => i?.is_active && !i?.deleted_at)                        
+            .filter((i) => i?.is_active && !i?.deleted_at)
             .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.label).localeCompare(String(b.label)))
             .map((i) => String(i.label));
     }
@@ -310,7 +310,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
             // Update job to set archivedJob to true
             const { data, error } = await supabase
                 .from('Jobs')
-                .update({ archivedJob: true, open:false })
+                .update({ archivedJob: true, open: false })
                 .eq('id', jobData.id)
                 .select()
                 .single()
@@ -384,20 +384,20 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                                 onChange={(e) => handleInputChange('region', e.target.value)}
                                 className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white text-sm'
                             >
-                            <option value='' disabled>Select Region</option>
-                            {regionOptions.map((opt) => (
-                                <option key={opt} value={opt}>{opt}</option>
-                            ))}
+                                <option value='' disabled>Select Region</option>
+                                {regionOptions.map((opt) => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
                             </select>
                             <select
                                 value={formData.hall}
                                 onChange={(e) => handleInputChange('hall', e.target.value)}
                                 className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white text-sm'
                             >
-                            <option value='' disabled>Select Hall</option>
-                            {hallOptions.map((opt) => (
-                                <option key={opt} value={opt}>{opt}</option>
-                            ))}
+                                <option value='' disabled>Select Hall</option>
+                                {hallOptions.map((opt) => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
                             </select>
                         </div>
                         {/* if job is open render box green and display 'Open' if filled render red and display 'Filled + date' */}
@@ -571,47 +571,29 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                     </div>
                 </div>
 
-                {/* Job Flags */}
-                <div className='flex flex-col w-full mt-2 space-y-1 text-white text-sm font-medium col-span-4 px-4'>
-                    <label className='flex items-center space-x-2'>
-                        <input
-                            type='checkbox'
-                            checked={formData.passThru}
-                            onChange={(e) =>
-                                handleInputChange('passThru', e.target.checked)
-                            }
-                            className='h-4 w-4 accent-mebablue-dark'
-                        />
-                        <span>Pass-Thru</span>
-                    </label>
-
-                    <label className='flex items-center space-x-2'>
-                        <input
-                            type='checkbox'
-                            checked={formData.nightCardEarlyReturn}
-                            onChange={(e) =>
-                                handleInputChange(
-                                    'nightCardEarlyReturn',
-                                    e.target.checked
-                                )
-                            }
-                            className='h-4 w-4 accent-mebablue-dark'
-                        />
-                        <span>Night Card Early Return</span>
-                    </label>
-
-                    <label className='flex items-center space-x-2'>
-                        <input
-                            type='checkbox'
-                            checked={formData.msc}
-                            onChange={(e) =>
-                                handleInputChange('msc', e.target.checked)
-                            }
-                            className='h-4 w-4 accent-mebablue-dark'
-                        />
-                        <span>MSC</span>
-                    </label>
+                {/* Job Flags (inline and scoped to their checkboxes) */}
+                <div className="flex flex-wrap items-center gap-6 mt-3 px-4 text-white text-sm font-medium">
+                    {[
+                        { name: 'passThru', label: 'Pass-Thru' },
+                        { name: 'nightCardEarlyReturn', label: 'Night Card Early Return' },
+                        { name: 'msc', label: 'MSC' },
+                    ].map(({ name, label }) => (
+                        <label
+                            key={name}
+                            className="flex items-center space-x-2 bg-mebablue-light/30 hover:bg-mebablue-light/50 px-3 py-1 rounded-md transition-all cursor-pointer"
+                            aria-label={label}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={formData[name]}
+                                onChange={(e) => handleInputChange(name, e.target.checked)}
+                                className="h-4 w-4 accent-mebablue-dark"
+                            />
+                            <span>{label}</span>
+                        </label>
+                    ))}
                 </div>
+
 
                 {/* Action Buttons */}
                 <div className='flex justify-between gap-4 p-4 bg-mebablue-hover sticky bottom-0'>
@@ -631,11 +613,10 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                             Cancel
                         </button>
                         <button
-                            className={`py-2 px-4 rounded-md focus:outline-none focus:ring-2 text-white ${
-                                saving || !user
+                            className={`py-2 px-4 rounded-md focus:outline-none focus:ring-2 text-white ${saving || !user
                                     ? 'bg-gray-400 cursor-not-allowed'
                                     : 'bg-green-500 hover:bg-green-600 focus:ring-green-500'
-                            }`}
+                                }`}
                             onClick={save}
                             disabled={saving || !user || archiving}
                             title={
@@ -653,40 +634,36 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                 {message && (
                     <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
                         <div
-                            className={`p-6 rounded-md shadow-lg max-w-sm w-full border ${
-                                messageType === 'success'
+                            className={`p-6 rounded-md shadow-lg max-w-sm w-full border ${messageType === 'success'
                                     ? 'bg-green-100 border-green-300'
                                     : 'bg-red-100 border-red-300'
-                            }`}
+                                }`}
                         >
                             <h2
-                                className={`text-xl font-semibold ${
-                                    messageType === 'success'
+                                className={`text-xl font-semibold ${messageType === 'success'
                                         ? 'text-green-800'
                                         : 'text-red-800'
-                                }`}
+                                    }`}
                             >
                                 {messageType === 'success'
                                     ? 'Success!'
                                     : 'Error'}
                             </h2>
                             <p
-                                className={`mt-2 ${
-                                    messageType === 'success'
+                                className={`mt-2 ${messageType === 'success'
                                         ? 'text-green-700'
                                         : 'text-red-700'
-                                }`}
+                                    }`}
                             >
                                 {message}
                             </p>
                             <div className='mt-6 flex justify-center w-full'>
                                 <button
                                     onClick={() => setMessage('')}
-                                    className={`py-2 px-4 rounded-md text-white ${
-                                        messageType === 'success'
+                                    className={`py-2 px-4 rounded-md text-white ${messageType === 'success'
                                             ? 'bg-green-600 hover:bg-green-700'
                                             : 'bg-red-600 hover:bg-red-700'
-                                    }`}
+                                        }`}
                                 >
                                     Close
                                 </button>
