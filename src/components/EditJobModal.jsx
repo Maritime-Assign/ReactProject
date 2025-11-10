@@ -6,6 +6,104 @@ import supabase from '../api/supabaseClient'
 const EditJobModal = ({ jobData, onClose, onSave }) => {
     const { user } = UserAuth()
 
+    const [regionOptions, setRegionOptions] = useState([]);
+    const [regionLoading, setRegionLoading] = useState(true);
+    const [hallOptions, setHallOptions] = useState([]);
+    const [hallLoading, setHallLoading] = useState(true);
+    const [billetOptions, setBilletOptions] = useState([]);
+    const [billetLoading, setBilletLoading] = useState(true);
+    const [typeOptions, setTypeOptions] = useState([]);
+    const [typeLoading, setTypeLoading] = useState(true);
+
+    function visible(items = []) {
+        return items
+            .filter((i) => i?.is_active && !i?.deleted_at)                        
+            .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.label).localeCompare(String(b.label)))
+            .map((i) => String(i.label));
+    }
+
+    async function loadRegionOptions() {
+        try {
+            const { data, error } = await supabase
+                .from('job_dropdown_options')
+                .select('region')
+                .maybeSingle();
+
+            if (error) {
+                console.error('Load region options error:', error);
+                setRegionOptions([]);
+            } else {
+                const items = Array.isArray(data?.region) ? data.region : [];
+                setRegionOptions(visible(items));
+            }
+        } finally {
+            setRegionLoading(false);
+        }
+    }
+
+    async function loadHallOptions() {
+        try {
+            const { data, error } = await supabase
+                .from('job_dropdown_options')
+                .select('hall')
+                .maybeSingle();
+
+            if (error) {
+                console.error('Load hall options error:', error);
+                setHallOptions([]);
+            } else {
+                const items = Array.isArray(data?.hall) ? data.hall : [];
+                setHallOptions(visible(items));
+            }
+        } finally {
+            setHallLoading(false);
+        }
+    }
+
+    async function loadBilletOptions() {
+        try {
+            const { data, error } = await supabase
+                .from('job_dropdown_options')
+                .select('billet')
+                .maybeSingle();
+
+            if (error) {
+                console.error('Load billet options error:', error);
+                setBilletOptions([]);
+            } else {
+                const items = Array.isArray(data?.billet) ? data.billet : [];
+                setBilletOptions(visible(items));
+            }
+        } finally {
+            setBilletLoading(false);
+        }
+    }
+
+    async function loadTypeOptions() {
+        try {
+            const { data, error } = await supabase
+                .from('job_dropdown_options')
+                .select('type')
+                .maybeSingle();
+
+            if (error) {
+                console.error('Load type options error:', error);
+                setTypeOptions([]);
+            } else {
+                const items = Array.isArray(data?.type) ? data.type : [];
+                setTypeOptions(visible(items));
+            }
+        } finally {
+            setTypeLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        loadRegionOptions();
+        loadHallOptions();
+        loadBilletOptions();
+        loadTypeOptions();
+    }, []);
     // Form state for all editable fields
     const [formData, setFormData] = useState({
         shipName: jobData?.shipName || '',
@@ -281,24 +379,26 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                             )}
                         </div>
                         <div className='grid grid-cols-2 gap-1'>
-                            <input
-                                type='text'
+                            <select
                                 value={formData.region}
-                                onChange={(e) =>
-                                    handleInputChange('region', e.target.value)
-                                }
-                                placeholder='Region'
-                                className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white placeholder-gray-300 text-sm'
-                            />
-                            <input
-                                type='text'
+                                onChange={(e) => handleInputChange('region', e.target.value)}
+                                className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white text-sm'
+                            >
+                            <option value='' disabled>Select Region</option>
+                            {regionOptions.map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                            </select>
+                            <select
                                 value={formData.hall}
-                                onChange={(e) =>
-                                    handleInputChange('hall', e.target.value)
-                                }
-                                placeholder='Hall'
-                                className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white placeholder-gray-300 text-sm'
-                            />
+                                onChange={(e) => handleInputChange('hall', e.target.value)}
+                                className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white text-sm'
+                            >
+                            <option value='' disabled>Select Hall</option>
+                            {hallOptions.map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                            </select>
                         </div>
                         {/* if job is open render box green and display 'Open' if filled render red and display 'Filled + date' */}
                         <select
@@ -424,17 +524,13 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div className='col-span-1'>
                             <select
                                 value={formData.billet}
-                                onChange={(e) =>
-                                    handleInputChange('billet', e.target.value)
-                                }
+                                onChange={(e) => handleInputChange('billet', e.target.value)}
                                 className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
                             >
-                                <option value=''>Billet</option>
-                                <option value='1A/E'>1A/E</option>
-                                <option value='2A/E'>2A/E</option>
-                                <option value='3M'>3M</option>
-                                <option value='CM'>CM</option>
-                                <option value='Relief'>Relief</option>
+                                <option value='' disabled>Select Billet</option>
+                                {billetOptions.map((opt) => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
                             </select>
                             {errors.billet && (
                                 <span className='text-red-400 text-xs block mt-1'>
@@ -445,15 +541,13 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div className='col-span-1'>
                             <select
                                 value={formData.type}
-                                onChange={(e) =>
-                                    handleInputChange('type', e.target.value)
-                                }
+                                onChange={(e) => handleInputChange('type', e.target.value)}
                                 className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
                             >
-                                <option value=''>Type</option>
-                                <option value='Permanent'>Permanent</option>
-                                <option value='Relief'>Relief</option>
-                                <option value='Temp'>Temp</option>
+                                <option value='' disabled>Select Type</option>
+                                {typeOptions.map((opt) => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
                             </select>
                             {errors.type && (
                                 <span className='text-red-400 text-xs block mt-1'>
