@@ -1,7 +1,13 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 
+import jobValidationSchema from '../data/jobValidationSchema'
+
+beforeAll(() => {
+    jobValidationSchema.fields.dateCalled = jobValidationSchema.fields.dateCalled.optional()
+    jobValidationSchema.fields.joinDate = jobValidationSchema.fields.joinDate.optional()
+})
 
 vi.mock('../auth/AuthContext', () => ({
     UserAuth: () => ({ user: { id: '1', email: 'test@example.com' } }),
@@ -22,8 +28,11 @@ import { addJob } from '../utils/jobHistoryOptimized'
 
 
 import AddJob from "../pages/AddJob"
+import { test } from 'vitest'
 
 describe('Add new job page', () => {
+    beforeEach(() => vi.clearAllMocks())
+
     test('renders without crashing', () => {
         render(
             <MemoryRouter>
@@ -86,6 +95,56 @@ describe('Add new job page', () => {
         expect(mscBox).toBeChecked()
     })
 
+    test(
+        'allows job submission when Notes field is empty',
+        async () => {
+            addJob.mockResolvedValue({ success: true })
+
+            render(
+                <MemoryRouter>
+                    <AddJob />
+                </MemoryRouter>
+            )
+
+            // Use fireEvent to ensure Formik sees real change events
+            const change = (label, name, value) =>
+                fireEvent.change(screen.getByLabelText(label, { exact: false }), {
+                    target: { name, value },
+                })
+
+            change(/Status/i, 'status', 'Open')
+            change(/Region/i, 'region', 'LA')
+            change(/Hall/i, 'hall', 'LA')
+            change(/Date Called/i, 'dateCalled', '2025-12-01')
+            change(/Ship Name/i, 'shipName', 'Test Vessel')
+            change(/Join Date/i, 'joinDate', '2025-12-10')
+            change(/Billet/i, 'billet', '1 A/E')
+            change(/Type/i, 'type', 'Relief')
+            change(/Days/i, 'days', 30)
+            change(/Location/i, 'location', 'Oakland')
+            change(/Company/i, 'company', 'ACME Marine')
+            change(/Crew Relieved/i, 'crewRelieved', 'Smith')
+
+            // Leave Notes blank intentionally
+            await userEvent.click(screen.getByRole('button', { name: /submit/i }))
+            console.log('Submitting form...')
+
+            // Wait for Formik submit → addJob call
+            await waitFor(() => expect(addJob).toHaveBeenCalled(), { timeout: 8000 })
+
+            // Confirm notes was null
+            expect(addJob).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    notes: null,
+                })
+            )
+        },
+        8000
+    )
+
+
 
 
 })
+
+

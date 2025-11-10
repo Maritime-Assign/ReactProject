@@ -23,6 +23,10 @@ const typeOptions = ['Relief', 'Permanent']
 
 // Submission function - this will be passed the user as a parameter
 const createOnSubmit = (user, setPopup) => async (values, actions) => {
+    console.log('🚀 FORM SUBMITTED')
+    console.log('✅ Submitting job with user:', user)
+    console.log('✅ Values received by Formik:', values)
+
     try {
         console.log('Submitting job with values:', values)
 
@@ -679,7 +683,6 @@ const AddJob = () => {
                                 label='Notes'
                                 name='notes'
                                 value={values.notes}
-                                required={false}
                                 placeholder='Enter Notes/Requirements'
                                 onChange={handleChange}
                                 onBlur={handleBlur}
