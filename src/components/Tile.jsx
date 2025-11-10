@@ -6,7 +6,11 @@ import EditJobModal from './EditJobModal'
 const Tile = ({ job, onJobUpdate }) => {
     const [showModal, setShowModal] = useState(false)
 
-    const statusColor = job.open ? 'bg-green-600' : 'bg-red-600'
+    var statusColor = 'bg-red-600'
+
+    if (job.open == 'Open') {
+        statusColor = 'bg-green-600'
+    }
 
     const boxStyle = () =>
         'bg-mebablue-light px-3 py-1 rounded-md font-medium text-white font-mont'
@@ -47,7 +51,7 @@ const Tile = ({ job, onJobUpdate }) => {
                         <span
                             className={`${statusColor} px-2 py-1 rounded-md text-white text-center`}
                         >
-                            {job.open ? 'Open' : `Filled ${job.fillDate || ''}`}
+                            {(job.open == 'Open') ?  job.open : (job.open == 'Filled') ? `Filled ${job.fillDate || ''}` : 'Filled by CO'}
                         </span>
                     </div>
 

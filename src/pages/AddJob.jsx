@@ -17,7 +17,7 @@ import React, { useState, useEffect, useActionState } from 'react'
 import supabase from '../api/supabaseClient'
 
 // Arrays for options for the various dropdowns
-const statusOptions = ['Open', 'Filled']
+const statusOptions = ['Open', 'Filled', 'Filled by Company']
 const billetOptions = ['1 A/E', '2M', '3M']
 const typeOptions = ['Relief', 'Permanent']
 
@@ -50,7 +50,7 @@ const createOnSubmit = (user, setPopup) => async (values, actions) => {
             company: values.company || null,
             crewRelieved: values.crewRelieved || null,
             notes: values.notes || null,
-            open: values.status === 'Open', // Convert status to boolean - table uses 'open' not 'status'
+            open: values.status || null,
             passThru: values.passThru || false,
             nightCardEarlyReturn: values.nightCardEarlyReturn || false,
             msc: values.msc || false,

@@ -11,7 +11,7 @@ import supabase from '../api/supabaseClient'
 export async function logJobHistory(jobId, userId, previousState, newState) {
     try {
         const { data, error } = await supabase
-            .from('JobsHistory')
+            .from('JobsHistory_test2')
             .insert({
                 job_id: jobId,
                 changed_by_user_id: userId,
@@ -40,7 +40,7 @@ export async function logJobHistory(jobId, userId, previousState, newState) {
 export async function fetchJobHistory(jobId) {
     try {
         const { data, error } = await supabase
-            .from('JobsHistory')
+            .from('JobsHistory_test2')
             .select(`*`)
             .eq('job_id', jobId)
             .order('change_time', { ascending: false })
@@ -67,7 +67,7 @@ export async function addJobWithHistory(jobData, userId) {
     try {
         // Start a transaction by inserting the job first
         const { data: newJob, error: jobError } = await supabase
-            .from('Jobs')
+            .from('Jobs_test2')
             .insert(jobData)
             .select()
             .single()
@@ -102,7 +102,7 @@ export async function updateJobWithHistory(jobId, updatedData, userId) {
     try {
         // First, get the current state of the job
         const { data: currentJob, error: fetchError } = await supabase
-            .from('Jobs')
+            .from('Jobs_test2')
             .select('*')
             .eq('id', jobId)
             .single()
@@ -114,7 +114,7 @@ export async function updateJobWithHistory(jobId, updatedData, userId) {
 
         // Update the job
         const { data: updatedJob, error: updateError } = await supabase
-            .from('Jobs')
+            .from('Jobs_test2')
             .update(updatedData)
             .eq('id', jobId)
             .select()

@@ -96,7 +96,7 @@ function ViewBoard() {
             <div className='w-full'>
                 {view === 'tile' ? (
                     <div className='grid md:grid-cols-2 grid-cols-1 justify-start place-items-center gap-4'>
-                        {(filterOpen ? filteredJobs.filter((j) => j.open) : filteredJobs).map(
+                        {(filterOpen ? filteredJobs.filter((j) => j.open == 'Open') : filteredJobs).map(
                             (job) => (
                                 <Tile
                                     key={job.id}
@@ -108,7 +108,7 @@ function ViewBoard() {
                     </div>
                 ) : (
                     <div className='space-y-4'>
-                        {(filterOpen ? filteredJobs.filter((j) => j.open) : filteredJobs).map(
+                        {(filterOpen ? filteredJobs.filter((j) => j.open == 'Open') : filteredJobs).map(
                             (job) => (
                                 <Tile
                                     key={job.id}
