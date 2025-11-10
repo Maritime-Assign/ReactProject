@@ -461,7 +461,7 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='text'
-                                label='Ship Name'
+                                label='Vessel'
                                 name='shipName'
                                 value={values.shipName}
                                 placeholder='Enter Ship Name'
