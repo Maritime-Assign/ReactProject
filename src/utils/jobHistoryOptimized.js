@@ -1,3 +1,4 @@
+import { fa } from '@faker-js/faker'
 import supabase from '../api/supabaseClient'
 
 /**
@@ -55,6 +56,16 @@ export async function updateJob(jobId, updatedData) {
             console.error('Error updating job:', updateError)
             return { success: false, data: null, error: updateError }
         }
+        try {
+            const { data: retiredFlag, error: retiredError } = await supabase
+                .from('Jobs')
+                .update({ retired: false })
+                .eq('id', jobId)
+                .single()
+        } catch (err) {
+            console.error('Exception updating job:', err)
+            return { success: false, data: null, error: err }
+        }
 
         // No manual history logging - database triggers handle this automatically
         return { success: true, data: updatedJob, error: null }
@@ -62,6 +73,7 @@ export async function updateJob(jobId, updatedData) {
         console.error('Exception updating job:', err)
         return { success: false, data: null, error: err }
     }
+    
 }
 
 /**
