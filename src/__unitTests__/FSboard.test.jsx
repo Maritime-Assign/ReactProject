@@ -76,7 +76,7 @@ describe('FSBoard components', () => {
             'Status',
             'Hall',
             'Date Called',
-            'Ship Name',
+            'Vessel',
             'Join Date',
             'Billet',
             'Type',
