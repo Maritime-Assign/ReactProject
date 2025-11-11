@@ -48,8 +48,8 @@ vi.mock('../api/supabaseClient', () => {
     }
 
     const from = vi.fn((table) => {
-        if (table === 'JobsHistory') return { ...jobsHistoryQuery }
-        if (table === 'Jobs')        return { ...jobsUpdateQuery }
+        if (table === 'JobsHistory_test2') return { ...jobsHistoryQuery }
+        if (table === 'Jobs_test2')        return { ...jobsUpdateQuery }
         return { ...jobsHistoryQuery }
     })
 
