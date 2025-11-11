@@ -63,7 +63,7 @@ vi.mock('../api/supabaseClient', () => {
         // compute result based on table and filters
         let result = { data: [], error: null, count: 0 }
 
-        if (this._table === 'JobsHistory') {
+        if (this._table === 'JobsHistory_test2') {
           if (this._selectArg && String(this._selectArg).includes('job_id')) {
             result = { data: historyRows.map(r => ({ job_id: r.job_id })), error: null }
           } else {
@@ -77,7 +77,7 @@ vi.mock('../api/supabaseClient', () => {
               result = { data: rows, error: null }
             }
           }
-        } else if (this._table === 'Jobs') {
+        } else if (this._table === 'Jobs_test2') {
           result = { data: [], error: null }
           const inFilter = this._filters.in
           const eqs = (this._filters.eq || []).reduce((acc, [k, v]) => { acc[k] = v; return acc }, {})
@@ -101,7 +101,7 @@ vi.mock('../api/supabaseClient', () => {
   const supabaseMock = {
     from: vi.fn((table) => {
       const chain = makeChain(table)
-      if (table === 'Jobs') {
+      if (table === 'Jobs_test2') {
         // attach update which records the payload and returns an object with eq that records the id
         chain.update = vi.fn((payload) => {
           updateSpy(payload)
