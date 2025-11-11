@@ -116,7 +116,7 @@ describe('Add new job page', () => {
             change(/Region/i, 'region', 'LA')
             change(/Hall/i, 'hall', 'LA')
             change(/Date Called/i, 'dateCalled', '2025-12-01')
-            change(/Ship Name/i, 'shipName', 'Test Vessel')
+            change(/Vessel/i, 'shipName', 'Test Vessel')
             change(/Join Date/i, 'joinDate', '2025-12-10')
             change(/Billet/i, 'billet', '1 A/E')
             change(/Type/i, 'type', 'Relief')
