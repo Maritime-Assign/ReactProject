@@ -13,6 +13,33 @@ vi.mock('../auth/AuthContext', () => ({
     UserAuth: () => ({ user: { id: '1', email: 'test@example.com' } }),
 }))
 
+vi.mock('../api/supabaseClient', () => {
+  return {
+    __esModule: true,
+    default: {
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: {
+              region: [
+                { label: 'LA', is_active: true, sort_order: 10 },
+                { label: 'DEN', is_active: true, sort_order: 20 },
+              ],
+              hall: [{ label: 'LA', is_active: true }],
+              billet: [{ label: '1 A/E', is_active: true }],
+              type: [
+                { label: 'Relief', is_active: true },
+                { label: 'Permanent', is_active: true },
+              ],
+            },
+            error: null,
+          }),
+        })),
+      })),
+    },
+  }
+})
+
 vi.mock('react-router-dom', async (importOriginal) => {
     const actual = await importOriginal()
     return {
@@ -106,11 +133,22 @@ describe('Add new job page', () => {
                 </MemoryRouter>
             )
 
+            const user = userEvent.setup()
+
             // Use fireEvent to ensure Formik sees real change events
             const change = (label, name, value) =>
                 fireEvent.change(screen.getByLabelText(label, { exact: false }), {
                     target: { name, value },
                 })
+
+             // Wait for dropdown options to populate from mock
+            await waitFor(() =>
+            expect(screen.getByLabelText(/Region/i).options.length).toBeGreaterThan(1)
+            )
+
+            await user.selectOptions(screen.getByLabelText(/Status/i), 'Open')
+            await user.selectOptions(screen.getByLabelText(/Region/i), 'LA')
+            await user.selectOptions(screen.getByLabelText(/Hall/i), 'LA')
 
             change(/Status/i, 'status', 'Open')
             change(/Region/i, 'region', 'LA')
