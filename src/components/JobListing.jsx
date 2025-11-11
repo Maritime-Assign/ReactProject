@@ -186,6 +186,8 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                     ) : (
                         <span className='text-red-700 text-center'>
                             Filled by CO
+                            <br />
+                            {props.FillDate ? `${formatDate(props.FillDate)}` : ''}
                         </span>
                     )
                 )}
