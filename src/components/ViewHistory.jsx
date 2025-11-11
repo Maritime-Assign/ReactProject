@@ -75,17 +75,29 @@ const ViewHistory = () => {
     // Define searchQuery State
     const [searchQuery, setSearchQuery] = useState('')
     // Define state for debounce
-    const [debouncedQuery, setDebouncedQuery] = useState(searchQuery)
+    const [debouncedQuery, setDebouncedQuery] = useState('')
 
     // Used to prevent stale requests and manage search state
     // token request method
     const latestFetchID = React.useRef(0)
 
-    // Define debounce timer - 350 seems good
+    // Define debounce timer - 1000 better to account for slower typing speed so less api calls are made
+    // The goal is to make it simulate the time it would take to press enter on average query lengths.
+    // So far ship name would be the longest and most time intensive - It is also a core search query required
     useEffect(() => {
         const handler = setTimeout(() => {
-            setDebouncedQuery(searchQuery)
-        }, 350)
+            const query = searchQuery.trim()
+            // Only clear filters if there is something to clear
+            if (query === '') {
+                if(lastFilters.current) {
+                    clearFilters()
+                    lastFilters.current = null
+                }
+            }
+            else {
+                setDebouncedQuery(query)
+            }
+        }, 1000)
 
         // clear prior timeout
         return () => clearTimeout(handler)
@@ -95,18 +107,17 @@ const ViewHistory = () => {
     // Track last applied filter and skip fetch when nothing is changed
     const lastFilters = React.useRef(null)
     useEffect(() => {
-        if (debouncedQuery.trim() !== '') {
-            const newFilters = detectSearchType(debouncedQuery)
-            if (
-                JSON.stringify(newFilters) !==
-                JSON.stringify(lastFilters.current)
-            ) {
-                handleSearch(debouncedQuery)
-                lastFilters.current = newFilters
-            }
-        } else {
+        const query = debouncedQuery.trim()
+        if(!query) {
             clearFilters()
             lastFilters.current = null
+            return
+        }
+
+        const newFilters = detectSearchType(query)
+        if (JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)) {
+            handleSearch(query)
+            lastFilters.current = newFilters
         }
     }, [debouncedQuery])
 
@@ -120,76 +131,108 @@ const ViewHistory = () => {
             // Populate search, set page and trigger debounce effect
             setSearchQuery(query)
             setCurrentPage(page)
-            setDebouncedQuery(query)
         }
     }, [location.search])
 
     // Build helper function to detect if its a jobid/username/date/etc
     const detectSearchType = (query) => {
         if (!query) return null
-
         const trimmed = query.trim()
 
-        // Check if jobId
-        if (trimmed.startsWith('job:')) {
-            const jobIdValue = trimmed.slice(4).trim()
-            if (!jobIdValue) return null
-            if (/^\d+$/.test(jobIdValue)) {
-                return { type: 'jobid', value: jobIdValue }
-            }
-            return null
+        // If numeric assume job id first
+        if (/^\d+$/.test(trimmed)) {
+            return { type: 'jobid', value: trimmed }
         }
 
-        // Check if date
-        if (trimmed.startsWith('date:')) {
-            let dateValue = trimmed.slice(5).trim()
-            if (!dateValue) return null
-
-            // YYYY
-            if (/^\d{4}$/.test(dateValue))
-                return {
-                    type: 'date',
-                    value: { type: 'year', value: dateValue },
-                }
-
-            // YYYY-MM or YYYY-M
-            if (/^\d{4}-\d{1,2}$/.test(dateValue)) {
-                let [year, month] = dateValue.split('-')
-                month = month.padStart(2, '0')
-                return { type: 'date', value: { type: 'month', year, month } }
-            }
-
-            // YYYY-MM-DD or YYYY-M-D
-            if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateValue)) {
-                let [year, month, day] = dateValue.split('-')
-                month = month.padStart(2, '0')
-                day = day.padStart(2, '0')
-                return {
-                    type: 'date',
-                    value: { type: 'day', year, month, day },
+        // If "numeric/" then handle date formats
+        // Handle MM/DD/YYYY | M/D/YYYY
+        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) {
+            const [month, day, year] = trimmed.split('/')
+            return { 
+                type: 'date', 
+                value: { 
+                    type: 'day', 
+                    year, 
+                    month: month.padStart(2, '0'), 
+                    day: day.padStart(2, '0') 
                 }
             }
-            return null
         }
 
-        // Check if username
-        if (trimmed.startsWith('user:')) {
-            const usernameValue = trimmed.slice(5).trim()
-            if (!usernameValue) return null
-            return { type: 'username', value: usernameValue }
+        // Handle MM/DD | M/D | MM/DD/ | M/D/
+        if (/^\d{1,2}\/\d{1,2}\/?$/.test(trimmed)) {
+            const parts = trimmed.split('/')
+            const month = parts[0].padStart(2, '0')
+            const day = parts[1] ? parts[1].padStart(2, '0') : null
+            // Assume user wants to see current year first if not a full date query
+            const year = new Date().getFullYear()
+                
+            if (!day) {
+                return {
+                    type: 'date',
+                    value: {
+                        type: 'month',
+                        year,
+                        month,
+                    },
+                }
+            }
+
+            return {
+                type: 'date',
+                value: {
+                    type: 'day',
+                    year,
+                    month,
+                    day,
+                },
+            }
         }
 
-        // Return null if its none of the types above
-        return null
+        // Handle MM/ | M/
+        if (/^\d{1,2}\/$/.test(trimmed)) {
+            const month = trimmed.replace('/', '').padStart(2, '0')
+            const year = new Date().getFullYear()
+            return { 
+                type: 'date', 
+                value: { 
+                    type: 'month', 
+                    year, 
+                    month 
+                }
+            }
+        }
+
+        // Name can be ship name or user name
+        return { type: 'name', value: trimmed }
     }
 
     // Build function to handle the search and refetch logs
+    // If the search bar is empty, skip fetching data
+    // This prevents unnecessary api calls when clearing the input
     const handleSearch = async (query) => {
         const trimmedQuery = query.trim()
 
         // If the search bar is empty, show everything
         if (!trimmedQuery) {
-            clearFilters()
+            // Only fetch is current filters have values
+            if(filters.jobId || filters.userId || (filters.dateFrom && filters.dateTo)) {
+                await clearFilters()
+            }
+            else {
+                // Reset state without fetch
+                setLogs([])
+                setGroupedLogs([])
+                setTotalCount(0)
+                setSummary({
+                    totalActions: 0,
+                    newJobs: 0,
+                    updatedJobs: 0,
+                    recentActivity: [],
+                    closedJobs: 0,
+                })
+                setLoading(false)
+            }
             return
         }
 
@@ -218,14 +261,55 @@ const ViewHistory = () => {
             case 'jobid':
                 newFilters.jobId = result.value
                 break
-            // handle username
-            case 'username': {
+            // Handle name - ship name or user name
+            case 'name': {
+                // Check if name is a valid user
                 const { data: userData, error: userError } = await supabase
                     .from('Users')
                     .select('UUID')
                     .ilike('username', `${result.value}%`)
-                // handle empty data or error
-                if (userError || !userData || userData.length === 0) {
+
+                if (userData && userData.length > 0) {
+                    // Turn objects into ID list and store it
+                    const userIds = userData.map((u) => u.UUID)
+                    newFilters.userId = userIds
+                } 
+                else {
+                    // user name does not match then ship name
+                    const { data: jobsByShip, error: shipError } = await supabase
+                        .from('Jobs')
+                        .select('id')
+                        .ilike('shipName', `%${result.value}%`)
+
+                    if (jobsByShip && jobsByShip.length > 0) {
+                        newFilters.jobId = jobsByShip.map((j) => j.id)
+                    } 
+                    else {
+                        // If name is not a ship name or a user name then show nothing
+                        setLogs([])
+                        setGroupedLogs([])
+                        setTotalCount(0)
+                        setSummary({
+                            totalActions: 0,
+                            newJobs: 0,
+                            updatedJobs: 0,
+                            recentActivity: [],
+                            closedJobs: 0,
+                        })
+                        setLoading(false)
+                        return
+                    }
+                }
+                break
+            }
+            // Format date into what backend expects
+            case 'date': {
+                const dateObj = result.value
+                // Handle invalid dates first 27/, 9/99, etc
+                const month = parseInt(dateObj.month, 10)
+                const day = parseInt(dateObj.day, 10)
+                if ((month && (month < 1 || month > 12)) || (day && (day < 1 || day > 31))) {
+                    // Show no results instead of screen error
                     setLogs([])
                     setGroupedLogs([])
                     setTotalCount(0)
@@ -239,14 +323,7 @@ const ViewHistory = () => {
                     setLoading(false)
                     return
                 }
-                // Turn objects into ID list and store it
-                const userIds = userData.map((u) => u.UUID)
-                newFilters.userId = userIds
-                break
-            }
-            // handle date
-            case 'date': {
-                const dateObj = result.value
+                // Handle dates
                 // YYYY
                 if (dateObj.type === 'year') {
                     newFilters.dateFrom = `${dateObj.value}-01-01`
@@ -267,6 +344,16 @@ const ViewHistory = () => {
                     newFilters.dateFrom = `${dateObj.year}-${dateObj.month}-${dateObj.day}`
                     newFilters.dateTo = `${dateObj.year}-${dateObj.month}-${dateObj.day}`
                 }
+                // Partial date handling so supabase does not throw error from incomplete date
+                else if(dateObj.type === 'partial') {
+                    if (dateObj.month) {
+                        newFilters.dateFrom = `${dateObj.year || '0000'}-${dateObj.month}-01`;
+                    }
+                    if (dateObj.day) {
+                        newFilters.dateTo = `${dateObj.year || '9999'}-${dateObj.month}-${dateObj.day.padStart(2, '0')}`;
+                    }
+                }
+
                 break
             }
         }
@@ -339,18 +426,23 @@ const ViewHistory = () => {
 
     // Fetch grouped logs (most recent change per job_id)
     const fetchGroupedLogs = async (page = 1, currentFilters = filters) => {
+        setLoading(true)
+        setError(null)
+
         try {
             const offset = (page - 1) * ITEMS_PER_PAGE
 
             // First, get all job_ids that match the filters
             let jobIdsQuery = supabase.from('JobsHistory').select('job_id, changed_by_user_id')
 
-            // Apply filters
-            if (currentFilters.jobId && currentFilters.jobId.trim()) {
-                jobIdsQuery = jobIdsQuery.eq(
-                    'job_id',
-                    currentFilters.jobId.trim()
-                )
+            // Apply filters - check if job id is array or string
+            if (currentFilters.jobId) {
+                if (Array.isArray(currentFilters.jobId) && currentFilters.jobId.length > 0) {
+                    jobIdsQuery = jobIdsQuery.in('job_id', currentFilters.jobId)
+                } 
+                else if (typeof currentFilters.jobId === 'string' && currentFilters.jobId.trim()) {
+                    jobIdsQuery = jobIdsQuery.eq('job_id', currentFilters.jobId.trim())
+                }
             }
 
             if (currentFilters.dateFrom) {
@@ -380,7 +472,7 @@ const ViewHistory = () => {
                 setError(`Failed to load job IDs: ${jobIdsError.message}`)
                 console.error('Job IDs error:', jobIdsError)
                 setLoading(false)
-                return
+                return { logs: [], totalCount: 0 }
             }
 
             // Get unique job IDs
@@ -467,10 +559,12 @@ const ViewHistory = () => {
 
             const formattedLogs = enrichedData.map(formatJobHistoryRecord)
             return { logs: formattedLogs, totalCount: totalUniqueJobs }
-        } catch (err) {
+        } 
+        catch (err) {
             setError('An error occurred while loading grouped data')
             console.error(err)
             setLoading(false)
+            return { logs: [], totalCount: 0 }
         }
     }
 
@@ -483,9 +577,15 @@ const ViewHistory = () => {
                 .select('*', { count: 'exact' })
                 .order('change_time', { ascending: false })
 
-            // Apply filters
-            if (currentFilters.jobId && currentFilters.jobId.trim()) {
-                query = query.eq('job_id', currentFilters.jobId.trim())
+            // Apply filters - check if job id is array or string and handle both
+
+            if (currentFilters.jobId) {
+                if (Array.isArray(currentFilters.jobId) && currentFilters.jobId.length > 0) {
+                    query = query.in('job_id', currentFilters.jobId)
+                } 
+                else if (typeof currentFilters.jobId === 'string' && currentFilters.jobId.trim()) {
+                    query = query.eq('job_id', currentFilters.jobId.trim())
+                }
             }
 
             if (currentFilters.dateFrom) {
@@ -551,9 +651,13 @@ const ViewHistory = () => {
         try {
             let query = supabase.from('JobsHistory').select('*')
 
-            // Filter for job id
-            if (currentFilters.jobId && currentFilters.jobId.trim()) {
-                query = query.eq('job_id', currentFilters.jobId.trim())
+            // Filter for job id - check if array or string and handle both
+            if (currentFilters.jobId) {
+                if (Array.isArray(currentFilters.jobId) && currentFilters.jobId.length > 0) {
+                    query = query.in('job_id', currentFilters.jobId)
+                } else if (typeof currentFilters.jobId === 'string' && currentFilters.jobId.trim()) {
+                    query = query.eq('job_id', currentFilters.jobId.trim())
+                }
             }
 
             if (currentFilters.dateFrom) {
@@ -653,16 +757,19 @@ const ViewHistory = () => {
     }
 
     const clearFilters = async () => {
-        const clearedFilters = {
-            jobId: '',
-            dateFrom: '',
-            dateTo: '',
-            userId: '',
+        // Only make api fetch call if there are valid filters to clear
+        if (filters.jobId || filters.userId || (filters.dateFrom && filters.dateTo)) {
+            const clearedFilters = {
+                jobId: '',
+                dateFrom: '',
+                dateTo: '',
+                userId: '',
+            }
+            setFilters(clearedFilters)
+            setCurrentPage(1)
+            await fetchLogs(1, clearedFilters)
+            await fetchSummaryData(clearedFilters)
         }
-        setFilters(clearedFilters)
-        setCurrentPage(1)
-        await fetchLogs(1, clearedFilters)
-        await fetchSummaryData(clearedFilters)
     }
 
     // Handle pagination
@@ -853,6 +960,21 @@ ${log.new_state}`
         }
     }
 
+    // Function to edit a job's status to open, refresh the page on call
+    const reopenJobArchive = async (jobId) => {
+        const { error } = await supabase
+            .from('Jobs')
+            .update({ archivedJob: false })
+            .eq('id', jobId)
+
+        if (error) {
+            console.error(`Failed to unarchive job ${jobId}:`, error)
+        } else {
+            console.log(`Job ${jobId} unarchived (archivedJob = false).`)
+            await handleRefresh()
+        }
+    }
+
     // Modal open/close handlers for closed jobs
     const openClosedModal = () => {
         setClosedPage(1) // reset modal page
@@ -923,7 +1045,7 @@ ${log.new_state}`
         try {
             const { error } = await supabase
                 .from('Jobs')
-                .update({ open: true })
+                .update({ open: true, archivedJob: false, claimedBy: null})
                 .eq('id', jobId)
             
             if (error) throw error
@@ -1237,35 +1359,29 @@ ${log.new_state}`
                 <div className='grow mx-4 relative overflow-visible'>
                     <input
                         type='text'
-                        placeholder='Search (user:name, job:21, date:2025, date:2025-10-15)'
+                        placeholder='Search by Username, Job ID, Date, or Vessel'
                         className='w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                // Enter triggers the same behavior as letting debounce elapse
-                                e.preventDefault()
-                                setDebouncedQuery(searchQuery)
-                            }
-                        }}
                     />
-                    {/* Loading spinner */}
-                    {loading && (
-                        <div className='absolute right-10 top-1/2 -translate-y-1/2 animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4'></div>
-                    )}
-                    {/*Clear filter button*/}
-                    {searchQuery && (
-                        <button
+                    {/* Spinner | Clear button */}
+                    <div className='absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center'>
+                        {loading ? (
+                            <div 
+                                className='animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4'>
+                            </div>
+                        ) : searchQuery ? (
+                            <button
                             data-testid='clearButton'
                             onClick={() => {
                                 setSearchQuery('')
-                                clearFilters()
                             }}
-                            className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 bg-white rounded-full p-1'
-                        >
-                            <IoClose className='w-5 h-5' />
-                        </button>
-                    )}
+                            className='text-gray-400 hover:text-gray-600 bg-white rounded-full p-1'
+                            >
+                            <IoClose className='w-4 h-4' />
+                            </button>
+                        ) : null}
+                    </div>
                 </div>
 
                 {/* icons */}
@@ -1559,20 +1675,43 @@ ${log.new_state}`
 
                                             {/* Actions */}
                                             <td className='px-6 py-4 whitespace-nowrap text-sm text-right w-[120px]'>
-                                                {isJobClosed(log) && (
-                                                    <button
+                                                {isJobClosed(log) && (() => {
+                                                    const jobId = log.job_id
+                                                    const isPendingMain = !!confirmPending[jobId]
+                                                    const isUpdatingMain = updatingJobs.has(String(jobId))
+
+                                                    return (
+                                                        <button
                                                         onClick={(e) => {
+                                                            // delegate to the shared handler that implements the 3s confirm window
+                                                            // handleOpenClick will call e.stopPropagation() itself but we keep this here
+                                                            // so clicks don't bubble if anything changes later.
                                                             e.stopPropagation()
-                                                            reopenJob(
-                                                                log.job_id
-                                                            )
+                                                            handleOpenClick(e, jobId)
                                                         }}
-                                                        className='text-mebablue-dark hover:text-mebablue-hover'
-                                                        title='Reopen job'
-                                                    >
-                                                        <IoRefresh className='w-4 h-4' />
-                                                    </button>
-                                                )}
+                                                        // while waiting for confirmation the button turns grey (visual cue) but remains clickable
+                                                        className={`px-2 py-1 rounded text-sm focus:outline-none transition-colors ${
+                                                            isUpdatingMain
+                                                            ? 'bg-gray-400 cursor-wait text-white'
+                                                            : isPendingMain
+                                                            ? 'bg-gray-200 text-gray-500'    // grey while waiting for confirmation
+                                                            : 'text-mebablue-dark hover:text-mebablue-hover'
+                                                        }`}
+                                                        title={isPendingMain ? 'Click again to confirm' : 'Reopen job'}
+                                                        aria-pressed={isPendingMain}
+                                                        aria-label={isPendingMain ? `Confirm reopen job ${jobId}` : `Reopen job ${jobId}`}
+                                                        >
+                                                        {isUpdatingMain ? (
+                                                            'Opening...'
+                                                        ) : isPendingMain ? (
+                                                            'Confirm?'
+                                                        ) : (
+                                                            <IoRefresh className='w-4 h-4' />
+                                                        )}
+                                                        </button>
+                                                    )
+                                                    })()}
+
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation()

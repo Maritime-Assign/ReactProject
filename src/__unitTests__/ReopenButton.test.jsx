@@ -106,6 +106,9 @@ describe('Reopen Job buttons', () => {
         const btn = await screen.findByTitle('Reopen job')
         fireEvent.click(btn)
 
+        const confirmBtn = await screen.findByTitle('Click again to confirm')
+        fireEvent.click(confirmBtn)
+
         await waitFor(() => {
         expect(calls.updates.length).toBeGreaterThan(0)
         expect(calls.updates[0].jobId).toBe('123')

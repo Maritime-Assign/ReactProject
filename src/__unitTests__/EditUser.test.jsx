@@ -46,7 +46,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 test('renders the form with initial data and submits edits', async () => {
-  render(
+  const { container } = render(
     <MemoryRouter initialEntries={['/edit-user']}>
       <Routes>
         <Route path="/edit-user" element={<EditUser />} />
@@ -55,7 +55,7 @@ test('renders the form with initial data and submits edits', async () => {
   );
 
   // Check initial form values (username, role)
-  expect(screen.getByDisplayValue('johndoe')).toBeInTheDocument();
+  await screen.findByDisplayValue('johndoe');
 
   // Ensure the dropdown has the correct initial value
   const roleDropdown = screen.getByRole('combobox');
@@ -63,12 +63,19 @@ test('renders the form with initial data and submits edits', async () => {
 
   // Change user role and submit
   fireEvent.change(roleDropdown, { target: { value: 'dispatch' } });
-  fireEvent.click(screen.getByText('Submit Changes'));
+
+  const abbrevInput = screen.getByPlaceholderText('Enter 3 character abbreviation here');
+  fireEvent.change(abbrevInput, { target: { value: 'ABC' } });
+
+  const form = container.querySelector('form');
+  expect(form).toBeTruthy(); // sanity check
+  fireEvent.submit(form);
 
   // Wait for the async operation to complete
   await waitFor(() => {
     expect(supabase.from).toHaveBeenCalledWith('Users');
     expect(mockUpdate).toHaveBeenCalledWith({
+      abbreviation: "ABC",
       username: 'johndoe',
       role: 'dispatch'
     });

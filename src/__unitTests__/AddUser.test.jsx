@@ -114,7 +114,7 @@ describe('AddUser page', () => {
 
     // expect inputs/labels to exist
     expect(getInput('First Name')).toBeInTheDocument()
-    expect(getInput('Last Name')).toBeInTheDocument()
+    expect(getInput('Abbreviation')).toBeInTheDocument()
     expect(getInput('Username')).toBeInTheDocument()
     expect(getInput('Password')).toBeInTheDocument()
     // Role is select
@@ -135,7 +135,7 @@ describe('AddUser page', () => {
   test('initial values empty', () => {
     render(<MemoryRouter><AddUser /></MemoryRouter>)
     expect(getInput('First Name')).toHaveValue('')
-    expect(getInput('Last Name')).toHaveValue('')
+    expect(getInput('Abbreviation')).toHaveValue('')
     expect(getInput('Username')).toHaveValue('')
     expect(getInput('Password')).toHaveValue('')
     expect(getInput('Role')).toHaveValue('')
@@ -163,7 +163,7 @@ describe('AddUser page', () => {
 
     // Fill out valid other fields
     await userEvent.type(getInput('First Name'), 'Bob')
-    await userEvent.type(getInput('Last Name'), 'Smith')
+    await userEvent.type(getInput('Abbreviation'), 'ABR')
     await userEvent.type(getInput('Username'), 'bobuser')
     // Weak password: 'password' (lowercase only) - should be rejected by pattern-based validation on submit
     await userEvent.type(getInput('Password'), 'password')
@@ -183,7 +183,7 @@ describe('AddUser page', () => {
     render(<MemoryRouter><AddUser /></MemoryRouter>)
 
     await userEvent.type(getInput('First Name'), 'Alice')
-    await userEvent.type(getInput('Last Name'), 'Jones')
+    await userEvent.type(getInput('Abbreviation'), 'ABV')
     await userEvent.type(getInput('Username'), 'alice')
     await userEvent.type(getInput('Password'), 'Password1!')
     await userEvent.selectOptions(getInput('Role'), 'Admin')
@@ -202,7 +202,7 @@ describe('AddUser page', () => {
     render(<MemoryRouter><AddUser /></MemoryRouter>)
 
     await userEvent.type(getInput('First Name'), 'Eve')
-    await userEvent.type(getInput('Last Name'), 'Me')
+    await userEvent.type(getInput('Abbreviation'), 'ABB')
     await userEvent.type(getInput('Username'), 'eve')
     await userEvent.type(getInput('Password'), 'Password1!')
     await userEvent.selectOptions(getInput('Role'), 'Dispatch')
@@ -223,7 +223,7 @@ describe('AddUser page', () => {
     render(<MemoryRouter><AddUser /></MemoryRouter>)
 
     await userEvent.type(getInput('First Name'), 'Trent')
-    await userEvent.type(getInput('Last Name'), 'Lane')
+    await userEvent.type(getInput('Abbreviation'), 'ABE')
     await userEvent.type(getInput('Username'), 'trent')
     await userEvent.type(getInput('Password'), 'Password1!')
     await userEvent.selectOptions(getInput('Role'), 'Display')
@@ -252,7 +252,7 @@ describe('AddUser page', () => {
     render(<MemoryRouter><AddUser /></MemoryRouter>)
 
     await userEvent.type(getInput('First Name'), 'Sam')
-    await userEvent.type(getInput('Last Name'), 'Taylor')
+    await userEvent.type(getInput('Abbreviation'), 'TAY')
     await userEvent.type(getInput('Username'), 'samt')
     await userEvent.type(getInput('Password'), 'Password1!')
     await userEvent.selectOptions(getInput('Role'), 'Admin')
@@ -294,7 +294,7 @@ describe('AddUser page', () => {
     render(<MemoryRouter><AddUser /></MemoryRouter>)
 
     await userEvent.type(getInput('First Name'), 'Will')
-    await userEvent.type(getInput('Last Name'), 'Hunter')
+    await userEvent.type(getInput('Abbreviation'), 'HNT')
     await userEvent.type(getInput('Username'), 'willh')
     await userEvent.type(getInput('Password'), 'Password1!')
     await userEvent.selectOptions(getInput('Role'), 'Display')
