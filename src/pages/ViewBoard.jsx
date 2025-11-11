@@ -29,7 +29,7 @@ function ViewBoard() {
     const filteredJobs = jobs.filter((job) => {
 
         const term = searchWord.toLowerCase()
-        if (!term && job.retired) return false;
+        if (!term && job.archivedJob) return false;
 
         const vessel = (job.shipName || '').toLowerCase()
         const region = (job.region || '').toLowerCase()
