@@ -59,9 +59,13 @@ export async function updateJob(jobId, updatedData) {
         try {
             const { data: retiredFlag, error: retiredError } = await supabase
                 .from('Jobs')
-                .update({ retired: false })
+                .update({ archivedJob: false })
                 .eq('id', jobId)
                 .single()
+            if (retiredError) {
+                console.error('Error resetting retired flag:', retiredError)
+                return { success: false, data: retiredFlag, error: retiredError }
+            }
         } catch (err) {
             console.error('Exception updating job:', err)
             return { success: false, data: null, error: err }

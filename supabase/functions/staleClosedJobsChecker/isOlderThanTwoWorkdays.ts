@@ -27,9 +27,9 @@ const supabase = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_KEY ?? "
   const now = new Date(currentDate);
   now.setHours(0, 0, 0, 0);
   let daysDifference = 0;
-  while(temp < now && daysDifference < 10){
+  while(temp < now && daysDifference < 3){
     const dow = temp.getDay();
-    if (dow !== 0 && dow !== 6) daysDifference++;
+    if (dow !== 0 && dow !== 6) daysDifference++; // checks if temp.getday() is a saturday or a sunday
     temp.setDate(temp.getDate() + 1);
   }
   return daysDifference >= 2;
@@ -37,11 +37,11 @@ const supabase = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_KEY ?? "
 Deno.serve(async (req)=>{
   try {
     // Fetch from Jobs table
-    const { data: jobs, error: fetchError } = await supabase.from("Jobs").select("id, open, retired");
+    const { data: jobs, error: fetchError } = await supabase.from("Jobs").select("id, open, archivedJob");
     if (fetchError) {
       console.error("Error fetching jobs:", fetchError.message, fetchError);
       return new Response(JSON.stringify({
-        error: "Failed to fetch jobs" + fetchError.message
+        error: "Failed to fetch jobs reponse:" + fetchError.message
       }), {
         status: 500,
         headers: {
@@ -51,7 +51,7 @@ Deno.serve(async (req)=>{
     }
     const retirePromises = [];
     for (const job of jobs){
-      if (!job.open && !job.retired) {
+      if (!job.open && !job.archivedJob) {
         // Get most recent history tuple on job.id
         const p = (async ()=>{
           const { data: historyData, error: historyError } = await supabase.from("JobsHistory").select("change_time").eq("job_id", job.id).order("change_time", {
@@ -62,36 +62,37 @@ Deno.serve(async (req)=>{
             console.error(`Error fetching history for job ${job.id}:`, historyError);
             return {
               jobId: job.id,
-              retired: false,
+              archivedJob: false,
               error: historyError
             };
           }
+          const sanity = true;
           if (historyData && historyData.length > 0) {
             const lastChange = historyData[0].change_time;
             if (isOlderThanTwoWorkdays(lastChange)) {
-              // Update job to set retired = true
+              // Update job to set archivedJob = true
               const { error: updateError } = await supabase.from("Jobs").update({
-                retired: true
+                archivedJob: true
               }).eq("id", job.id);
               if (updateError) {
                 console.error(`Error updating job ${job.id}:`, updateError);
                 return {
                   jobId: job.id,
-                  retired: false,
+                  archivedJob: false,
                   error: updateError
                 };
               } else {
-                console.log(`Job ${job.id} marked as retired.`);
+                console.log(`Job ${job.id} marked as archived.`);
                 return {
                   jobId: job.id,
-                  retired: true
+                  archivedJob: true
                 };
               }
             }
           }
           return {
             jobId: job.id,
-            retired: false
+            archivedJob: false
           };
         })();
         retirePromises.push(p); // add promise to array ie. waits for all operations to complete

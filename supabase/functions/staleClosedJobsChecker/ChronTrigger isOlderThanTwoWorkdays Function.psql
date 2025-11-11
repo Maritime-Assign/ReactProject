@@ -9,7 +9,7 @@ select
     select
       net.http_post(
         url:='https://niwgwqnkqpfjhxvcwjdt.supabase.co/functions/v1/isOlderThanTwoWorkdays',
-        headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pd2d3cW5rcXBmamh4dmN3amR0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MjI2OTEyNiwiZXhwIjoyMDU3ODQ1MTI2fQ.FsrStTXQlcKMLpa6AcTZaFtCo-6kwdx-hnNoU2hi4pc"}'::jsonb,
+        headers:='{"Content-Type": "application/json", "Authorization": "Bearer <SUPABASE_SERVICE_ROLE_KEY>"}'::jsonb,
         body := '{}'::jsonb
     ) as request_id;
   $$
