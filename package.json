@@ -47,7 +47,7 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
     "jsdom": "^27.0.0",
-    "msw": "^2.12.0",
+    "msw": "^2.12.1",
     "supabase": "^2.39.2",
     "vite": "^6.2.1",
     "vitest": "^3.2.4"
