@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { UserAuth } from '../auth/AuthContext'
-import { updateJob } from '../utils/jobHistoryOptimized'
 import supabase from '../api/supabaseClient'
 
 const EditJobModal = ({ jobData, onClose, onSave }) => {
@@ -150,26 +149,31 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
         setSaving(true)
 
         try {
-            // Update the job
-            const result = await updateJob(jobData.id, formData)
+            // Update the job directly
+            const { data, error } = await supabase
+                .from('Jobs')
+                .update(formData)
+                .eq('id', jobData.id)
+                .select()
+                .single()
 
-            if (result.success) {
+            if (error) {
+                console.error('Failed to update job:', error)
+                setMessage('Failed to update job. Please try again.')
+                setMessageType('error')
+            } else {
                 setMessage('Job updated successfully!')
                 setMessageType('success')
 
                 // Call onSave callback with updated data
                 if (onSave) {
-                    onSave(result.data)
+                    onSave(data)
                 }
 
                 // Close modal after a brief delay
                 setTimeout(() => {
                     onClose()
                 }, 1500)
-            } else {
-                console.error('Failed to update job:', result.error)
-                setMessage('Failed to update job. Please try again.')
-                setMessageType('error')
             }
         } catch (error) {
             console.error('Error updating job:', error)

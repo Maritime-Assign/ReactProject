@@ -138,12 +138,24 @@ export function formatJobHistoryRecord(historyRecord) {
     const previousState = formatState(historyRecord.previous_state)
     const newState = formatState(historyRecord.new_state)
 
+    // Extract username from joined Users table data
+    let username = 'Unknown User'
+    if (historyRecord.Users) {
+        // Users is the joined data from the foreign key relationship
+        if (historyRecord.Users.username) {
+            username = historyRecord.Users.username
+        } else if (historyRecord.Users.first_name) {
+            username = historyRecord.Users.first_name
+        }
+    }
+
     return {
         ...historyRecord,
         formattedDate: formatDate(historyRecord.change_time),
         previousStateFormatted: previousState,
         newStateFormatted: newState,
         changesSummary: generateChangesSummary(previousState, newState),
+        username: username,
         userEmail: historyRecord.changed_by_user_id || 'Unknown User',
         isNewJob: !previousState
     }
@@ -156,6 +168,11 @@ export function formatJobHistoryRecord(historyRecord) {
  * @returns {Array} Array of field changes
  */
 export function getJobStateComparison(previousState, newState) {
+    // Handle null or undefined newState
+    if (!newState) {
+        return []
+    }
+    
     if (!previousState) {
         return Object.entries(newState).map(([key, value]) => ({
             field: key,

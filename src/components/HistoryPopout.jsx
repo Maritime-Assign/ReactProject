@@ -34,7 +34,29 @@ const HistoryPopout = ({ jobId, onClose, initialData = null }) => {
                 return
             }
 
-            const formattedHistory = data ? data.map(formatJobHistoryRecord) : []
+            // Fetch usernames for all unique user IDs
+            const userIds = [...new Set((data || []).map(d => d.changed_by_user_id))].filter(Boolean)
+            let userMap = {}
+            if (userIds.length > 0) {
+                const { data: usersData } = await supabase
+                    .from('Users')
+                    .select('UUID, username, first_name')
+                    .in('UUID', userIds)
+                
+                if (usersData) {
+                    userMap = Object.fromEntries(
+                        usersData.map(u => [u.UUID, u])
+                    )
+                }
+            }
+
+            // Add Users data to each record
+            const enrichedData = (data || []).map(record => ({
+                ...record,
+                Users: userMap[record.changed_by_user_id] || null
+            }))
+
+            const formattedHistory = enrichedData.map(formatJobHistoryRecord)
             setHistory(formattedHistory)
             setTotalCount(count || 0)
         } catch (err) {
@@ -96,7 +118,7 @@ const HistoryPopout = ({ jobId, onClose, initialData = null }) => {
 
         return `Job History Entry
 Date: ${log.formattedDate}
-User: ${log.changed_by_user_id || 'Unknown User'}
+User: ${log.username || 'Unknown User'}
 Job ID: ${log.job_id}
 Action: ${log.isNewJob ? 'Job Created' : 'Job Updated'}
 
@@ -180,7 +202,7 @@ ${log.new_state}`
                                             </div>
                                             <div>
                                                 <div className="text-xs text-gray-500 mb-1">User</div>
-                                                <div className="text-sm font-medium text-gray-900">{log.changed_by_user_id || 'Unknown User'}</div>
+                                                <div className="text-sm font-medium text-gray-900">{log.username || 'Unknown User'}</div>
                                             </div>
                                             <div>
                                                 <div className="text-xs text-gray-500 mb-1">Action</div>

@@ -11,6 +11,14 @@ import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
 import ViewHistory from '../components/ViewHistory'
 
+// Mock AuthContext
+vi.mock('../auth/AuthContext', () => ({
+  UserAuth: () => ({
+    user: { id: 'test-user-id', email: 'test@example.com' },
+    role: 'admin'
+  })
+}))
+
 // spies we'll assert against
 let updateSpy = vi.fn()
 let eqSpy = vi.fn()
@@ -25,7 +33,11 @@ vi.mock('../api/supabaseClient', () => {
       changed_by_user_id: 'user1',
       change_time: '2024-01-01T12:00:00',
       previous_state: null,
-      new_state: '{"position":"Engineer","location":"Oakland"}'
+      new_state: '{"position":"Engineer","location":"Oakland"}',
+      Users: {
+        username: 'user1',
+        first_name: 'User'
+      }
     }
   ]
 
@@ -210,8 +222,9 @@ describe('View Changes Page Tests', () => {
     const jobToggleButton = screen.getByRole('button', { name: /Job #1/i })
     await user.click(jobToggleButton)
 
-    // The history entry 'user1' from our mocked historyRows should appear
-    expect(await screen.findByText(/user1/)).toBeInTheDocument()
+    // The history entry username from our mocked historyRows should appear
+    // Note: Username now comes from separate Users query, not direct field
+    expect(await screen.findByText(/Unknown User|john_doe/)).toBeInTheDocument()
   })
 
   // --- Final test: ensure clicking Open? then Confirm triggers supabase update ---

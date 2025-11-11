@@ -10,6 +10,14 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import ViewHistory from '../components/ViewHistory'
 import { MemoryRouter, useNavigate } from 'react-router-dom'
 
+// Mock AuthContext
+vi.mock('../auth/AuthContext', () => ({
+  UserAuth: () => ({
+    user: { id: 'test-user-id', email: 'test@example.com' },
+    role: 'admin'
+  })
+}))
+
 
 
 // Mock the back end

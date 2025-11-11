@@ -12,7 +12,7 @@ import jobValidationSchema from '../data/jobValidationSchema'
 import { useNavigate } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
 import { UserAuth } from '../auth/AuthContext'
-import { addJob } from '../utils/jobHistoryOptimized'
+import supabase from '../api/supabaseClient'
 
 // Arrays for options for the various dropdowns
 const statusOptions = ['Open', 'Filled']
@@ -53,19 +53,23 @@ const createOnSubmit = (user) => async (values, actions) => {
         // Debug: Log the exact data being sent
         console.log('Sending job data:', JSON.stringify(jobData, null, 2))
 
-        // Add the job (history logging handled automatically by database triggers)
-        const result = await addJob(jobData)
+        // Add the job directly
+        const { data, error } = await supabase
+            .from('Jobs')
+            .insert(jobData)
+            .select()
+            .single()
 
-        if (result.success) {
-            console.log('Job added successfully:', result.data)
+        if (error) {
+            console.error('Failed to add job:', error)
+            actions.setStatus({ error: 'Failed to add job. Please try again.' })
+        } else {
+            console.log('Job added successfully:', data)
             actions.setStatus({ success: 'Job added successfully!' })
             actions.resetForm() // reset/clear the form
 
             // Note: Navigation will happen when user manually navigates
             // Auto-navigation removed to prevent errors
-        } else {
-            console.error('Failed to add job:', result.error)
-            actions.setStatus({ error: 'Failed to add job. Please try again.' })
         }
     } catch (error) {
         console.error('Error submitting job:', error)

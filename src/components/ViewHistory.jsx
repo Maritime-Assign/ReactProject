@@ -343,7 +343,7 @@ const ViewHistory = () => {
             const offset = (page - 1) * ITEMS_PER_PAGE
 
             // First, get all job_ids that match the filters
-            let jobIdsQuery = supabase.from('JobsHistory').select('job_id')
+            let jobIdsQuery = supabase.from('JobsHistory').select('job_id, changed_by_user_id')
 
             // Apply filters
             if (currentFilters.jobId && currentFilters.jobId.trim()) {
@@ -436,7 +436,36 @@ const ViewHistory = () => {
                 (a, b) => new Date(b.change_time) - new Date(a.change_time)
             )
 
-            const formattedLogs = groupedData.map(formatJobHistoryRecord)
+            // Fetch usernames for all unique user IDs
+            const userIds = [...new Set(groupedData.map(d => d.changed_by_user_id))].filter(Boolean)
+            console.log('[DEBUG fetchGroupedLogs] User IDs from JobsHistory:', userIds)
+            let userMap = {}
+            if (userIds.length > 0) {
+                const { data: usersData, error: usersError } = await supabase
+                    .from('Users')
+                    .select('UUID, username, first_name')
+                    .in('UUID', userIds)
+                
+                if (usersError) {
+                    console.error('[DEBUG fetchGroupedLogs] Error fetching users:', usersError)
+                }
+                
+                console.log('[DEBUG fetchGroupedLogs] Users data from database:', usersData)
+                
+                if (usersData) {
+                    userMap = Object.fromEntries(
+                        usersData.map(u => [u.UUID, u])
+                    )
+                }
+            }
+
+            // Add Users data to each record
+            const enrichedData = groupedData.map(record => ({
+                ...record,
+                Users: userMap[record.changed_by_user_id] || null
+            }))
+
+            const formattedLogs = enrichedData.map(formatJobHistoryRecord)
             return { logs: formattedLogs, totalCount: totalUniqueJobs }
         } catch (err) {
             setError('An error occurred while loading grouped data')
@@ -451,7 +480,7 @@ const ViewHistory = () => {
             const offset = (page - 1) * ITEMS_PER_PAGE
             let query = supabase
                 .from('JobsHistory')
-                .select(`*`, { count: 'exact' })
+                .select('*', { count: 'exact' })
                 .order('change_time', { ascending: false })
 
             // Apply filters
@@ -486,7 +515,29 @@ const ViewHistory = () => {
                 return
             }
 
-            const formattedLogs = data ? data.map(formatJobHistoryRecord) : []
+            // Fetch usernames for all unique user IDs
+            const userIds = [...new Set((data || []).map(d => d.changed_by_user_id))].filter(Boolean)
+            let userMap = {}
+            if (userIds.length > 0) {
+                const { data: usersData } = await supabase
+                    .from('Users')
+                    .select('UUID, username, first_name')
+                    .in('UUID', userIds)
+                
+                if (usersData) {
+                    userMap = Object.fromEntries(
+                        usersData.map(u => [u.UUID, u])
+                    )
+                }
+            }
+
+            // Add Users data to each record
+            const enrichedData = (data || []).map(record => ({
+                ...record,
+                Users: userMap[record.changed_by_user_id] || null
+            }))
+
+            const formattedLogs = enrichedData.map(formatJobHistoryRecord)
             return { logs: formattedLogs, totalCount: count || 0 }
         } catch (err) {
             setError('An error occurred while loading flat data')
@@ -731,7 +782,7 @@ const ViewHistory = () => {
 
         return `Job History Entry
 Date: ${log.formattedDate}
-User: ${log.changed_by_user_id || 'Unknown User'}
+User: ${log.username || 'Unknown User'}
 Job ID: ${log.job_id}
 Action: ${log.isNewJob ? 'Job Created' : 'Job Updated'}
 
@@ -761,7 +812,7 @@ ${log.new_state}`
             ...logs.map((log) =>
                 [
                     log.formattedDate,
-                    log.changed_by_user_id || 'Unknown User',
+                    log.username || 'Unknown User',
                     log.job_id,
                     log.isNewJob ? 'Created' : 'Updated',
                     'Unknown Ship',
@@ -798,7 +849,6 @@ ${log.new_state}`
         if (error) {
             console.error(`Failed to reopen job ${jobId}:`, error)
         } else {
-            console.log(`Job ${jobId} reopened (open = true).`)
             await handleRefresh()
         }
     }
@@ -871,11 +921,11 @@ ${log.new_state}`
         })
 
         try {
-            // Perform supabase update: set open true
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('Jobs')
                 .update({ open: true })
                 .eq('id', jobId)
+            
             if (error) throw error
 
             // Optimistic UI: remove job from closedJobsList
@@ -1038,9 +1088,29 @@ ${log.new_state}`
                         continue
                     }
 
-                    const formattedHistory = (historyData || []).map(
-                        formatJobHistoryRecord
-                    )
+                    // Fetch usernames for this job's history
+                    const userIds = [...new Set((historyData || []).map(d => d.changed_by_user_id))].filter(Boolean)
+                    let userMap = {}
+                    if (userIds.length > 0) {
+                        const { data: usersData } = await supabase
+                            .from('Users')
+                            .select('UUID, username, first_name')
+                            .in('UUID', userIds)
+                        
+                        if (usersData) {
+                            userMap = Object.fromEntries(
+                                usersData.map(u => [u.UUID, u])
+                            )
+                        }
+                    }
+
+                    // Add Users data to each record
+                    const enrichedHistory = (historyData || []).map(record => ({
+                        ...record,
+                        Users: userMap[record.changed_by_user_id] || null
+                    }))
+
+                    const formattedHistory = enrichedHistory.map(formatJobHistoryRecord)
                     enriched.push({
                         id: job.id,
                         fillDate: job.fillDate,
@@ -1379,7 +1449,7 @@ ${log.new_state}`
                                                 {log.formattedDate}
                                             </td>
                                             <td className='px-6 py-4 text-sm text-gray-900 truncate max-w-[140px]'>
-                                                {log.changed_by_user_id ||
+                                                {log.username ||
                                                     'Unknown User'}
                                             </td>
                                             <td className='px-6 py-4 text-sm font-mono text-gray-900 truncate max-w-[80px]'>
@@ -2060,7 +2130,7 @@ ${log.new_state}`
                                                                                                     }
                                                                                                 </div>
                                                                                                 <div className='text-sm font-medium'>
-                                                                                                    {entry.changed_by_user_id ||
+                                                                                                    {entry.username ||
                                                                                                         'Unknown User'}
                                                                                                 </div>
                                                                                                 <div className='text-xs text-gray-500'>
