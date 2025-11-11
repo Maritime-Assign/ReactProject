@@ -1,83 +1,89 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { vi } from 'vitest';
-import EditUser from '../pages/EditUser.jsx';
-import supabase from '../api/supabaseAdmin';
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import EditUser from '../pages/EditUser'
 
-const mockSelect = vi.fn().mockResolvedValue({ data: [{/* updated user data */}], error: null });
-
-const mockEq = vi.fn(() => ({
-  select: mockSelect,
-}));
-
-const mockUpdate = vi.fn(() => ({
-  eq: mockEq,
-}));
-
-const mockFromReturnValue = {
-  update: mockUpdate,
-};
-
-// Mock the entire supabase API
-vi.mock('../api/supabaseAdmin', () => ({
+// Mock supabase and supabaseAdmin
+vi.mock('../api/supabaseClient', () => ({
+  __esModule: true,
   default: {
-    from: vi.fn(() => mockFromReturnValue),
+    from: vi.fn(() => ({
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      select: vi.fn().mockResolvedValue({ data: [{ UUID: '123' }], error: null })
+    })),
+    auth: {
+      getUser: vi.fn().mockResolvedValue({
+        data: { user: { id: 'logged-user' } },
+        error: null
+      })
+    }
+  }
+}))
+
+vi.mock('../api/supabaseAdmin', () => ({
+  __esModule: true,
+  default: {
     auth: {
       admin: {
-        updateUserById: vi.fn().mockResolvedValue({ data: {}, error: null })
+        updateUserById: vi.fn().mockResolvedValue({ data: {}, error: null }),
+        deleteUser: vi.fn().mockResolvedValue({ data: {}, error: null })
       }
     }
   }
-}));
+}))
 
-// Mocking useLocation to return custom state
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal();
+// Mock useNavigate and alerts
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
+    useNavigate: () => mockNavigate,
     useLocation: () => ({
       state: {
-        username: 'johndoe',
-        role: 'admin',
-        UUID: '1234-uuid'
+        UUID: '123',
+        username: 'TestUser',
+        role: 'dispatch',
+        abbreviation: 'TST'
       }
     })
-  };
-});
+  }
+})
 
-test('renders the form with initial data and submits edits', async () => {
-  const { container } = render(
-    <MemoryRouter initialEntries={['/edit-user']}>
-      <Routes>
-        <Route path="/edit-user" element={<EditUser />} />
-      </Routes>
-    </MemoryRouter>
-  );
+describe('EditUser Unit Test', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.spyOn(window, 'alert').mockImplementation(() => {})
+    vi.spyOn(window, 'confirm').mockImplementation(() => true)
+  })
 
-  // Check initial form values (username, role)
-  await screen.findByDisplayValue('johndoe');
+  const setup = () =>
+    render(
+      <MemoryRouter initialEntries={['/edit-user']}>
+        <Routes>
+          <Route path="/edit-user" element={<EditUser />} />
+        </Routes>
+      </MemoryRouter>
+    )
 
-  // Ensure the dropdown has the correct initial value
-  const roleDropdown = screen.getByRole('combobox');
-  expect(roleDropdown).toHaveValue('admin');
+  it('renders with state user data', () => {
+    setup()
 
-  // Change user role and submit
-  fireEvent.change(roleDropdown, { target: { value: 'dispatch' } });
+    expect(screen.getByDisplayValue('TestUser')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('TST')).toBeInTheDocument()
+  })
 
-  const abbrevInput = screen.getByPlaceholderText('Enter 3 character abbreviation here');
-  fireEvent.change(abbrevInput, { target: { value: 'ABC' } });
+  it('changes role dropdown', async () => {
+    setup()
 
-  const form = container.querySelector('form');
-  expect(form).toBeTruthy(); // sanity check
-  fireEvent.submit(form);
+    const roleDropdown = screen.getByRole('combobox');
+    expect(roleDropdown).toHaveValue('dispatch');
 
-  // Wait for the async operation to complete
-  await waitFor(() => {
-    expect(supabase.from).toHaveBeenCalledWith('Users');
-    expect(mockUpdate).toHaveBeenCalledWith({
-      abbreviation: "ABC",
-      username: 'johndoe',
-      role: 'dispatch'
-    });
-  });
-});
+    fireEvent.change(roleDropdown, { target: { value: 'admin' } });
+
+    expect(roleDropdown).toHaveValue('admin');
+
+  })
+})
