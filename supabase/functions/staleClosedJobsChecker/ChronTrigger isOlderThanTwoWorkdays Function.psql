@@ -1,0 +1,16 @@
+--SELECT cron.unschedule('ChronTrigger isOlderThanTwoWorkdays Function')
+--run ^ to get rid of me
+
+select
+  cron.schedule(
+    'ChronTrigger isOlderThanTwoWorkdays Function',
+    '0 16 * * MON-FRI', --4pm every workday
+    $$
+    select
+      net.http_post(
+        url:='https://niwgwqnkqpfjhxvcwjdt.supabase.co/functions/v1/isOlderThanTwoWorkdays',
+        headers:='{"Content-Type": "application/json", "Authorization": "Bearer <SUPABASE_SERVICE_ROLE_KEY>"}'::jsonb,
+        body := '{}'::jsonb
+    ) as request_id;
+  $$
+);

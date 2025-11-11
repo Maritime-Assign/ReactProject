@@ -22,7 +22,7 @@ const FSBheader = () => {
                 <span>Date Called</span>
             </div>
             <div className={`col-span-3 ${cellStyle}`}>
-                <span>Ship Name</span>
+                <span>Vessel</span>
             </div>
             <div className={`col-span-2 ${cellStyle}`}>
                 <span>Join Date</span>

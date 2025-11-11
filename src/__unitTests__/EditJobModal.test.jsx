@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within, waitFor } from '@testing-library/react'
+
 
 // Mock AuthContext
 vi.mock('../auth/AuthContext', () => ({
@@ -10,20 +11,63 @@ vi.mock('../utils/jobHistoryOptimized', () => ({
     updateJob: vi.fn(),
 }))
 
-// Mock supabase client
-vi.mock('../api/supabaseClient', () => ({
-    default: {
-        from: vi.fn(() => ({
+vi.mock('../api/supabaseClient', () => {
+    const makeDropdownItems = (items) => items
+    const dataFor = {
+        region: makeDropdownItems([
+            { label: 'A-Region', sort_order: 1, is_active: true },
+            { label: 'B-Region', sort_order: 2, is_active: true }
+        ]),
+        hall: makeDropdownItems([
+            { label: 'Hall-1', sort_order: 1, is_active: true },
+            { label: 'Hall-2', sort_order: 2, is_active: true },
+        ]),
+        billet: makeDropdownItems([
+            { label: '1A/E', sort_order: 1, is_active: true },
+            { label: '3M', sort_order: 2, is_active: true },    
+        ]),
+        type: makeDropdownItems([
+            { label: 'Permanent', sort_order: 1, is_active: true },
+            { label: 'Relief', sort_order: 2, is_active: true },
+        ]),
+    }
+
+    const supabaseFromMock = (table) => {
+        if (table === 'job_dropdown_options') {
+        return {
+            select: vi.fn((column) => ({
+            maybeSingle: vi.fn(async () => ({
+                data: { [column]: dataFor[column] ?? [] },
+                error: null,
+            })),
+            })),
+        }
+        }
+        if (table === 'Jobs') {
+        return {
             update: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                    select: vi.fn(() => ({
-                        single: vi.fn(),
-                    })),
+            eq: vi.fn(() => ({
+                select: vi.fn(() => ({
+                single: vi.fn(async () => ({
+                    data: { id: 1, archivedJob: true, open: false },
+                    error: null,
+                })),
                 })),
             })),
+            })),
+        }
+        }
+        return {
+        select: vi.fn(() => ({
+            maybeSingle: vi.fn(async () => ({ data: null, error: null })),
         })),
-    },
-}))
+        }
+    }
+
+    return {
+        default: { from: supabaseFromMock },
+    }
+})
 
 import EditJobModal from '../components/EditJobModal'
 
@@ -31,8 +75,8 @@ describe('EditJobModal Component', () => {
     const mockJobData = {
         id: 1,
         shipName: 'Test Ship',
-        region: 'LA',
-        hall: 'LA',
+        region: 'A-Region',
+        hall: 'Hall-1',
         open: true,
         notes: 'Test notes',
         location: 'Test Location',

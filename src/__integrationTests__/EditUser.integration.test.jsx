@@ -52,7 +52,7 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-describe('EditUser Unit Test', () => {
+describe('EditUser Integration Test', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.spyOn(window, 'alert').mockImplementation(() => {})
@@ -75,15 +75,36 @@ describe('EditUser Unit Test', () => {
     expect(screen.getByDisplayValue('TST')).toBeInTheDocument()
   })
 
-  it('changes role dropdown', async () => {
+  it('shows abbreviation validation error when length is not 3', () => {
     setup()
 
-    const roleDropdown = screen.getByRole('combobox');
-    expect(roleDropdown).toHaveValue('dispatch');
+    const abbrevInput = screen.getByPlaceholderText(/Enter 3 character abbreviation/i)
+    fireEvent.change(abbrevInput, { target: { value: 'ABC' } })
+    fireEvent.change(abbrevInput, { target: { value: 'ABCD' } })
 
-    fireEvent.change(roleDropdown, { target: { value: 'admin' } });
+    expect(screen.getByText(/Must be exactly 3 letters/i)).toBeInTheDocument()
+  })
 
-    expect(roleDropdown).toHaveValue('admin');
+  it('submits form successfully', async () => {
+    setup()
 
+    const submitButton = screen.getByRole('button', { name: /Submit Changes/i })
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith('User updated successfully')
+    })
+  })
+
+  it('calls delete user and navigates back', async () => {
+    setup()
+
+    const deleteButton = screen.getByRole('button', { name: /Delete User/i })
+    fireEvent.click(deleteButton)
+
+    await waitFor(() => {
+      expect(window.alert).toHaveBeenCalledWith('User deleted successfully')
+      expect(mockNavigate).toHaveBeenCalledWith('/users-roles')
+    })
   })
 })

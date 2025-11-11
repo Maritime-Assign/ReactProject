@@ -17,6 +17,7 @@ function ViewBoard() {
             try {
                 const fetchedJobs = await fetchJobs() // Fetch jobs asynchronously
                 setJobs(fetchedJobs || []) // Ensure jobs is always an array
+
             } catch (error) {
                 console.error('Failed to fetch jobs:', error)
                 setJobs([]) // Set jobs to an empty array in case of an error
@@ -26,8 +27,9 @@ function ViewBoard() {
     }, [])
 
     const filteredJobs = jobs.filter((job) => {
+
         const term = searchWord.toLowerCase()
-        if (!term) return true
+        if (!term && job.archivedJob) return false;
 
         const vessel = (job.shipName || '').toLowerCase()
         const region = (job.region || '').toLowerCase()
@@ -45,9 +47,8 @@ function ViewBoard() {
             passThru.includes(term) ||
             nightCard.includes(term) ||
             msc.includes(term)
-        )
+        );
     })
-
     // Update handler
     const handleJobUpdate = (updatedJob) => {
         setJobs((prevJobs) =>
