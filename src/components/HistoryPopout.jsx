@@ -6,6 +6,55 @@ import {
     getJobStateComparison,
 } from '../utils/jobHistoryOptimized'
 
+const getActionColorClasses = (actionType) => {
+    // Ensure case-insensitivity and default to an empty string if null/undefined
+    const type = actionType ? actionType.toLowerCase() : ''
+
+    switch (type) {
+        case 'created':
+            // Green for new jobs
+            return 'bg-green-100 text-green-800'
+        case 'updated':
+            // Blue for changes/updates
+            return 'bg-blue-100 text-blue-800'
+        case 'filled':
+        case 'filled by company':
+            // Red for closed jobs
+            return 'bg-red-100 text-red-800'
+        case 'archived':
+            // Gray/Yellow for less critical states
+            return 'bg-yellow-100 text-yellow-800'
+        default:
+            return 'bg-gray-100 text-gray-800'
+    }
+}
+
+const getChangeAction = (log, changes) => {
+    // 1. Check for creation
+    if (log.isNewJob) {
+        return 'created'
+    }
+
+    // 2. Check for specific status changes
+    const statusChange = changes.find((c) => c.field === 'status')
+    if (statusChange) {
+        const newStatus = statusChange.newValue
+
+        if (newStatus === 'Filled') {
+            return 'filled'
+        }
+        if (newStatus === 'Filled by Company') {
+            return 'filled by company'
+        }
+        if (newStatus === 'Archived') {
+            return 'archived'
+        }
+    }
+
+    // 3. Fallback for all other updates
+    return 'updated'
+}
+
 const HistoryPopout = ({ jobId, onClose, initialData = null }) => {
     const [history, setHistory] = useState(initialData ? [initialData] : [])
     const [loading, setLoading] = useState(true)
@@ -30,7 +79,9 @@ const HistoryPopout = ({ jobId, onClose, initialData = null }) => {
                 count,
             } = await supabase
                 .from('JobsHistory')
-                .select('*', { count: 'exact' })
+                .select('*, changed_by_user_id:Users(username)', {
+                    count: 'exact',
+                })
                 .eq('job_id', jobId)
                 .order('change_time', { ascending: false })
                 .range(offset, offset + ITEMS_PER_PAGE - 1)
@@ -41,9 +92,22 @@ const HistoryPopout = ({ jobId, onClose, initialData = null }) => {
                 return
             }
 
-            const formattedHistory = data
-                ? data.map(formatJobHistoryRecord)
-                : []
+            // Format and calculate changes for each record
+            const formattedHistory = await Promise.all(
+                (data || []).map(async (record) => {
+                    const formatted = formatJobHistoryRecord(record)
+                    // Pre-calculate changes
+                    const changes = await getJobStateComparison(
+                        formatted.previousStateFormatted,
+                        formatted.newStateFormatted
+                    )
+                    return {
+                        ...formatted,
+                        changes, // Add changes to the record
+                    }
+                })
+            )
+
             setHistory(formattedHistory)
             setTotalCount(count || 0)
         } catch (err) {
@@ -123,8 +187,8 @@ const HistoryPopout = ({ jobId, onClose, initialData = null }) => {
             .join('\n')
 
         return `Job History Entry
-Date: ${log.formattedDate}
-User: ${log.changed_by_user_id || 'Unknown User'}
+Date: ${log.formattedDateTime.date}
+User: ${log.changed_by_user_id?.username}
 Job ID: ${log.job_id}
 Action: ${log.isNewJob ? 'Job Created' : 'Job Updated'}
 
@@ -141,7 +205,7 @@ ${log.new_state}`
     const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
     return (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
+        <div className='fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50 p-4'>
             <div className='bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col'>
                 {/* Header */}
                 <div className='flex justify-between items-center p-6 border-b border-gray-200'>
@@ -191,273 +255,331 @@ ${log.new_state}`
 
                     {!loading && !error && history.length > 0 && (
                         <div className='space-y-4'>
-                            {history.map((log) => (
-                                <div
-                                    key={log.id}
-                                    className='border border-gray-200 rounded-lg overflow-hidden'
-                                >
-                                    {/* Summary Row */}
-                                    <div className='bg-gray-50 p-4 flex items-center gap-4'>
-                                        <button
-                                            onClick={() =>
-                                                toggleRowExpansion(log.id)
-                                            }
-                                            className='text-gray-400 hover:text-gray-600 flex-shrink-0'
-                                        >
-                                            {expandedRows.has(log.id) ? (
-                                                <IoChevronUp className='w-5 h-5' />
-                                            ) : (
-                                                <IoChevronDown className='w-5 h-5' />
-                                            )}
-                                        </button>
+                            {history.map((log) => {
+                                const changes = log.changes || [] // Use pre-calculated changes
+                                const actionType = log.actionType
 
-                                        <div className='flex-1 grid grid-cols-1 md:grid-cols-3 gap-4'>
-                                            <div>
-                                                <div className='text-xs text-gray-500 mb-1'>
-                                                    Date & Time
-                                                </div>
-                                                <div className='text-sm font-medium text-gray-900'>
-                                                    {log.formattedDate}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div className='text-xs text-gray-500 mb-1'>
-                                                    User
-                                                </div>
-                                                <div className='text-sm font-medium text-gray-900'>
-                                                    {log.changed_by_user_id ||
-                                                        'Unknown User'}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div className='text-xs text-gray-500 mb-1'>
-                                                    Action
-                                                </div>
-                                                <span
-                                                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                        log.isNewJob
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-blue-100 text-blue-800'
-                                                    }`}
-                                                >
-                                                    {log.isNewJob
-                                                        ? 'Created'
-                                                        : 'Updated'}
-                                                </span>
-                                            </div>
-                                        </div>
+                                return (
+                                    <div
+                                        key={log.id}
+                                        className='border border-gray-200 rounded-lg overflow-hidden'
+                                    >
+                                        {/* Summary Row */}
+                                        <div className='bg-gray-50 p-4 flex items-center gap-4'>
+                                            <button
+                                                onClick={() =>
+                                                    toggleRowExpansion(log.id)
+                                                }
+                                                className='text-gray-400 hover:text-gray-600 flex-shrink-0'
+                                            >
+                                                {expandedRows.has(log.id) ? (
+                                                    <IoChevronUp className='w-5 h-5' />
+                                                ) : (
+                                                    <IoChevronDown className='w-5 h-5' />
+                                                )}
+                                            </button>
 
-                                        <button
-                                            onClick={() =>
-                                                copyToClipboard(
-                                                    getFullContentForCopy(log),
-                                                    log.id
-                                                )
-                                            }
-                                            className='text-mebablue-dark hover:text-mebablue-hover flex-shrink-0'
-                                            title='Copy full details'
-                                        >
-                                            <IoCopy className='w-5 h-5' />
-                                        </button>
-                                    </div>
-
-                                    {/* Changes Summary */}
-                                    <div className='px-4 py-3 bg-white border-t border-gray-200'>
-                                        <div className='max-w-full'>
-                                            {(() => {
-                                                const changes = Array.isArray(
-                                                    getJobStateComparison(
-                                                        log.previousStateFormatted,
-                                                        log.newStateFormatted
-                                                    )
-                                                )
-                                                    ? getJobStateComparison(
-                                                          log.previousStateFormatted,
-                                                          log.newStateFormatted
-                                                      )
-                                                    : []
-
-                                                const displayChanges =
-                                                    changes.slice(0, 4)
-                                                const remainingCount =
-                                                    changes.length - 4
-
-                                                return (
-                                                    <div className='flex flex-wrap gap-2'>
-                                                        {displayChanges.map(
-                                                            (change, idx) => (
-                                                                <div
-                                                                    key={idx}
-                                                                    className='flex items-center gap-2 text-xs bg-gray-50 px-2 py-1 rounded'
-                                                                >
-                                                                    <span
-                                                                        className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                                                            change.changeType ===
-                                                                            'added'
-                                                                                ? 'bg-green-100 text-green-700'
-                                                                                : change.changeType ===
-                                                                                  'removed'
-                                                                                ? 'bg-red-100 text-red-700'
-                                                                                : 'bg-blue-100 text-blue-700'
-                                                                        }`}
-                                                                    >
-                                                                        {
-                                                                            change.field
-                                                                        }
-                                                                    </span>
-                                                                    <span className='text-gray-400'>
-                                                                        →
-                                                                    </span>
-                                                                    <span
-                                                                        className='truncate max-w-[150px] text-gray-700'
-                                                                        title={String(
-                                                                            change.newValue ||
-                                                                                'None'
-                                                                        )}
-                                                                    >
-                                                                        {String(
-                                                                            change.newValue ||
-                                                                                'None'
-                                                                        )}
-                                                                    </span>
-                                                                </div>
-                                                            )
-                                                        )}
-                                                        {remainingCount > 0 && (
-                                                            <div className='flex items-center text-xs text-gray-500 italic bg-gray-100 px-2 py-1 rounded'>
-                                                                +
-                                                                {remainingCount}{' '}
-                                                                more change
-                                                                {remainingCount !==
-                                                                1
-                                                                    ? 's'
-                                                                    : ''}
-                                                            </div>
-                                                        )}
+                                            <div className='flex-1 grid grid-cols-1 md:grid-cols-3 gap-4'>
+                                                <div>
+                                                    <div className='text-xs text-gray-500 mb-1'>
+                                                        Date & Time
                                                     </div>
-                                                )
-                                            })()}
+                                                    <div className='text-sm font-medium text-gray-900'>
+                                                        <div>
+                                                            {
+                                                                log
+                                                                    .formattedDateTime
+                                                                    .date
+                                                            }
+                                                        </div>
+                                                        <div className='text-xs'>
+                                                            {
+                                                                log
+                                                                    .formattedDateTime
+                                                                    .time
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className='text-xs text-gray-500 mb-1'>
+                                                        User
+                                                    </div>
+                                                    <div className='text-sm font-medium text-gray-900'>
+                                                        {
+                                                            log
+                                                                .changed_by_user_id
+                                                                ?.username
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className='text-xs text-gray-500 mb-1'>
+                                                        Action
+                                                    </div>
+                                                    <span
+                                                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getActionColorClasses(
+                                                            actionType
+                                                        )}`}
+                                                    >
+                                                        {actionType
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            actionType.slice(1)}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                onClick={() =>
+                                                    copyToClipboard(
+                                                        getFullContentForCopy(
+                                                            log
+                                                        ),
+                                                        log.id
+                                                    )
+                                                }
+                                                className='text-mebablue-dark hover:text-mebablue-hover flex-shrink-0'
+                                                title='Copy full details'
+                                            >
+                                                <IoCopy className='w-5 h-5' />
+                                            </button>
                                         </div>
-                                    </div>
 
-                                    {/* Expanded Details */}
-                                    {expandedRows.has(log.id) && (
-                                        <div className='px-4 py-4 bg-gray-50 border-t border-gray-200'>
-                                            <h4 className='text-sm font-semibold text-gray-900 mb-3'>
-                                                Change Summary
-                                            </h4>
+                                        {/* Changes Summary */}
+                                        <div className='px-4 py-3 bg-white border-t border-gray-200'>
+                                            <div className='max-w-full'>
+                                                {(() => {
+                                                    const displayChanges =
+                                                        changes.slice(0, 4)
+                                                    const remainingCount =
+                                                        changes.length - 4
 
-                                            {/* Spreadsheet-style Field Changes Table */}
-                                            <div className='mb-4'>
-                                                <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-                                                    <table className='min-w-full divide-y divide-gray-200'>
-                                                        <thead className='bg-gray-100'>
-                                                            <tr>
-                                                                <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase'>
-                                                                    Field
-                                                                </th>
-                                                                <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase'>
-                                                                    Previous
-                                                                    Value
-                                                                </th>
-                                                                <th className='px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase w-24'>
-                                                                    Change
-                                                                </th>
-                                                                <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase'>
-                                                                    New Value
-                                                                </th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className='bg-white divide-y divide-gray-200'>
-                                                            {/* FIX: Add Array.isArray check to ensure getJobStateComparison returns an array 
-        before attempting to call .map().
-    */}
-                                                            {(Array.isArray(
-                                                                getJobStateComparison(
-                                                                    log.previousStateFormatted,
-                                                                    log.newStateFormatted
-                                                                )
-                                                            )
-                                                                ? getJobStateComparison(
-                                                                      log.previousStateFormatted,
-                                                                      log.newStateFormatted
-                                                                  )
-                                                                : []
-                                                            ).map(
+                                                    return (
+                                                        <div className='flex flex-wrap gap-2'>
+                                                            {displayChanges.map(
                                                                 (
                                                                     change,
-                                                                    index
+                                                                    idx
                                                                 ) => (
-                                                                    <tr
+                                                                    <div
                                                                         key={
-                                                                            index
+                                                                            idx
                                                                         }
-                                                                        className='hover:bg-gray-50'
+                                                                        className='flex items-center gap-2 text-xs bg-gray-50 px-2 py-1 rounded'
                                                                     >
-                                                                        <td className='px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap'>
+                                                                        <span
+                                                                            className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                                                                change.changeType ===
+                                                                                'added'
+                                                                                    ? 'bg-green-100 text-green-700'
+                                                                                    : change.changeType ===
+                                                                                      'removed'
+                                                                                    ? 'bg-red-100 text-red-700'
+                                                                                    : 'bg-blue-100 text-blue-700'
+                                                                            }`}
+                                                                        >
                                                                             {
                                                                                 change.field
                                                                             }
-                                                                        </td>
-                                                                        <td className='px-4 py-3 text-sm text-gray-700'>
-                                                                            {change.oldValue || (
-                                                                                <span className='text-gray-400 italic'>
-                                                                                    None
-                                                                                </span>
+                                                                        </span>
+                                                                        <span className='text-gray-400'>
+                                                                            →
+                                                                        </span>
+                                                                        <span
+                                                                            className='truncate max-w-[150px] text-gray-700'
+                                                                            title={String(
+                                                                                change.newValue ||
+                                                                                    'None'
                                                                             )}
-                                                                        </td>
-                                                                        <td className='px-4 py-3 text-center'>
-                                                                            <span
-                                                                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                                                    change.changeType ===
-                                                                                    'added'
-                                                                                        ? 'bg-green-100 text-green-800'
-                                                                                        : change.changeType ===
-                                                                                          'removed'
-                                                                                        ? 'bg-red-100 text-red-800'
-                                                                                        : 'bg-blue-100 text-blue-800'
-                                                                                }`}
-                                                                            >
-                                                                                {change.changeType ===
-                                                                                'added'
-                                                                                    ? '+ Added'
-                                                                                    : change.changeType ===
-                                                                                      'removed'
-                                                                                    ? '- Removed'
-                                                                                    : '↻ Modified'}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td className='px-4 py-3 text-sm text-gray-700'>
-                                                                            {change.newValue || (
-                                                                                <span className='text-gray-400 italic'>
-                                                                                    None
-                                                                                </span>
+                                                                        >
+                                                                            {String(
+                                                                                change.newValue ||
+                                                                                    'None'
                                                                             )}
-                                                                        </td>
-                                                                    </tr>
+                                                                        </span>
+                                                                    </div>
                                                                 )
                                                             )}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                                            {remainingCount >
+                                                                0 && (
+                                                                <div className='flex items-center text-xs text-gray-500 italic bg-gray-100 px-2 py-1 rounded'>
+                                                                    +
+                                                                    {
+                                                                        remainingCount
+                                                                    }{' '}
+                                                                    more change
+                                                                    {remainingCount !==
+                                                                    1
+                                                                        ? 's'
+                                                                        : ''}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )
+                                                })()}
                                             </div>
+                                        </div>
 
-                                            {/* Complete Job Snapshot */}
-                                            <div className='mt-4'>
-                                                <h5 className='font-medium text-gray-900 mb-2 text-sm'>
-                                                    Complete Job Snapshot
-                                                </h5>
-                                                <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
-                                                    {log.previousStateFormatted && (
+                                        {/* Expanded Details */}
+                                        {expandedRows.has(log.id) && (
+                                            <div className='px-4 py-4 bg-gray-50 border-t border-gray-200'>
+                                                <h4 className='text-sm font-semibold text-gray-900 mb-3'>
+                                                    Change Summary
+                                                </h4>
+
+                                                {/* Spreadsheet-style Field Changes Table */}
+                                                <div className='mb-4'>
+                                                    <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+                                                        <table className='min-w-full divide-y divide-gray-200'>
+                                                            <thead className='bg-gray-100'>
+                                                                <tr>
+                                                                    <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase'>
+                                                                        Field
+                                                                    </th>
+                                                                    <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase'>
+                                                                        Previous
+                                                                        Value
+                                                                    </th>
+                                                                    <th className='px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase w-24'>
+                                                                        Change
+                                                                    </th>
+                                                                    <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase'>
+                                                                        New
+                                                                        Value
+                                                                    </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className='bg-white divide-y divide-gray-200'>
+                                                                {changes.map(
+                                                                    (
+                                                                        change,
+                                                                        index
+                                                                    ) => (
+                                                                        <tr
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className='hover:bg-gray-50'
+                                                                        >
+                                                                            <td className='px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap'>
+                                                                                {
+                                                                                    change.field
+                                                                                }
+                                                                            </td>
+                                                                            <td className='px-4 py-3 text-sm text-gray-700'>
+                                                                                {change.oldValue || (
+                                                                                    <span className='text-gray-400 italic'>
+                                                                                        None
+                                                                                    </span>
+                                                                                )}
+                                                                            </td>
+                                                                            <td className='px-4 py-3 text-center'>
+                                                                                <span
+                                                                                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                                                        change.changeType ===
+                                                                                        'added'
+                                                                                            ? 'bg-green-100 text-green-800'
+                                                                                            : change.changeType ===
+                                                                                              'removed'
+                                                                                            ? 'bg-red-100 text-red-800'
+                                                                                            : 'bg-blue-100 text-blue-800'
+                                                                                    }`}
+                                                                                >
+                                                                                    {change.changeType ===
+                                                                                    'added'
+                                                                                        ? '+ Added'
+                                                                                        : change.changeType ===
+                                                                                          'removed'
+                                                                                        ? '- Removed'
+                                                                                        : '↻ Modified'}
+                                                                                </span>
+                                                                            </td>
+                                                                            <td className='px-4 py-3 text-sm text-gray-700'>
+                                                                                {change.newValue || (
+                                                                                    <span className='text-gray-400 italic'>
+                                                                                        None
+                                                                                    </span>
+                                                                                )}
+                                                                            </td>
+                                                                        </tr>
+                                                                    )
+                                                                )}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                                {/* Complete Job Snapshot */}
+                                                <div className='mt-4'>
+                                                    <h5 className='font-medium text-gray-900 mb-2 text-sm'>
+                                                        Complete Job Snapshot
+                                                    </h5>
+                                                    <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+                                                        {log.previousStateFormatted && (
+                                                            <div>
+                                                                <div className='text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider'>
+                                                                    Before
+                                                                    Changes
+                                                                </div>
+                                                                <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+                                                                    <table className='min-w-full divide-y divide-gray-200'>
+                                                                        <tbody className='bg-white divide-y divide-gray-100'>
+                                                                            {Object.entries(
+                                                                                log.previousStateFormatted
+                                                                            ).map(
+                                                                                (
+                                                                                    [
+                                                                                        key,
+                                                                                        value,
+                                                                                    ],
+                                                                                    idx
+                                                                                ) => (
+                                                                                    <tr
+                                                                                        key={
+                                                                                            idx
+                                                                                        }
+                                                                                        className='hover:bg-gray-50'
+                                                                                    >
+                                                                                        <td className='px-3 py-2 text-xs font-medium text-gray-600 w-1/3'>
+                                                                                            {
+                                                                                                key
+                                                                                            }
+                                                                                        </td>
+                                                                                        <td className='px-3 py-2 text-xs text-gray-900'>
+                                                                                            {value !==
+                                                                                                null &&
+                                                                                            value !==
+                                                                                                undefined ? (
+                                                                                                String(
+                                                                                                    value
+                                                                                                )
+                                                                                            ) : (
+                                                                                                <span className='text-gray-400 italic'>
+                                                                                                    null
+                                                                                                </span>
+                                                                                            )}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                )
+                                                                            )}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
                                                         <div>
                                                             <div className='text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider'>
-                                                                Before Changes
+                                                                {log.previousStateFormatted
+                                                                    ? 'After Changes'
+                                                                    : 'Job Created'}
                                                             </div>
                                                             <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
                                                                 <table className='min-w-full divide-y divide-gray-200'>
                                                                     <tbody className='bg-white divide-y divide-gray-100'>
                                                                         {Object.entries(
-                                                                            log.previousStateFormatted
+                                                                            log.newStateFormatted
                                                                         ).map(
                                                                             (
                                                                                 [
@@ -498,65 +620,13 @@ ${log.new_state}`
                                                                 </table>
                                                             </div>
                                                         </div>
-                                                    )}
-
-                                                    <div>
-                                                        <div className='text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider'>
-                                                            {log.previousStateFormatted
-                                                                ? 'After Changes'
-                                                                : 'Job Created'}
-                                                        </div>
-                                                        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-                                                            <table className='min-w-full divide-y divide-gray-200'>
-                                                                <tbody className='bg-white divide-y divide-gray-100'>
-                                                                    {Object.entries(
-                                                                        log.newStateFormatted
-                                                                    ).map(
-                                                                        (
-                                                                            [
-                                                                                key,
-                                                                                value,
-                                                                            ],
-                                                                            idx
-                                                                        ) => (
-                                                                            <tr
-                                                                                key={
-                                                                                    idx
-                                                                                }
-                                                                                className='hover:bg-gray-50'
-                                                                            >
-                                                                                <td className='px-3 py-2 text-xs font-medium text-gray-600 w-1/3'>
-                                                                                    {
-                                                                                        key
-                                                                                    }
-                                                                                </td>
-                                                                                <td className='px-3 py-2 text-xs text-gray-900'>
-                                                                                    {value !==
-                                                                                        null &&
-                                                                                    value !==
-                                                                                        undefined ? (
-                                                                                        String(
-                                                                                            value
-                                                                                        )
-                                                                                    ) : (
-                                                                                        <span className='text-gray-400 italic'>
-                                                                                            null
-                                                                                        </span>
-                                                                                    )}
-                                                                                </td>
-                                                                            </tr>
-                                                                        )
-                                                                    )}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                                        )}
+                                    </div>
+                                )
+                            })}
                         </div>
                     )}
                 </div>

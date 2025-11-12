@@ -163,23 +163,52 @@ export async function fetchJobHistory(jobId) {
  */
 export function formatJobHistoryRecord(historyRecord) {
     const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleString('en-US', {
+        const dateObj = new Date(dateString)
+
+        // Date format (e.g., Nov 12, 2025)
+        const datePart = dateObj.toLocaleString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
+        })
+
+        // Time format (e.g., 2:45:29 PM)
+        const timePart = dateObj.toLocaleString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
         })
+
+        return {
+            date: datePart,
+            time: timePart,
+        }
     }
 
     const formatState = (stateString) => {
         if (!stateString) return null
+
+        // If it's already an object, return it
+        if (typeof stateString === 'object') return stateString
+
+        // If it's not a string, return null
+        if (typeof stateString !== 'string') return null
+
         try {
-            return JSON.parse(stateString)
+            // Trim whitespace and check if it looks like JSON
+            const trimmed = stateString.trim()
+            if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+                console.warn(
+                    'State string does not appear to be JSON:',
+                    trimmed.substring(0, 50)
+                )
+                return null
+            }
+            return JSON.parse(trimmed)
         } catch (err) {
-            console.warn('Failed to parse state JSON:', err)
-            return stateString
+            console.warn('Failed to parse state JSON:', err.message)
+            console.warn('Problematic string:', stateString.substring(0, 100))
+            return null
         }
     }
 
@@ -279,7 +308,7 @@ export function formatJobHistoryRecord(historyRecord) {
 
     return {
         ...historyRecord,
-        formattedDate: formatDate(historyRecord.change_time),
+        formattedDateTime: formatDate(historyRecord.change_time),
         previousStateFormatted: previousState,
         newStateFormatted: newState,
         changesSummary: generateChangesSummary(
