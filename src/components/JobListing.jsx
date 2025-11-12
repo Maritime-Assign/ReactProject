@@ -1,7 +1,7 @@
 import supabase from '../api/supabaseClient'
 import { useEffect, useRef, useState } from 'react'
 import { UserAuth } from '../auth/AuthContext.jsx'
-import { updateJobWithHistory } from '../utils/jobHistory'
+import { updateJob } from '../utils/jobHistoryOptimized.js'
 import { Plus, Minus } from 'lucide-react'
 
 const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
@@ -89,11 +89,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
             }
 
             // Update job and log the change
-            const result = await updateJobWithHistory(
-                props.id,
-                claimData,
-                user.id
-            )
+            const result = await updateJob(props.id, claimData, user.id)
 
             if (result.success) {
                 handleClaimJob() // refresh list
