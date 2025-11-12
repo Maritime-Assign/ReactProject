@@ -19,6 +19,7 @@ import HistoryPopout from './HistoryPopout'
 import EditJobModal from './EditJobModal'
 // clear icon for search bar / modal close
 import { IoClose } from 'react-icons/io5'
+import HistoryRowDetails from './HistoryRowDetails'
 
 const ViewHistory = () => {
     const ITEMS_PER_PAGE = 10
@@ -89,12 +90,11 @@ const ViewHistory = () => {
             const query = searchQuery.trim()
             // Only clear filters if there is something to clear
             if (query === '') {
-                if(lastFilters.current) {
+                if (lastFilters.current) {
                     clearFilters()
                     lastFilters.current = null
                 }
-            }
-            else {
+            } else {
                 setDebouncedQuery(query)
             }
         }, 1000)
@@ -108,14 +108,16 @@ const ViewHistory = () => {
     const lastFilters = React.useRef(null)
     useEffect(() => {
         const query = debouncedQuery.trim()
-        if(!query) {
+        if (!query) {
             clearFilters()
             lastFilters.current = null
             return
         }
 
         const newFilters = detectSearchType(query)
-        if (JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)) {
+        if (
+            JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)
+        ) {
             handleSearch(query)
             lastFilters.current = newFilters
         }
@@ -148,14 +150,14 @@ const ViewHistory = () => {
         // Handle MM/DD/YYYY | M/D/YYYY
         if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) {
             const [month, day, year] = trimmed.split('/')
-            return { 
-                type: 'date', 
-                value: { 
-                    type: 'day', 
-                    year, 
-                    month: month.padStart(2, '0'), 
-                    day: day.padStart(2, '0') 
-                }
+            return {
+                type: 'date',
+                value: {
+                    type: 'day',
+                    year,
+                    month: month.padStart(2, '0'),
+                    day: day.padStart(2, '0'),
+                },
             }
         }
 
@@ -166,7 +168,7 @@ const ViewHistory = () => {
             const day = parts[1] ? parts[1].padStart(2, '0') : null
             // Assume user wants to see current year first if not a full date query
             const year = new Date().getFullYear()
-                
+
             if (!day) {
                 return {
                     type: 'date',
@@ -193,13 +195,13 @@ const ViewHistory = () => {
         if (/^\d{1,2}\/$/.test(trimmed)) {
             const month = trimmed.replace('/', '').padStart(2, '0')
             const year = new Date().getFullYear()
-            return { 
-                type: 'date', 
-                value: { 
-                    type: 'month', 
-                    year, 
-                    month 
-                }
+            return {
+                type: 'date',
+                value: {
+                    type: 'month',
+                    year,
+                    month,
+                },
             }
         }
 
@@ -216,10 +218,13 @@ const ViewHistory = () => {
         // If the search bar is empty, show everything
         if (!trimmedQuery) {
             // Only fetch is current filters have values
-            if(filters.jobId || filters.userId || (filters.dateFrom && filters.dateTo)) {
+            if (
+                filters.jobId ||
+                filters.userId ||
+                (filters.dateFrom && filters.dateTo)
+            ) {
                 await clearFilters()
-            }
-            else {
+            } else {
                 // Reset state without fetch
                 setLogs([])
                 setGroupedLogs([])
@@ -273,18 +278,17 @@ const ViewHistory = () => {
                     // Turn objects into ID list and store it
                     const userIds = userData.map((u) => u.UUID)
                     newFilters.userId = userIds
-                } 
-                else {
+                } else {
                     // user name does not match then ship name
-                    const { data: jobsByShip, error: shipError } = await supabase
-                        .from('Jobs')
-                        .select('id')
-                        .ilike('shipName', `%${result.value}%`)
+                    const { data: jobsByShip, error: shipError } =
+                        await supabase
+                            .from('Jobs')
+                            .select('id')
+                            .ilike('shipName', `%${result.value}%`)
 
                     if (jobsByShip && jobsByShip.length > 0) {
                         newFilters.jobId = jobsByShip.map((j) => j.id)
-                    } 
-                    else {
+                    } else {
                         // If name is not a ship name or a user name then show nothing
                         setLogs([])
                         setGroupedLogs([])
@@ -308,7 +312,10 @@ const ViewHistory = () => {
                 // Handle invalid dates first 27/, 9/99, etc
                 const month = parseInt(dateObj.month, 10)
                 const day = parseInt(dateObj.day, 10)
-                if ((month && (month < 1 || month > 12)) || (day && (day < 1 || day > 31))) {
+                if (
+                    (month && (month < 1 || month > 12)) ||
+                    (day && (day < 1 || day > 31))
+                ) {
                     // Show no results instead of screen error
                     setLogs([])
                     setGroupedLogs([])
@@ -345,12 +352,16 @@ const ViewHistory = () => {
                     newFilters.dateTo = `${dateObj.year}-${dateObj.month}-${dateObj.day}`
                 }
                 // Partial date handling so supabase does not throw error from incomplete date
-                else if(dateObj.type === 'partial') {
+                else if (dateObj.type === 'partial') {
                     if (dateObj.month) {
-                        newFilters.dateFrom = `${dateObj.year || '0000'}-${dateObj.month}-01`;
+                        newFilters.dateFrom = `${dateObj.year || '0000'}-${
+                            dateObj.month
+                        }-01`
                     }
                     if (dateObj.day) {
-                        newFilters.dateTo = `${dateObj.year || '9999'}-${dateObj.month}-${dateObj.day.padStart(2, '0')}`;
+                        newFilters.dateTo = `${dateObj.year || '9999'}-${
+                            dateObj.month
+                        }-${dateObj.day.padStart(2, '0')}`
                     }
                 }
 
@@ -424,7 +435,6 @@ const ViewHistory = () => {
         }
     }
 
-    // Fetch grouped logs (most recent change per job_id)
     const fetchGroupedLogs = async (page = 1, currentFilters = filters) => {
         setLoading(true)
         setError(null)
@@ -432,16 +442,30 @@ const ViewHistory = () => {
         try {
             const offset = (page - 1) * ITEMS_PER_PAGE
 
-            // First, get all job_ids that match the filters
-            let jobIdsQuery = supabase.from('JobsHistory').select('job_id')
+            // 1. QUERY TO GET ALL RELEVANT JOB IDs (ORDERED BY RECENT ACTIVITY)
+            // We fetch all records matching the filters, but we order them by change_time DESC
+            // to ensure the most recently updated jobs appear first in the results.
+            let jobIdsQuery = supabase
+                .from('JobsHistory')
+                .select('job_id, change_time')
+                .order('change_time', { ascending: false }) // KEY: Orders the results by time before deduplication
 
-            // Apply filters - check if job id is array or string
+            // Apply filters (Job ID, Date Range, User ID) to the initial query
+            // This narrows down which history entries are considered.
             if (currentFilters.jobId) {
-                if (Array.isArray(currentFilters.jobId) && currentFilters.jobId.length > 0) {
+                if (
+                    Array.isArray(currentFilters.jobId) &&
+                    currentFilters.jobId.length > 0
+                ) {
                     jobIdsQuery = jobIdsQuery.in('job_id', currentFilters.jobId)
-                } 
-                else if (typeof currentFilters.jobId === 'string' && currentFilters.jobId.trim()) {
-                    jobIdsQuery = jobIdsQuery.eq('job_id', currentFilters.jobId.trim())
+                } else if (
+                    typeof currentFilters.jobId === 'string' &&
+                    currentFilters.jobId.trim()
+                ) {
+                    jobIdsQuery = jobIdsQuery.eq(
+                        'job_id',
+                        currentFilters.jobId.trim()
+                    )
                 }
             }
 
@@ -453,6 +477,7 @@ const ViewHistory = () => {
             }
 
             if (currentFilters.dateTo) {
+                // Append time to ensure the entire 'dateTo' day is included
                 jobIdsQuery = jobIdsQuery.lte(
                     'change_time',
                     currentFilters.dateTo + 'T23:59:59'
@@ -475,29 +500,40 @@ const ViewHistory = () => {
                 return { logs: [], totalCount: 0 }
             }
 
-            // Get unique job IDs
-            const uniqueJobIds = [
-                ...new Set((allJobIds || []).map((item) => item.job_id)),
-            ]
+            // 2. DEDUPLICATE AND PAGINATE JOB IDs
+            // We use a Map to guarantee that we only list the job_id once.
+            // Since `allJobIds` is already sorted by `change_time` DESC, the first time
+            // a job_id appears is the most recent activity for that job, ensuring the list
+            // of unique IDs is correctly ordered by global activity time.
+            const uniqueJobIdsMap = new Map()
+            for (const item of allJobIds || []) {
+                if (!uniqueJobIdsMap.has(item.job_id)) {
+                    uniqueJobIdsMap.set(item.job_id, item.change_time)
+                }
+            }
+            const uniqueJobIds = Array.from(uniqueJobIdsMap.keys())
+
             const totalUniqueJobs = uniqueJobIds.length
 
-            // Paginate the unique job IDs
+            // Paginate the correctly ordered unique job IDs
             const paginatedJobIds = uniqueJobIds.slice(
                 offset,
                 offset + ITEMS_PER_PAGE
             )
 
-            // Fetch the most recent record for each paginated job_id
+            // 3. FETCH THE LATEST LOG FOR EACH PAGINATED JOB ID
             const groupedData = []
             for (const jobId of paginatedJobIds) {
+                // For each unique job ID on the current page, fetch its absolute most recent log entry.
                 let query = supabase
                     .from('JobsHistory')
-                    .select('*')
+                    .select('*, changed_by_user_id:Users(username)')
                     .eq('job_id', jobId)
                     .order('change_time', { ascending: false })
                     .limit(1)
 
-                // Re-apply filters for consistency
+                // Re-apply date/user filters here for maximum consistency, although
+                // the initial jobIdsQuery should have already filtered out invalid records.
                 if (currentFilters.dateFrom) {
                     query = query.gte('change_time', currentFilters.dateFrom)
                 }
@@ -523,7 +559,8 @@ const ViewHistory = () => {
                 }
             }
 
-            // Sort by most recent change_time
+            // The final sorting is now based on the `uniqueJobIds` order (recent activity first),
+            // but sorting the final 10 items is still a good safety check.
             groupedData.sort(
                 (a, b) => new Date(b.change_time) - new Date(a.change_time)
             )
@@ -531,8 +568,8 @@ const ViewHistory = () => {
             const formattedLogs = groupedData.map(formatJobHistoryRecord)
             setLoading(false)
             return { logs: formattedLogs, totalCount: totalUniqueJobs }
-        } 
-        catch (err) {
+        } catch (err) {
+            // General error handling for the entire process
             setError('An error occurred while loading grouped data')
             console.error(err)
             setLoading(false)
@@ -546,16 +583,23 @@ const ViewHistory = () => {
             const offset = (page - 1) * ITEMS_PER_PAGE
             let query = supabase
                 .from('JobsHistory')
-                .select(`*`, { count: 'exact' })
+                .select(`*, changed_by_user_id:Users(username)`, {
+                    count: 'exact',
+                })
                 .order('change_time', { ascending: false })
 
             // Apply filters - check if job id is array or string and handle both
 
             if (currentFilters.jobId) {
-                if (Array.isArray(currentFilters.jobId) && currentFilters.jobId.length > 0) {
+                if (
+                    Array.isArray(currentFilters.jobId) &&
+                    currentFilters.jobId.length > 0
+                ) {
                     query = query.in('job_id', currentFilters.jobId)
-                } 
-                else if (typeof currentFilters.jobId === 'string' && currentFilters.jobId.trim()) {
+                } else if (
+                    typeof currentFilters.jobId === 'string' &&
+                    currentFilters.jobId.trim()
+                ) {
                     query = query.eq('job_id', currentFilters.jobId.trim())
                 }
             }
@@ -603,9 +647,15 @@ const ViewHistory = () => {
 
             // Filter for job id - check if array or string and handle both
             if (currentFilters.jobId) {
-                if (Array.isArray(currentFilters.jobId) && currentFilters.jobId.length > 0) {
+                if (
+                    Array.isArray(currentFilters.jobId) &&
+                    currentFilters.jobId.length > 0
+                ) {
                     query = query.in('job_id', currentFilters.jobId)
-                } else if (typeof currentFilters.jobId === 'string' && currentFilters.jobId.trim()) {
+                } else if (
+                    typeof currentFilters.jobId === 'string' &&
+                    currentFilters.jobId.trim()
+                ) {
                     query = query.eq('job_id', currentFilters.jobId.trim())
                 }
             }
@@ -647,7 +697,7 @@ const ViewHistory = () => {
                         .from('Jobs')
                         .select('id')
                         .in('id', uniqueJobIds)
-                        .eq('open', ['Filled', 'Filled by Company']) // <-- closed jobs
+                        .in('open', ['Filled', 'Filled by Company']) // <-- closed jobs
                     if (!jobsError && jobsData) {
                         closedJobsCount = jobsData.length
                     } else if (jobsError) {
@@ -708,7 +758,11 @@ const ViewHistory = () => {
 
     const clearFilters = async () => {
         // Only make api fetch call if there are valid filters to clear
-        if (filters.jobId || filters.userId || (filters.dateFrom && filters.dateTo)) {
+        if (
+            filters.jobId ||
+            filters.userId ||
+            (filters.dateFrom && filters.dateTo)
+        ) {
             const clearedFilters = {
                 jobId: '',
                 dateFrom: '',
@@ -823,8 +877,8 @@ const ViewHistory = () => {
     }
 
     // Format the full content for copying
-    const getFullContentForCopy = (log) => {
-        const comparison = getJobStateComparison(
+    const getFullContentForCopy = async (log) => {
+        const comparison = await getJobStateComparison(
             log.previousStateFormatted,
             log.newStateFormatted
         )
@@ -839,9 +893,9 @@ const ViewHistory = () => {
 
         return `Job History Entry
 Date: ${log.formattedDate}
-User: ${log.changed_by_user_id || 'Unknown User'}
+User: ${log.username}
 Job ID: ${log.job_id}
-Action: ${log.isNewJob ? 'Job Created' : 'Job Updated'}
+Action: ${log.actionType}
 
 Changes:
 ${changeDetails}
@@ -869,9 +923,9 @@ ${log.new_state}`
             ...logs.map((log) =>
                 [
                     log.formattedDate,
-                    log.changed_by_user_id || 'Unknown User',
+                    log.username,
                     log.job_id,
-                    log.isNewJob ? 'Created' : 'Updated',
+                    log.actionType,
                     'Unknown Ship',
                     'Unknown Location',
                     `"${log.changesSummary}"`,
@@ -997,7 +1051,7 @@ ${log.new_state}`
             // Perform supabase update: set open true
             const { data, error } = await supabase
                 .from('Jobs')
-                .update({ open: 'Open', archivedJob: false, claimedBy: null})
+                .update({ open: 'Open', archivedJob: false, claimedBy: null })
                 .eq('id', jobId)
             if (error) throw error
 
@@ -1082,9 +1136,9 @@ ${log.new_state}`
                 // 2) Query Jobs for those job ids and only where open === false (closed)
                 const { data: jobsData, error: jobsError } = await supabase
                     .from('Jobs')
-                    .select('id, FillDate, Vessel, type, crewRelieved')
+                    .select('id, FillDate, shipName, type, crewRelieved')
                     .in('id', uniqueJobIds)
-                    .eq('open', ['Filled', 'Filled by Company'])
+                    .in('open', ['Filled', 'Filled by Company'])
 
                 if (jobsError) {
                     console.error(
@@ -1270,6 +1324,29 @@ ${log.new_state}`
         }
     }, [])
 
+    const getActionColorClasses = (actionType) => {
+        // Ensure case-insensitivity and default to an empty string if null/undefined
+        const type = actionType ? actionType.toLowerCase() : ''
+
+        switch (type) {
+            case 'created':
+                // Green for new jobs
+                return 'bg-green-100 text-green-800'
+            case 'updated':
+                // Blue for changes/updates
+                return 'bg-blue-100 text-blue-800'
+            case 'filled':
+            case 'filled by company':
+                // Red for closed jobs
+                return 'bg-red-100 text-red-800'
+            case 'archived':
+                // Gray/Yellow for less critical states
+                return 'bg-yellow-100 text-yellow-800'
+            default:
+                return 'bg-gray-100 text-gray-800'
+        }
+    }
+
     return (
         <div className='w-full pt-4 flex flex-col max-w-[1280px] mx-auto font-mont'>
             {/* Header */}
@@ -1298,18 +1375,16 @@ ${log.new_state}`
                     {/* Spinner | Clear button */}
                     <div className='absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center'>
                         {loading ? (
-                            <div 
-                                className='animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4'>
-                            </div>
+                            <div className='animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4'></div>
                         ) : searchQuery ? (
                             <button
-                            data-testid='clearButton'
-                            onClick={() => {
-                                setSearchQuery('')
-                            }}
-                            className='text-gray-400 hover:text-gray-600 bg-white rounded-full p-1'
+                                data-testid='clearButton'
+                                onClick={() => {
+                                    setSearchQuery('')
+                                }}
+                                className='text-gray-400 hover:text-gray-600 bg-white rounded-full p-1'
                             >
-                            <IoClose className='w-4 h-4' />
+                                <IoClose className='w-4 h-4' />
                             </button>
                         ) : null}
                     </div>
@@ -1496,8 +1571,7 @@ ${log.new_state}`
                                                 {log.formattedDate}
                                             </td>
                                             <td className='px-6 py-4 text-sm text-gray-900 truncate max-w-[140px]'>
-                                                {log.changed_by_user_id ||
-                                                    'Unknown User'}
+                                                {log.username}
                                             </td>
                                             <td className='px-6 py-4 text-sm font-mono text-gray-900 truncate max-w-[80px]'>
                                                 {log.job_id}
@@ -1505,14 +1579,12 @@ ${log.new_state}`
                                             <td className='px-6 py-4 text-sm text-gray-900 truncate max-w-[180px] break-words'>
                                                 <span
                                                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                        log.isNewJob
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-blue-100 text-blue-800'
+                                                        getActionColorClasses(
+                                                            log.actionType
+                                                        ) // Call the helper function here
                                                     }`}
                                                 >
-                                                    {log.isNewJob
-                                                        ? 'Created'
-                                                        : 'Updated'}
+                                                    {log.actionType}
                                                 </span>
                                             </td>
                                             <td className='px-6 py-4 text-sm text-gray-500 break-words max-w-[250px]'>
@@ -1527,120 +1599,66 @@ ${log.new_state}`
                                             </td>
 
                                             {/* Changes Summary */}
-                                            <td className='px-6 py-4 text-sm text-gray-900 truncate max-w-[250px]'>
-                                                {(() => {
-                                                    const changes =
-                                                        getJobStateComparison(
-                                                            log.previousStateFormatted,
-                                                            log.newStateFormatted
-                                                        )
-                                                    const displayChanges =
-                                                        changes.slice(0, 3)
-                                                    const remainingCount =
-                                                        changes.length - 3
-
-                                                    return (
-                                                        <div className='space-y-1'>
-                                                            {displayChanges.map(
-                                                                (
-                                                                    change,
-                                                                    idx
-                                                                ) => (
-                                                                    <div
-                                                                        key={
-                                                                            idx
-                                                                        }
-                                                                        className='flex items-center gap-2 text-xs'
-                                                                    >
-                                                                        <span
-                                                                            className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                                                                                change.changeType ===
-                                                                                'added'
-                                                                                    ? 'bg-green-100 text-green-700'
-                                                                                    : change.changeType ===
-                                                                                      'removed'
-                                                                                    ? 'bg-red-100 text-red-700'
-                                                                                    : 'bg-blue-100 text-blue-700'
-                                                                            }`}
-                                                                        >
-                                                                            {
-                                                                                change.field
-                                                                            }
-                                                                        </span>
-                                                                        <span className='text-gray-400'>
-                                                                            →
-                                                                        </span>
-                                                                        <span
-                                                                            className='truncate max-w-[200px]'
-                                                                            title={String(
-                                                                                change.newValue ||
-                                                                                    'None'
-                                                                            )}
-                                                                        >
-                                                                            {String(
-                                                                                change.newValue ||
-                                                                                    'None'
-                                                                            )}
-                                                                        </span>
-                                                                    </div>
-                                                                )
-                                                            )}
-                                                            {remainingCount >
-                                                                0 && (
-                                                                <div className='text-xs text-gray-400 italic'>
-                                                                    +
-                                                                    {
-                                                                        remainingCount
-                                                                    }{' '}
-                                                                    more change
-                                                                    {remainingCount !==
-                                                                    1
-                                                                        ? 's'
-                                                                        : ''}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )
-                                                })()}
-                                            </td>
-
+                                            <HistoryRowDetails log={log} />
                                             {/* Actions */}
                                             <td className='px-6 py-4 whitespace-nowrap text-sm text-right w-[120px]'>
-                                                {isJobClosed(log) && (() => {
-                                                    const jobId = log.job_id
-                                                    const isPendingMain = !!confirmPending[jobId]
-                                                    const isUpdatingMain = updatingJobs.has(String(jobId))
+                                                {isJobClosed(log) &&
+                                                    (() => {
+                                                        const jobId = log.job_id
+                                                        const isPendingMain =
+                                                            !!confirmPending[
+                                                                jobId
+                                                            ]
+                                                        const isUpdatingMain =
+                                                            updatingJobs.has(
+                                                                String(jobId)
+                                                            )
 
-                                                    return (
-                                                        <button
-                                                        onClick={(e) => {
-                                                            // delegate to the shared handler that implements the 3s confirm window
-                                                            // handleOpenClick will call e.stopPropagation() itself but we keep this here
-                                                            // so clicks don't bubble if anything changes later.
-                                                            e.stopPropagation()
-                                                            handleOpenClick(e, jobId)
-                                                        }}
-                                                        // while waiting for confirmation the button turns grey (visual cue) but remains clickable
-                                                        className={`px-2 py-1 rounded text-sm focus:outline-none transition-colors ${
-                                                            isUpdatingMain
-                                                            ? 'bg-gray-400 cursor-wait text-white'
-                                                            : isPendingMain
-                                                            ? 'bg-gray-200 text-gray-500'    // grey while waiting for confirmation
-                                                            : 'text-mebablue-dark hover:text-mebablue-hover'
-                                                        }`}
-                                                        title={isPendingMain ? 'Click again to confirm' : 'Reopen job'}
-                                                        aria-pressed={isPendingMain}
-                                                        aria-label={isPendingMain ? `Confirm reopen job ${jobId}` : `Reopen job ${jobId}`}
-                                                        >
-                                                        {isUpdatingMain ? (
-                                                            'Opening...'
-                                                        ) : isPendingMain ? (
-                                                            'Confirm?'
-                                                        ) : (
-                                                            <IoRefresh className='w-4 h-4' />
-                                                        )}
-                                                        </button>
-                                                    )
+                                                        return (
+                                                            <button
+                                                                onClick={(
+                                                                    e
+                                                                ) => {
+                                                                    // delegate to the shared handler that implements the 3s confirm window
+                                                                    // handleOpenClick will call e.stopPropagation() itself but we keep this here
+                                                                    // so clicks don't bubble if anything changes later.
+                                                                    e.stopPropagation()
+                                                                    handleOpenClick(
+                                                                        e,
+                                                                        jobId
+                                                                    )
+                                                                }}
+                                                                // while waiting for confirmation the button turns grey (visual cue) but remains clickable
+                                                                className={`px-2 py-1 rounded text-sm focus:outline-none transition-colors ${
+                                                                    isUpdatingMain
+                                                                        ? 'bg-gray-400 cursor-wait text-white'
+                                                                        : isPendingMain
+                                                                        ? 'bg-gray-200 text-gray-500' // grey while waiting for confirmation
+                                                                        : 'text-mebablue-dark hover:text-mebablue-hover'
+                                                                }`}
+                                                                title={
+                                                                    isPendingMain
+                                                                        ? 'Click again to confirm'
+                                                                        : 'Reopen job'
+                                                                }
+                                                                aria-pressed={
+                                                                    isPendingMain
+                                                                }
+                                                                aria-label={
+                                                                    isPendingMain
+                                                                        ? `Confirm reopen job ${jobId}`
+                                                                        : `Reopen job ${jobId}`
+                                                                }
+                                                            >
+                                                                {isUpdatingMain ? (
+                                                                    'Opening...'
+                                                                ) : isPendingMain ? (
+                                                                    'Confirm?'
+                                                                ) : (
+                                                                    <IoRefresh className='w-4 h-4' />
+                                                                )}
+                                                            </button>
+                                                        )
                                                     })()}
 
                                                 <button
@@ -1668,12 +1686,14 @@ ${log.new_state}`
                                                     </svg>
                                                 </button>
                                                 <button
-                                                    onClick={(e) => {
+                                                    onClick={async (e) => {
                                                         e.stopPropagation()
-                                                        copyToClipboard(
-                                                            getFullContentForCopy(
+                                                        const content =
+                                                            await getFullContentForCopy(
                                                                 log
-                                                            ),
+                                                            )
+                                                        copyToClipboard(
+                                                            content,
                                                             log.id
                                                         )
                                                     }}
@@ -1698,14 +1718,16 @@ ${log.new_state}`
                                                                     Summary
                                                                 </h4>
                                                                 <button
-                                                                    onClick={(
+                                                                    onClick={async (
                                                                         e
                                                                     ) => {
                                                                         e.stopPropagation()
-                                                                        copyToClipboard(
-                                                                            getFullContentForCopy(
+                                                                        const content =
+                                                                            await getFullContentForCopy(
                                                                                 log
-                                                                            ),
+                                                                            )
+                                                                        copyToClipboard(
+                                                                            content,
                                                                             log.id
                                                                         )
                                                                     }}
@@ -2212,14 +2234,16 @@ ${log.new_state}`
 
                                                                                             <div className='flex items-center gap-2'>
                                                                                                 <button
-                                                                                                    onClick={(
+                                                                                                    onClick={async (
                                                                                                         e
                                                                                                     ) => {
                                                                                                         e.stopPropagation()
-                                                                                                        copyToClipboard(
-                                                                                                            getFullContentForCopy(
+                                                                                                        const content =
+                                                                                                            await getFullContentForCopy(
                                                                                                                 entry
-                                                                                                            ),
+                                                                                                            )
+                                                                                                        copyToClipboard(
+                                                                                                            content,
                                                                                                             entry.id
                                                                                                         )
                                                                                                     }}

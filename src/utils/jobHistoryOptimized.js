@@ -15,9 +15,12 @@ export async function addJob(jobData) {
         delete cleanJobData.FillDate
         delete cleanJobData.claimedBy
         delete cleanJobData.claimed_at
-        
-        console.log('Clean job data being sent:', JSON.stringify(cleanJobData, null, 2))
-        
+
+        console.log(
+            'Clean job data being sent:',
+            JSON.stringify(cleanJobData, null, 2)
+        )
+
         const { data: newJob, error: jobError } = await supabase
             .from('Jobs')
             .insert(cleanJobData)
@@ -64,7 +67,11 @@ export async function updateJob(jobId, updatedData) {
                 .single()
             if (retiredError) {
                 console.error('Error resetting retired flag:', retiredError)
-                return { success: false, data: retiredFlag, error: retiredError }
+                return {
+                    success: false,
+                    data: retiredFlag,
+                    error: retiredError,
+                }
             }
         } catch (err) {
             console.error('Exception updating job:', err)
@@ -77,7 +84,28 @@ export async function updateJob(jobId, updatedData) {
         console.error('Exception updating job:', err)
         return { success: false, data: null, error: err }
     }
-    
+}
+
+export async function resolveUserIdToUsername(userId) {
+    if (!userId) return 'N/A'
+
+    try {
+        const { data, error } = await supabase
+            .from('Users')
+            .select('username')
+            .eq('UUID', userId)
+            .single()
+
+        if (error) {
+            console.error('Error resolving user ID:', error)
+            return userId // Fallback to displaying the raw ID on error
+        }
+
+        return data?.username || 'Unknown User'
+    } catch (err) {
+        console.error('Exception resolving user ID:', err)
+        return userId // Fallback
+    }
 }
 
 /**
@@ -118,7 +146,7 @@ export function formatJobHistoryRecord(historyRecord) {
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
-            second: '2-digit'
+            second: '2-digit',
         })
     }
 
@@ -132,19 +160,41 @@ export function formatJobHistoryRecord(historyRecord) {
         }
     }
 
-    const generateChangesSummary = (previousState, newState) => {
-        if (!previousState) {
+    const generateChangesSummary = (previousState, newState, action) => {
+        if (action === 'Created') {
             return 'Job created'
         }
 
+        if (action === 'Filled') {
+            return 'Job status changed to Filled'
+        }
+
+        if (action === 'Archived') {
+            return 'Job archived'
+        }
+
         const changes = []
-        const prev = typeof previousState === 'string' ? JSON.parse(previousState) : previousState
-        const current = typeof newState === 'string' ? JSON.parse(newState) : newState
+        const prev = previousState
+        const current = newState
+
+        if (
+            typeof prev !== 'object' ||
+            prev === null ||
+            typeof current !== 'object' ||
+            current === null
+        ) {
+            // Should not happen if formatState is robust, but kept for safety.
+            return 'Detailed comparison skipped or failed.'
+        }
 
         // Compare each field
-        Object.keys(current).forEach(key => {
+        Object.keys(current).forEach((key) => {
             if (prev[key] !== current[key]) {
-                changes.push(`${key}: "${prev[key] || 'N/A'}" → "${current[key] || 'N/A'}"`)
+                changes.push(
+                    `${key}: "${prev[key] || 'N/A'}" → "${
+                        current[key] || 'N/A'
+                    }"`
+                )
             }
         })
 
@@ -154,14 +204,69 @@ export function formatJobHistoryRecord(historyRecord) {
     const previousState = formatState(historyRecord.previous_state)
     const newState = formatState(historyRecord.new_state)
 
+    const isNewJob = !previousState
+
+    let actionType = 'Updated' // Default action for any general change
+
+    if (isNewJob) {
+        actionType = 'Created'
+    } else if (newState && previousState) {
+        const prevOpen = previousState.open
+        const newOpen = newState.open
+
+        // Check the separate boolean field for archiving
+        const prevArchived = previousState.archivedJob || false // Default to false if missing
+        const newArchived = newState.archivedJob || false // Default to false if missing
+
+        // 1. Check for Archive Action (archivedJob changed from false to true)
+        if (!prevArchived && newArchived) {
+            actionType = 'Archived'
+        }
+        // 2. Check for Filled Action (open status changed to Filled, provided it wasn't just archived)
+        else if (prevOpen !== newOpen) {
+            if (newOpen === 'Filled' || newOpen === 'Filled by Company') {
+                actionType = 'Filled'
+            }
+            // 3. Check for Reopened Action (archivedJob changed from true to false OR status changed back to Open)
+            else if (
+                (prevArchived && !newArchived) ||
+                (newOpen === 'Open' &&
+                    (prevOpen === 'Filled' ||
+                        prevOpen === 'Archived' ||
+                        prevOpen === 'Removed'))
+            ) {
+                actionType = 'Reopened'
+            }
+        }
+        // If none of the above specific status changes occurred, it remains 'Updated'
+    }
+
+    const getUsername = (record) => {
+        // Check if the record contains the nested object from the join
+        if (
+            record.changed_by_user_id &&
+            typeof record.changed_by_user_id === 'object'
+        ) {
+            // Return the username, or 'Unknown User' if the join failed to find a name
+            return record.changed_by_user_id.username || 'Unknown User'
+        }
+        // Fallback if the join failed entirely or only the raw ID was returned
+        return record.changed_by_user_id || 'Unknown User'
+    }
+
     return {
         ...historyRecord,
         formattedDate: formatDate(historyRecord.change_time),
         previousStateFormatted: previousState,
         newStateFormatted: newState,
-        changesSummary: generateChangesSummary(previousState, newState),
-        userEmail: historyRecord.changed_by_user_id || 'Unknown User',
-        isNewJob: !previousState
+        changesSummary: generateChangesSummary(
+            previousState,
+            newState,
+            actionType
+        ),
+        username: getUsername(historyRecord),
+        isNewJob: isNewJob,
+        actionType: actionType,
     }
 }
 
@@ -171,28 +276,63 @@ export function formatJobHistoryRecord(historyRecord) {
  * @param {Object} newState - New job state
  * @returns {Array} Array of field changes
  */
-export function getJobStateComparison(previousState, newState) {
+export async function getJobStateComparison(previousState, newState) {
     if (!previousState) {
         return Object.entries(newState).map(([key, value]) => ({
             field: key,
             oldValue: null,
             newValue: value,
-            changeType: 'added'
+            changeType: 'added',
         }))
     }
 
     const changes = []
-    const allKeys = new Set([...Object.keys(previousState), ...Object.keys(newState)])
+    const allKeys = new Set([
+        ...Object.keys(previousState),
+        ...Object.keys(newState),
+    ])
 
-    allKeys.forEach(key => {
-        const oldValue = previousState[key]
-        const newValue = newState[key]
+    // Define fields that hold a User ID and need resolution
+    const USER_ID_FIELDS = new Set(['claimedBy', 'FillUser']) // Add any other user ID fields here
+    const EXCLUDED_KEYS = new Set(['changed_by_user_id']) // Exclude the redundant log author ID
+
+    for (const key of allKeys) {
+        if (EXCLUDED_KEYS.has(key)) {
+            continue
+        }
+
+        let oldValue = previousState[key]
+        let newValue = newState[key]
+        let resolveRequired = false
+
+        // Check if resolution is needed
+        if (USER_ID_FIELDS.has(key) && (oldValue || newValue)) {
+            resolveRequired = true
+        }
+
+        if (resolveRequired) {
+            // Resolve the UUIDs to usernames 👈
+            if (oldValue) {
+                oldValue = await resolveUserIdToUsername(oldValue)
+            }
+            if (newValue) {
+                newValue = await resolveUserIdToUsername(newValue)
+            }
+        }
 
         if (oldValue !== newValue) {
             let changeType = 'modified'
-            if (oldValue === undefined || oldValue === null) {
+            if (
+                oldValue === undefined ||
+                oldValue === null ||
+                oldValue === 'N/A'
+            ) {
                 changeType = 'added'
-            } else if (newValue === undefined || newValue === null) {
+            } else if (
+                newValue === undefined ||
+                newValue === null ||
+                newValue === 'N/A'
+            ) {
                 changeType = 'removed'
             }
 
@@ -200,10 +340,10 @@ export function getJobStateComparison(previousState, newState) {
                 field: key,
                 oldValue,
                 newValue,
-                changeType
+                changeType,
             })
         }
-    })
+    }
 
     return changes
 }
