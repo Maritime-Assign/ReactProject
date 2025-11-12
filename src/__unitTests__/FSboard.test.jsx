@@ -1,4 +1,6 @@
 import {
+    within,
+    waitFor,
     render,
     screen,
     waitForElementToBeRemoved,
@@ -9,6 +11,7 @@ import '@testing-library/jest-dom'
 import { MemoryRouter } from 'react-router-dom'
 import FSBoard from '../pages/FSboard'
 import getJobsArray from '../components/jobDataAPI'
+import { mockJobs } from '../mocks/handlers'
 
 beforeAll(() => {
     Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
@@ -39,6 +42,7 @@ afterAll(() => {
 vi.mock('../auth/AuthContext', () => ({
     UserAuth: () => ({
         user: { id: '1', email: 'test@example.com' },
+        role: 'admin', // move outside user
     }),
 }))
 
@@ -92,11 +96,7 @@ describe('FSBoard components', () => {
     })
 
     test('renders all possible job claim states', async () => {
-        getJobsArray.mockResolvedValueOnce([
-            { id: 1, open: true, FillDate: null },
-
-            { id: 2, open: false, FillDate: '2025-02-10' },
-        ])
+        getJobsArray.mockResolvedValueOnce(mockJobs)
 
         render(
             <MemoryRouter>
@@ -108,14 +108,43 @@ describe('FSBoard components', () => {
             screen.queryByText('Loading jobs...')
         )
 
-        expect(screen.getAllByText('Open')).toHaveLength(1)
-
-        expect(
-            screen.getByText(
-                (content) =>
-                    content.includes('Filled') && content.includes('02/09/25')
+        // Custom matcher for the 'Filled' status (Job 3).
+        // It matches content that starts with 'Filled' but does NOT contain 'by CO'.
+        const filledStatusMatcher = (content, element) => {
+            const normalizedContent = content.trim()
+            return (
+                normalizedContent.startsWith('Filled') &&
+                !normalizedContent.includes('by CO')
             )
-        ).toBeInTheDocument()
+        }
+
+        await waitFor(
+            () => {
+                // ASSERTION 2: Check for 'Filled by Company' job (Job 2 status text)
+                // Using regex /Filled by CO/ to handle text split by <br/>
+                expect(screen.getByText(/Filled by CO/)).toBeInTheDocument()
+
+                // ASSERTION 3: Check for 'Filled' job (Job 3 status text)
+                // Using the precise function matcher to exclude 'Filled by CO'
+                expect(
+                    screen.getByText(filledStatusMatcher)
+                ).toBeInTheDocument()
+            },
+            { timeout: 1000 }
+        )
+
+        // ASSERTION 1: Only 1 Open Job (Job 1) should show the claim button
+        const openButtons = screen.getAllByTestId('claim-button')
+        expect(openButtons).toHaveLength(1)
+
+        // Ensure the specific FillDates are rendered (10/20/25 and 11/05/25)
+        // FIX: Using regex matchers for MM/DD/YY format
+        expect(screen.getByText(/10\/20\/25/)).toBeInTheDocument()
+        expect(screen.getByText(/12\/25\/25/)).toBeInTheDocument()
+
+        // Extra check for Join Dates to ensure all 3 rows are present
+        expect(screen.getByText('12/15/2025')).toBeInTheDocument() // Job 1 Join Date
+        expect(screen.getByText('10/22/2025')).toBeInTheDocument() // Job 2 Join Date
     })
 
     test('shows error message when data fetch fails', async () => {
@@ -149,7 +178,7 @@ describe('FSBoard components', () => {
     })
 
     test('removes loading message after successful load', async () => {
-        getJobsArray.mockResolvedValueOnce([{ id: 1, open: true }])
+        getJobsArray.mockResolvedValueOnce([{ id: 1, open: 'Open' }])
 
         render(
             <MemoryRouter>
@@ -164,9 +193,9 @@ describe('FSBoard components', () => {
     })
 
     test('expands and collapses the Notes section when button is clicked', async () => {
-        getJobsArray.mockResolvedValueOnce([
-            { id: 1, open: true, notes: 'Example job notes for testing' },
-        ])
+        getJobsArray.mockResolvedValueOnce(mockJobs)
+        const user = userEvent.setup()
+
         render(
             <MemoryRouter>
                 <FSBoard />
@@ -176,17 +205,33 @@ describe('FSBoard components', () => {
             screen.queryByText('Loading jobs...')
         )
 
-        const expandButton = await screen.findByRole('button', {
-            name: /expand notes/i,
-        })
+        // 1. Identify the unique element for the job row with long notes (Job 3: QMED (Electrician))
+        const uniqueElementInRow = screen.getByText('QMED (Electrician)')
 
-        const notesContent = screen.getByTestId('notesContent')
+        // 2. Find the row container by traversing up.
+        // The cell div is the first parentElement. The row div (grid) is the second parentElement.
+        const jobRowContainer = uniqueElementInRow.parentElement.parentElement
+
+        // Use findByRole (waits for element) and getByTestId (sync) scoped to the specific job row container.
+        const expandButton = await within(jobRowContainer).findByRole(
+            'button',
+            {
+                name: /expand notes/i,
+            }
+        )
+
+        // Find the notes content scoped to this row
+        const notesContent = within(jobRowContainer).getByTestId('notesContent')
+
+        // Initial state
         expect(notesContent).toHaveClass('line-clamp-2')
 
-        await userEvent.click(expandButton)
+        // Click 1: Expand
+        await user.click(expandButton)
         expect(notesContent).not.toHaveClass('line-clamp-2')
 
-        await userEvent.click(expandButton)
+        // Click 2: Collapse
+        await user.click(expandButton)
         expect(notesContent).toHaveClass('line-clamp-2')
     })
 })

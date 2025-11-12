@@ -28,8 +28,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
     useEffect(() => {
         if (props.open == 'Open') {
             setStatus(true)
-        }
-        else {
+        } else {
             setStatus(false)
         }
     }, [props.open])
@@ -167,6 +166,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                         </div>
                     ) : (
                         <button
+                            data-testid='claim-button'
                             onClick={claimJob}
                             disabled={makingClaim}
                             className='inline-flex items-center justify-center px-1 md:px-2 py-1 rounded bg-linear-to-r from-green-500 to-green-600
@@ -176,20 +176,18 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                             {makingClaim ? 'Filling...' : 'Open'}
                         </button>
                     )
+                ) : props.open == 'Filled' ? (
+                    <span className='text-red-700 text-center'>
+                        Filled
+                        <br />
+                        {props.FillDate ? `${formatDate(props.FillDate)}` : ''}
+                    </span>
                 ) : (
-                    props.open == 'Filled' ? (
-                        <span className='text-red-700 text-center'>
-                            Filled
-                            <br />
-                            {props.FillDate ? `${formatDate(props.FillDate)}` : ''}
-                        </span>
-                    ) : (
-                        <span className='text-red-700 text-center'>
-                            Filled by CO
-                            <br />
-                            {props.FillDate ? `${formatDate(props.FillDate)}` : ''}
-                        </span>
-                    )
+                    <span className='text-red-700 text-center'>
+                        Filled by CO
+                        <br />
+                        {props.FillDate ? `${formatDate(props.FillDate)}` : ''}
+                    </span>
                 )}
             </div>
             <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
