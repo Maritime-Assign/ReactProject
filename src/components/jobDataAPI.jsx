@@ -3,7 +3,7 @@ import supabase from '../api/supabaseClient'
 async function fetchJobs() {
     // Fetch all non-archived jobs from the Jobs table
     const { data, error } = await supabase
-        .from('Jobs_test2')
+        .from('Jobs')
         .select(`*, Users:claimedBy (abbreviation)`)
         .or('archivedJob.is.null,archivedJob.eq.false') // Exclude archived jobs
 

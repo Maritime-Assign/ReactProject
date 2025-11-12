@@ -80,11 +80,8 @@ export const mockJobs = [
 ]
 
 export const handlers = [
-    http.get(
-        'https://niwgwqnkqpfjhxvcwjdt.supabase.co/rest/v1/Jobs_test2',
-        () => {
-            // This will now intercept the request that the real component code sends
-            return HttpResponse.json(mockJobs, { status: 200 })
-        }
-    ),
+    http.get('https://niwgwqnkqpfjhxvcwjdt.supabase.co/rest/v1/Jobs', () => {
+        // This will now intercept the request that the real component code sends
+        return HttpResponse.json(mockJobs, { status: 200 })
+    }),
 ]
