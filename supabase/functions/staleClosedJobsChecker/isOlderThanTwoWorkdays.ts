@@ -51,7 +51,7 @@ Deno.serve(async (req)=>{
     }
     const retirePromises = [];
     for (const job of jobs){
-      if (!job.open && !job.archivedJob) {
+      if (job.open !== 'Open' && !job.archivedJob) {
         // Get most recent history tuple on job.id
         const p = (async ()=>{
           const { data: historyData, error: historyError } = await supabase.from("JobsHistory").select("change_time").eq("job_id", job.id).order("change_time", {
