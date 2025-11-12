@@ -6,20 +6,24 @@ import supabase from '../api/supabaseClient'
 const EditJobModal = ({ jobData, onClose, onSave }) => {
     const { user } = UserAuth()
 
-    const [regionOptions, setRegionOptions] = useState([]);
-    const [regionLoading, setRegionLoading] = useState(true);
-    const [hallOptions, setHallOptions] = useState([]);
-    const [hallLoading, setHallLoading] = useState(true);
-    const [billetOptions, setBilletOptions] = useState([]);
-    const [billetLoading, setBilletLoading] = useState(true);
-    const [typeOptions, setTypeOptions] = useState([]);
-    const [typeLoading, setTypeLoading] = useState(true);
+    const [regionOptions, setRegionOptions] = useState([])
+    const [regionLoading, setRegionLoading] = useState(true)
+    const [hallOptions, setHallOptions] = useState([])
+    const [hallLoading, setHallLoading] = useState(true)
+    const [billetOptions, setBilletOptions] = useState([])
+    const [billetLoading, setBilletLoading] = useState(true)
+    const [typeOptions, setTypeOptions] = useState([])
+    const [typeLoading, setTypeLoading] = useState(true)
 
     function visible(items = []) {
         return items
             .filter((i) => i?.is_active && !i?.deleted_at)
-            .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || String(a.label).localeCompare(String(b.label)))
-            .map((i) => String(i.label));
+            .sort(
+                (a, b) =>
+                    (a.sort_order ?? 0) - (b.sort_order ?? 0) ||
+                    String(a.label).localeCompare(String(b.label))
+            )
+            .map((i) => String(i.label))
     }
 
     async function loadRegionOptions() {
@@ -27,17 +31,17 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
             const { data, error } = await supabase
                 .from('job_dropdown_options')
                 .select('region')
-                .maybeSingle();
+                .maybeSingle()
 
             if (error) {
-                console.error('Load region options error:', error);
-                setRegionOptions([]);
+                console.error('Load region options error:', error)
+                setRegionOptions([])
             } else {
-                const items = Array.isArray(data?.region) ? data.region : [];
-                setRegionOptions(visible(items));
+                const items = Array.isArray(data?.region) ? data.region : []
+                setRegionOptions(visible(items))
             }
         } finally {
-            setRegionLoading(false);
+            setRegionLoading(false)
         }
     }
 
@@ -46,17 +50,17 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
             const { data, error } = await supabase
                 .from('job_dropdown_options')
                 .select('hall')
-                .maybeSingle();
+                .maybeSingle()
 
             if (error) {
-                console.error('Load hall options error:', error);
-                setHallOptions([]);
+                console.error('Load hall options error:', error)
+                setHallOptions([])
             } else {
-                const items = Array.isArray(data?.hall) ? data.hall : [];
-                setHallOptions(visible(items));
+                const items = Array.isArray(data?.hall) ? data.hall : []
+                setHallOptions(visible(items))
             }
         } finally {
-            setHallLoading(false);
+            setHallLoading(false)
         }
     }
 
@@ -65,17 +69,17 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
             const { data, error } = await supabase
                 .from('job_dropdown_options')
                 .select('billet')
-                .maybeSingle();
+                .maybeSingle()
 
             if (error) {
-                console.error('Load billet options error:', error);
-                setBilletOptions([]);
+                console.error('Load billet options error:', error)
+                setBilletOptions([])
             } else {
-                const items = Array.isArray(data?.billet) ? data.billet : [];
-                setBilletOptions(visible(items));
+                const items = Array.isArray(data?.billet) ? data.billet : []
+                setBilletOptions(visible(items))
             }
         } finally {
-            setBilletLoading(false);
+            setBilletLoading(false)
         }
     }
 
@@ -84,32 +88,32 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
             const { data, error } = await supabase
                 .from('job_dropdown_options')
                 .select('type')
-                .maybeSingle();
+                .maybeSingle()
 
             if (error) {
-                console.error('Load type options error:', error);
-                setTypeOptions([]);
+                console.error('Load type options error:', error)
+                setTypeOptions([])
             } else {
-                const items = Array.isArray(data?.type) ? data.type : [];
-                setTypeOptions(visible(items));
+                const items = Array.isArray(data?.type) ? data.type : []
+                setTypeOptions(visible(items))
             }
         } finally {
-            setTypeLoading(false);
+            setTypeLoading(false)
         }
     }
 
     useEffect(() => {
-        loadRegionOptions();
-        loadHallOptions();
-        loadBilletOptions();
-        loadTypeOptions();
-    }, []);
+        loadRegionOptions()
+        loadHallOptions()
+        loadBilletOptions()
+        loadTypeOptions()
+    }, [])
     // Form state for all editable fields
     const [formData, setFormData] = useState({
         shipName: jobData?.shipName || '',
         region: jobData?.region || '',
         hall: jobData?.hall || '',
-        open: jobData?.open || false,
+        open: jobData?.open || '',
         notes: jobData?.notes || '',
         location: jobData?.location || '',
         days: jobData?.days || '',
@@ -145,7 +149,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                 shipName: jobData.shipName || '',
                 region: jobData.region || '',
                 hall: jobData.hall || '',
-                open: jobData.open || false,
+                open: jobData.open || '',
                 notes: jobData.notes || '',
                 location: jobData.location || '',
                 days: jobData.days ?? '',
@@ -344,7 +348,12 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
     }
 
     // Status color green if state is true, red if false (open vs filled)
-    const statusColor = formData.open ? 'bg-green-600' : 'bg-red-600'
+    //const statusColor = (formData.open = 'Open') ? 'bg-green-600' : 'bg-red-600'
+    var statusColor = 'bg-red-600'
+
+    if (formData.open == 'Open') {
+        statusColor = 'bg-green-600'
+    }
 
     return (
         <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4'>
@@ -381,36 +390,50 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div className='grid grid-cols-2 gap-1'>
                             <select
                                 value={formData.region}
-                                onChange={(e) => handleInputChange('region', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange('region', e.target.value)
+                                }
                                 className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white text-sm'
                             >
-                                <option value='' disabled>Select Region</option>
+                                <option value='' disabled>
+                                    Select Region
+                                </option>
                                 {regionOptions.map((opt) => (
-                                    <option key={opt} value={opt}>{opt}</option>
+                                    <option key={opt} value={opt}>
+                                        {opt}
+                                    </option>
                                 ))}
                             </select>
                             <select
                                 value={formData.hall}
-                                onChange={(e) => handleInputChange('hall', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange('hall', e.target.value)
+                                }
                                 className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white text-sm'
                             >
-                                <option value='' disabled>Select Hall</option>
+                                <option value='' disabled>
+                                    Select Hall
+                                </option>
                                 {hallOptions.map((opt) => (
-                                    <option key={opt} value={opt}>{opt}</option>
+                                    <option key={opt} value={opt}>
+                                        {opt}
+                                    </option>
                                 ))}
                             </select>
                         </div>
                         {/* if job is open render box green and display 'Open' if filled render red and display 'Filled + date' */}
                         <select
-                            value={formData.open ? 'Open' : 'Filled'}
+                            value={formData.open}
                             onChange={(e) => {
-                                const isOpen = e.target.value === 'Open'
-                                handleInputChange('open', isOpen)
+                                handleInputChange('open', e.target.value)
                             }}
                             className={`${statusColor} px-2 py-1 rounded-md text-white text-center`}
                         >
                             <option value='Open'>Open</option>
                             <option value='Filled'>Filled</option>
+                            <option value='Filled by Company'>
+                                Filled by Company
+                            </option>
                         </select>
                     </div>
 
@@ -524,12 +547,18 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div className='col-span-1'>
                             <select
                                 value={formData.billet}
-                                onChange={(e) => handleInputChange('billet', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange('billet', e.target.value)
+                                }
                                 className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
                             >
-                                <option value='' disabled>Select Billet</option>
+                                <option value='' disabled>
+                                    Select Billet
+                                </option>
                                 {billetOptions.map((opt) => (
-                                    <option key={opt} value={opt}>{opt}</option>
+                                    <option key={opt} value={opt}>
+                                        {opt}
+                                    </option>
                                 ))}
                             </select>
                             {errors.billet && (
@@ -541,12 +570,18 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div className='col-span-1'>
                             <select
                                 value={formData.type}
-                                onChange={(e) => handleInputChange('type', e.target.value)}
+                                onChange={(e) =>
+                                    handleInputChange('type', e.target.value)
+                                }
                                 className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
                             >
-                                <option value='' disabled>Select Type</option>
+                                <option value='' disabled>
+                                    Select Type
+                                </option>
                                 {typeOptions.map((opt) => (
-                                    <option key={opt} value={opt}>{opt}</option>
+                                    <option key={opt} value={opt}>
+                                        {opt}
+                                    </option>
                                 ))}
                             </select>
                             {errors.type && (
@@ -572,28 +607,32 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                 </div>
 
                 {/* Job Flags (inline and scoped to their checkboxes) */}
-                <div className="flex flex-wrap items-center gap-6 mt-3 px-4 text-white text-sm font-medium">
+                <div className='flex flex-wrap items-center gap-6 mt-3 px-4 text-white text-sm font-medium'>
                     {[
                         { name: 'passThru', label: 'Pass-Thru' },
-                        { name: 'nightCardEarlyReturn', label: 'Night Card Early Return' },
+                        {
+                            name: 'nightCardEarlyReturn',
+                            label: 'Night Card Early Return',
+                        },
                         { name: 'msc', label: 'MSC' },
                     ].map(({ name, label }) => (
                         <label
                             key={name}
-                            className="flex items-center space-x-2 bg-mebablue-light/30 hover:bg-mebablue-light/50 px-3 py-1 rounded-md transition-all cursor-pointer"
+                            className='flex items-center space-x-2 bg-mebablue-light/30 hover:bg-mebablue-light/50 px-3 py-1 rounded-md transition-all cursor-pointer'
                             aria-label={label}
                         >
                             <input
-                                type="checkbox"
+                                type='checkbox'
                                 checked={formData[name]}
-                                onChange={(e) => handleInputChange(name, e.target.checked)}
-                                className="h-4 w-4 accent-mebablue-dark"
+                                onChange={(e) =>
+                                    handleInputChange(name, e.target.checked)
+                                }
+                                className='h-4 w-4 accent-mebablue-dark'
                             />
                             <span>{label}</span>
                         </label>
                     ))}
                 </div>
-
 
                 {/* Action Buttons */}
                 <div className='flex justify-between gap-4 p-4 bg-mebablue-hover sticky bottom-0'>
@@ -613,10 +652,11 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                             Cancel
                         </button>
                         <button
-                            className={`py-2 px-4 rounded-md focus:outline-none focus:ring-2 text-white ${saving || !user
+                            className={`py-2 px-4 rounded-md focus:outline-none focus:ring-2 text-white ${
+                                saving || !user
                                     ? 'bg-gray-400 cursor-not-allowed'
                                     : 'bg-green-500 hover:bg-green-600 focus:ring-green-500'
-                                }`}
+                            }`}
                             onClick={save}
                             disabled={saving || !user || archiving}
                             title={
@@ -634,36 +674,40 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                 {message && (
                     <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
                         <div
-                            className={`p-6 rounded-md shadow-lg max-w-sm w-full border ${messageType === 'success'
+                            className={`p-6 rounded-md shadow-lg max-w-sm w-full border ${
+                                messageType === 'success'
                                     ? 'bg-green-100 border-green-300'
                                     : 'bg-red-100 border-red-300'
-                                }`}
+                            }`}
                         >
                             <h2
-                                className={`text-xl font-semibold ${messageType === 'success'
+                                className={`text-xl font-semibold ${
+                                    messageType === 'success'
                                         ? 'text-green-800'
                                         : 'text-red-800'
-                                    }`}
+                                }`}
                             >
                                 {messageType === 'success'
                                     ? 'Success!'
                                     : 'Error'}
                             </h2>
                             <p
-                                className={`mt-2 ${messageType === 'success'
+                                className={`mt-2 ${
+                                    messageType === 'success'
                                         ? 'text-green-700'
                                         : 'text-red-700'
-                                    }`}
+                                }`}
                             >
                                 {message}
                             </p>
                             <div className='mt-6 flex justify-center w-full'>
                                 <button
                                     onClick={() => setMessage('')}
-                                    className={`py-2 px-4 rounded-md text-white ${messageType === 'success'
+                                    className={`py-2 px-4 rounded-md text-white ${
+                                        messageType === 'success'
                                             ? 'bg-green-600 hover:bg-green-700'
                                             : 'bg-red-600 hover:bg-red-700'
-                                        }`}
+                                    }`}
                                 >
                                     Close
                                 </button>

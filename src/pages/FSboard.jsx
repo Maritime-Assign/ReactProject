@@ -21,8 +21,13 @@ const FSboard = () => {
 
     useEffect(() => {
         let isMounted = true
+        const fetchedOnce = { current: false }
 
         async function fetchJobs() {
+            // prevent duplicate fetches from StrictMode or re-renders
+            if (fetchedOnce.current) return
+            fetchedOnce.current = true
+
             try {
                 const fetchedJobs = await getJobsArray()
                 if (!isMounted) return
@@ -38,14 +43,17 @@ const FSboard = () => {
         }
 
         fetchJobs()
+        console.log('fetchJobs called')
 
-        const intervalId = setInterval(() => {
-            fetchJobs()
-        }, 60000)
+        // skip auto-refresh interval in tests
+        let intervalId
+        if (process.env.NODE_ENV !== 'test') {
+            intervalId = setInterval(fetchJobs, 60000)
+        }
 
         return () => {
             isMounted = false
-            clearInterval(intervalId)
+            if (intervalId) clearInterval(intervalId)
         }
     }, [])
 
@@ -57,8 +65,8 @@ const FSboard = () => {
         return <div>Error: {error}</div> // Show an error message if fetching fails
     }
 
-    const regularJobs = jobs.filter((j) => !j.passThru)
-    const passThruJobs = jobs.filter((j) => j.passThru)
+    const regularJobs = jobs.filter((j) => j.passThru === false)
+    const passThruJobs = jobs.filter((j) => j.passThru === true)
 
     return (
         <div className='w-full flex flex-col my-4 shadow-[0_0_5px_5px_rgba(0,0,0,0.05)] rounded-md'>

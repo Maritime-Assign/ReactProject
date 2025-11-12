@@ -6,7 +6,7 @@ import { Plus, Minus } from 'lucide-react'
 
 const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
     const { user, role } = UserAuth()
-    const [status, setStatus] = useState(props.open)
+    const [status, setStatus] = useState(true)
     const [makingClaim, setClaim] = useState(false)
     const [error, setError] = useState(null)
     const [expandedNotes, setExpandedNotes] = useState(false)
@@ -26,7 +26,11 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
 
     // make sure the status matches incoming prop
     useEffect(() => {
-        setStatus(props.open)
+        if (props.open == 'Open') {
+            setStatus(true)
+        } else {
+            setStatus(false)
+        }
     }, [props.open])
 
     // Auto-clear error message after 3 seconds
@@ -78,7 +82,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
 
             // Build claim data
             const claimData = {
-                open: false,
+                open: 'Filled',
                 FillDate: new Date().toISOString().split('T')[0],
                 claimedBy: user.id,
                 claimed_at: new Date().toISOString(),
@@ -162,6 +166,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                         </div>
                     ) : (
                         <button
+                            data-testid='claim-button'
                             onClick={claimJob}
                             disabled={makingClaim}
                             className='inline-flex items-center justify-center px-1 md:px-2 py-1 rounded bg-linear-to-r from-green-500 to-green-600
@@ -171,9 +176,15 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                             {makingClaim ? 'Filling...' : 'Open'}
                         </button>
                     )
-                ) : (
+                ) : props.open == 'Filled' ? (
                     <span className='text-red-700 text-center'>
                         Filled
+                        <br />
+                        {props.FillDate ? `${formatDate(props.FillDate)}` : ''}
+                    </span>
+                ) : (
+                    <span className='text-red-700 text-center'>
+                        Filled by CO
                         <br />
                         {props.FillDate ? `${formatDate(props.FillDate)}` : ''}
                     </span>

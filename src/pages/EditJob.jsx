@@ -15,7 +15,7 @@ const EditJob = () => {
         shipName: jobData?.shipName || '',
         region: jobData?.region || '',
         hall: jobData?.hall || '',
-        open: jobData?.open || false,
+        open: jobData?.open || '',
         notes: jobData?.notes || '',
         location: jobData?.location || '',
         days: jobData?.days || '',
@@ -30,7 +30,7 @@ const EditJob = () => {
         msc: jobData?.msc || false,
     })
 
-    const [status, setStatus] = useState(formData.open)
+    const [status, setStatus] = useState('')
     const [message, setMessage] = useState('')
     const [messageType, setMessageType] = useState('') // 'success' or 'error'
     const [window, setWindow] = useState(false)
@@ -43,7 +43,7 @@ const EditJob = () => {
                 shipName: jobData.shipName || '',
                 region: jobData.region || '',
                 hall: jobData.hall || '',
-                open: jobData.open || false,
+                open: jobData.open || '',
                 notes: jobData.notes || '',
                 location: jobData.location || '',
                 days: jobData.days || '',
@@ -123,7 +123,7 @@ const EditJob = () => {
     }
 
     // status color green if state is true, red if false (open vs filled)
-    const statusColor = formData.open ? 'bg-green-600' : 'bg-red-600'
+    const statusColor = (formData.open == 'Open') ? 'bg-green-600' : 'bg-red-600'
 
     return (
         <div className='flex flex-col bg-mebablue-hover max-w-[1280px] mx-auto h-fit rounded-md mt-4'>
@@ -167,15 +167,15 @@ const EditJob = () => {
                     </div>
                     {/* if job is open render box green and display 'Open' if filled render red and display 'Filled + date' */}
                     <select
-                        value={formData.open ? 'Open' : 'Filled'}
+                        value={formData.open}
                         onChange={(e) => {
-                            const isOpen = e.target.value === 'Open'
-                            handleInputChange('open', isOpen)
+                            handleInputChange('open', e.target.value)
                         }}
                         className={`${statusColor} px-2 py-1 rounded-md text-white text-center`}
                     >
                         <option value='Open'>Open</option>
                         <option value='Filled'>Filled</option>
+                        <option value='Filled by Company'>Filled by CO</option>
                     </select>
                 </div>
                 {/* Row 2: Notes */}

@@ -7,12 +7,16 @@ vi.mock('../api/supabaseClient', () => {
     // Create a mock closed job to test
     let rows = [
         {
-        id: 1,
-        job_id: '123',
-        changed_by_user_id: 'user1',
-        change_time: '2024-01-01T12:00:00',
-        previous_state: null,
-        new_state: JSON.stringify({ position: 'Engineer', location: 'Oakland', open: false }),
+            id: 1,
+            job_id: '123',
+            changed_by_user_id: 'user1',
+            change_time: '2024-01-01T12:00:00',
+            previous_state: null,
+            new_state: JSON.stringify({
+                position: 'Engineer',
+                location: 'Oakland',
+                open: false,
+            }),
         },
     ]
 
@@ -20,50 +24,76 @@ vi.mock('../api/supabaseClient', () => {
 
     // Builder used for JobsHistory reads (flat mode uses .range())
     const jobsHistoryQuery = {
-        select: vi.fn(function () { return this }),
-        order:  vi.fn(function () { return this }),
-        gte:    vi.fn(function () { return this }),
-        lte:    vi.fn(function () { return this }),
-        in:     vi.fn(function () { return this }),
-        eq:     vi.fn(function () { return this }),
-        limit:  vi.fn(function () { return this }),
-        range:  vi.fn(async function () {
-        return { data: rows, count: rows.length, error: null }
+        select: vi.fn(function () {
+            return this
+        }),
+        order: vi.fn(function () {
+            return this
+        }),
+        gte: vi.fn(function () {
+            return this
+        }),
+        lte: vi.fn(function () {
+            return this
+        }),
+        in: vi.fn(function () {
+            return this
+        }),
+        eq: vi.fn(function () {
+            return this
+        }),
+        limit: vi.fn(function () {
+            return this
+        }),
+        range: vi.fn(async function () {
+            return { data: rows, count: rows.length, error: null }
         }),
     }
 
     // Builder used for Jobs update
     const jobsUpdateQuery = {
-        update: vi.fn(function () { return this }),
+        update: vi.fn(function () {
+            return this
+        }),
         eq: vi.fn(async function (_col, jobId) {
-        calls.updates.push({ jobId: String(jobId) })
-        // emulate a success update in the DB
-        rows = rows.map(r =>
-            r.job_id === String(jobId)
-            ? { ...r, new_state: JSON.stringify({ ...JSON.parse(r.new_state), open: true }) }
-            : r
-        )
-        return { data: [{ id: jobId }], error: null }
+            calls.updates.push({ jobId: String(jobId) })
+            // emulate a success update in the DB
+            rows = rows.map((r) =>
+                r.job_id === String(jobId)
+                    ? {
+                          ...r,
+                          new_state: JSON.stringify({
+                              ...JSON.parse(r.new_state),
+                              open: true,
+                          }),
+                      }
+                    : r
+            )
+            return { data: [{ id: jobId }], error: null }
         }),
     }
 
     const from = vi.fn((table) => {
         if (table === 'JobsHistory') return { ...jobsHistoryQuery }
-        if (table === 'Jobs')        return { ...jobsUpdateQuery }
+        if (table === 'Jobs') return { ...jobsUpdateQuery }
         return { ...jobsHistoryQuery }
     })
 
     // Helper to reset mock data before each tests
     const resetMock = () => {
         rows = [
-        {
-            id: 1,
-            job_id: '123',
-            changed_by_user_id: 'user1',
-            change_time: '2024-01-01T12:00:00',
-            previous_state: null,
-            new_state: JSON.stringify({ position: 'Engineer', location: 'Oakland', open: false }),
-        },
+            {
+                id: 1,
+                job_id: '123',
+                changed_by_user_id: 'user1',
+                change_time: '2024-01-01T12:00:00',
+                previous_state: null,
+                new_state: JSON.stringify({
+                    position: 'Engineer',
+                    location: 'Oakland',
+                    open: false,
+                }),
+            },
         ]
         calls.updates.length = 0
     }
@@ -80,7 +110,7 @@ import { calls, resetMock } from '../api/supabaseClient'
 const renderInFlatView = async () => {
     render(
         <MemoryRouter>
-        <ViewHistory />
+            <ViewHistory />
         </MemoryRouter>
     )
     const toggle = await screen.findByTitle('Switch to Flat View')
@@ -110,8 +140,8 @@ describe('Reopen Job buttons', () => {
         fireEvent.click(confirmBtn)
 
         await waitFor(() => {
-        expect(calls.updates.length).toBeGreaterThan(0)
-        expect(calls.updates[0].jobId).toBe('123')
+            expect(calls.updates.length).toBeGreaterThan(0)
+            expect(calls.updates[0].jobId).toBe('123')
         })
     })
 
@@ -125,7 +155,7 @@ describe('Reopen Job buttons', () => {
         fireEvent.click(btn)
 
         await waitFor(() => {
-        expect(screen.queryByTitle('Reopen job')).not.toBeInTheDocument()
+            expect(screen.queryByTitle('Reopen job')).not.toBeInTheDocument()
         })
     })
 })
