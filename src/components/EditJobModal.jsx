@@ -264,6 +264,15 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
 
         setSaving(true)
 
+        let dataToSave = { ...formData }
+
+        // Check if the status in the form data is 'Open'
+        if (dataToSave.open === 'Open') {
+            // Explicitly set claimedBy to null if the status is 'Open'
+            dataToSave.claimedBy = null
+            console.log('Status is Open, setting claimedBy to null.')
+        }
+
         try {
             // Update the job
             const result = await updateJob(
