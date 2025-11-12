@@ -1,5 +1,3 @@
-// HistoryRowDetails.jsx
-
 import React, { useState, useEffect } from 'react'
 import { getJobStateComparison } from '../utils/jobHistoryOptimized' // Assuming this path is correct
 // Import getActionColorClasses if used elsewhere, but not strictly needed for this file's core logic now.
@@ -7,7 +5,7 @@ import { getJobStateComparison } from '../utils/jobHistoryOptimized' // Assuming
 // Note: Ensure the getActionColorClasses helper used for field bubbles
 // is available or defined (as it was in the previous step).
 
-const HistoryRowDetails = ({ log }) => {
+const HistoryChangesSummary = ({ log }) => {
     const [resolvedChanges, setResolvedChanges] = useState([])
     const [isLoading, setIsLoading] = useState(false)
 
@@ -100,4 +98,4 @@ const HistoryRowDetails = ({ log }) => {
     )
 }
 
-export default HistoryRowDetails
+export default HistoryChangesSummary

@@ -19,7 +19,7 @@ import HistoryPopout from './HistoryPopout'
 import EditJobModal from './EditJobModal'
 // clear icon for search bar / modal close
 import { IoClose } from 'react-icons/io5'
-import HistoryRowDetails from './HistoryRowDetails'
+import HistoryChangesSummary from './HistoryChangesSummary'
 
 const ViewHistory = () => {
     const ITEMS_PER_PAGE = 10
@@ -1599,7 +1599,7 @@ ${log.new_state}`
                                                 </td>
 
                                             {/* Changes Summary */}
-                                            <HistoryRowDetails log={log} />
+                                            <HistoryChangesSummary log={log} />
                                             {/* Actions */}
                                             <td className='px-6 py-4 whitespace-nowrap text-sm text-right w-[120px]'>
                                                 {isJobClosed(log) &&
