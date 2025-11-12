@@ -527,7 +527,7 @@ const ViewHistory = () => {
                 // For each unique job ID on the current page, fetch its absolute most recent log entry.
                 let query = supabase
                     .from('JobsHistory')
-                    .select('*, changed_by_user_id:Users(username)')
+                    .select('*, changed_by_user_id:Users(username), job:job_id ( shipName )')
                     .eq('job_id', jobId)
                     .order('change_time', { ascending: false })
                     .limit(1)
@@ -583,7 +583,7 @@ const ViewHistory = () => {
             const offset = (page - 1) * ITEMS_PER_PAGE
             let query = supabase
                 .from('JobsHistory')
-                .select(`*, changed_by_user_id:Users(username)`, {
+                .select(`*, changed_by_user_id:Users(username), job:job_id ( shipName )`, {
                     count: 'exact',
                 })
                 .order('change_time', { ascending: false })
@@ -1589,14 +1589,14 @@ ${log.new_state}`
                                             </td>
                                             <td className='px-6 py-4 text-sm text-gray-500 break-words max-w-[250px]'>
                                                 <div className='font-medium'>
-                                                    Job #{log.job_id}
+                                                    {log.job?.shipName ?? log.job?.ship_name ?? 'Unknown Ship'}
                                                 </div>
                                                 <div className='text-gray-500'>
                                                     {viewMode === 'grouped'
-                                                        ? 'Click to view full history'
-                                                        : 'View details in expanded view'}
+                                                    ? 'Click to view full history'
+                                                    : 'View details in expanded view'}
                                                 </div>
-                                            </td>
+                                                </td>
 
                                             {/* Changes Summary */}
                                             <HistoryRowDetails log={log} />
