@@ -185,4 +185,3 @@ describe('Add new job page', () => {
 
 })
 
-
