@@ -277,7 +277,7 @@ const ViewHistory = () => {
                 else {
                     // user name does not match then ship name
                     const { data: jobsByShip, error: shipError } = await supabase
-                        .from('Jobs_test2')
+                        .from('Jobs')
                         .select('id')
                         .ilike('shipName', `%${result.value}%`)
 
@@ -433,7 +433,7 @@ const ViewHistory = () => {
             const offset = (page - 1) * ITEMS_PER_PAGE
 
             // First, get all job_ids that match the filters
-            let jobIdsQuery = supabase.from('JobsHistory_test2').select('job_id')
+            let jobIdsQuery = supabase.from('JobsHistory').select('job_id')
 
             // Apply filters - check if job id is array or string
             if (currentFilters.jobId) {
@@ -491,7 +491,7 @@ const ViewHistory = () => {
             const groupedData = []
             for (const jobId of paginatedJobIds) {
                 let query = supabase
-                    .from('JobsHistory_test2')
+                    .from('JobsHistory')
                     .select('*')
                     .eq('job_id', jobId)
                     .order('change_time', { ascending: false })
@@ -545,7 +545,7 @@ const ViewHistory = () => {
         try {
             const offset = (page - 1) * ITEMS_PER_PAGE
             let query = supabase
-                .from('JobsHistory_test2')
+                .from('JobsHistory')
                 .select(`*`, { count: 'exact' })
                 .order('change_time', { ascending: false })
 
@@ -599,7 +599,7 @@ const ViewHistory = () => {
     // Fetch summary data
     const fetchSummaryData = async (currentFilters = filters) => {
         try {
-            let query = supabase.from('JobsHistory_test2').select('*')
+            let query = supabase.from('JobsHistory').select('*')
 
             // Filter for job id - check if array or string and handle both
             if (currentFilters.jobId) {
@@ -644,7 +644,7 @@ const ViewHistory = () => {
                 let closedJobsCount = 0
                 if (uniqueJobIds.length > 0) {
                     const { data: jobsData, error: jobsError } = await supabase
-                        .from('Jobs_test2')
+                        .from('Jobs')
                         .select('id')
                         .in('id', uniqueJobIds)
                         .eq('open', false) // <-- closed jobs
@@ -766,7 +766,7 @@ const ViewHistory = () => {
         try {
             // Fetch the current job data
             const { data, error } = await supabase
-                .from('Jobs_test2')
+                .from('Jobs')
                 .select('*')
                 .eq('id', jobId)
                 .single()
@@ -899,7 +899,7 @@ ${log.new_state}`
     // Function to edit a job's status to open, refresh the page on call
     const reopenJob = async (jobId) => {
         const { error } = await supabase
-            .from('Jobs_test2')
+            .from('Jobs')
             .update({ open: true })
             .eq('id', jobId)
 
@@ -914,7 +914,7 @@ ${log.new_state}`
     // Function to edit a job's status to open, refresh the page on call
     const reopenJobArchive = async (jobId) => {
         const { error } = await supabase
-            .from('Jobs_test2')
+            .from('Jobs')
             .update({ archivedJob: false })
             .eq('id', jobId)
 
@@ -996,7 +996,7 @@ ${log.new_state}`
         try {
             // Perform supabase update: set open true
             const { data, error } = await supabase
-                .from('Jobs_test2')
+                .from('Jobs')
                 .update({ open: true, archivedJob: false, claimedBy: null})
                 .eq('id', jobId)
             if (error) throw error
@@ -1036,7 +1036,7 @@ ${log.new_state}`
                 setClosedPage(1)
 
                 // 1) Get job_ids from JobsHistory that match current filters
-                let jobIdsQuery = supabase.from('JobsHistory_test2').select('job_id')
+                let jobIdsQuery = supabase.from('JobsHistory').select('job_id')
 
                 if (filters.jobId && filters.jobId.trim())
                     jobIdsQuery = jobIdsQuery.eq('job_id', filters.jobId.trim())
@@ -1081,7 +1081,7 @@ ${log.new_state}`
 
                 // 2) Query Jobs for those job ids and only where open === false (closed)
                 const { data: jobsData, error: jobsError } = await supabase
-                    .from('Jobs_test2')
+                    .from('Jobs')
                     .select('id, FillDate, shipName, type, crewRelieved')
                     .in('id', uniqueJobIds)
                     .eq('open', false)
@@ -1120,7 +1120,7 @@ ${log.new_state}`
                 const enriched = []
                 for (const job of jobs) {
                     let historyQuery = supabase
-                        .from('JobsHistory_test2')
+                        .from('JobsHistory')
                         .select('*')
                         .eq('job_id', String(job.id))
                         .order('change_time', { ascending: true })

@@ -22,7 +22,7 @@ const HistoryPopout = ({ jobId, onClose, initialData = null }) => {
         try {
             const offset = (page - 1) * ITEMS_PER_PAGE
             const { data, error: fetchError, count } = await supabase
-                .from('JobsHistory_test2')
+                .from('JobsHistory')
                 .select('*', { count: 'exact' })
                 .eq('job_id', jobId)
                 .order('change_time', { ascending: false })

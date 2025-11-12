@@ -313,7 +313,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
         try {
             // Update job to set archivedJob to true
             const { data, error } = await supabase
-                .from('Jobs_test2')
+                .from('Jobs')
                 .update({ archivedJob: true, open: false })
                 .eq('id', jobData.id)
                 .select()

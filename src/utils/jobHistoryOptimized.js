@@ -19,7 +19,7 @@ export async function addJob(jobData) {
         console.log('Clean job data being sent:', JSON.stringify(cleanJobData, null, 2))
         
         const { data: newJob, error: jobError } = await supabase
-            .from('Jobs_test2')
+            .from('Jobs')
             .insert(cleanJobData)
             .select()
             .single()
@@ -46,7 +46,7 @@ export async function addJob(jobData) {
 export async function updateJob(jobId, updatedData) {
     try {
         const { data: updatedJob, error: updateError } = await supabase
-            .from('Jobs_test2')
+            .from('Jobs')
             .update(updatedData)
             .eq('id', jobId)
             .select()
@@ -88,7 +88,7 @@ export async function updateJob(jobId, updatedData) {
 export async function fetchJobHistory(jobId) {
     try {
         const { data, error } = await supabase
-            .from('JobsHistory_test2')
+            .from('JobsHistory')
             .select(`*`)
             .eq('job_id', jobId)
             .order('change_time', { ascending: false })
