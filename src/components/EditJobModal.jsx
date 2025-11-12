@@ -266,7 +266,11 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
 
         try {
             // Update the job
-            const result = await updateJob(jobData.id, formData)
+            const result = await updateJob(
+                jobData.id,
+                formData, // Contains all fields to update
+                user.id // <-- This must be a non-null/non-undefined UUID!
+            )
 
             if (result.success) {
                 setMessage('Job updated successfully!')

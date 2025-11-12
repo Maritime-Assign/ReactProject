@@ -6,7 +6,18 @@ import supabase from '../api/supabaseClient'
  * @param {Object} jobData - The job data to add
  * @returns {Promise<{success: boolean, data: any, error: any}>}
  */
-export async function addJob(jobData) {
+export async function addJob(jobData, userId) {
+    if (!userId) {
+        console.error(
+            'Action aborted: User ID is missing. The user must be logged in to create a job.'
+        )
+        return {
+            success: false,
+            data: null,
+            error: new Error('Authentication required.'),
+        }
+    }
+
     try {
         // Remove any auto-generated fields that shouldn't be sent
         const cleanJobData = { ...jobData }
@@ -16,6 +27,8 @@ export async function addJob(jobData) {
         delete cleanJobData.claimedBy
         delete cleanJobData.claimed_at
 
+        cleanJobData.updated_by = userId
+
         console.log(
             'Clean job data being sent:',
             JSON.stringify(cleanJobData, null, 2)
@@ -24,10 +37,12 @@ export async function addJob(jobData) {
         const { data: newJob, error: jobError } = await supabase
             .from('Jobs')
             .insert(cleanJobData)
-            .select()
+            .select('*')
             .single()
 
         if (jobError) {
+            // Note: If this fails again, it will be because the database
+            // trigger still failed, and you need to review Step 2.
             console.error('Error adding job:', jobError)
             return { success: false, data: null, error: jobError }
         }
@@ -46,46 +61,54 @@ export async function addJob(jobData) {
  * @param {Object} updatedData - The updated job data
  * @returns {Promise<{success: boolean, data: any, error: any}>}
  */
-export async function updateJob(jobId, updatedData) {
+export async function updateJob(jobId, updatedData, userId) {
+    // 1. Initial Authentication Check
+    if (!userId) {
+        console.error(
+            'Action aborted: User ID is missing. The user must be logged in to update a job.'
+        )
+        return {
+            success: false,
+            data: null,
+            error: new Error('Authentication required.'),
+        }
+    }
+
+    // 2. Prepare the Update Payload
+    // Inject the userId for the database trigger to use and handle.
+    // Also, if 'archivedJob' isn't explicitly set to true (i.e., this isn't an archive action),
+    // ensure it is set to false to handle the second update's logic in one call.
+    const updatesWithUserId = {
+        ...updatedData,
+        updated_by: userId,
+        // ⭐️ MERGED OPTIMIZATION: If the incoming data doesn't explicitly set archivedJob to true,
+        // we set it to false here to replace the unnecessary second update.
+        archivedJob: updatedData.archivedJob === true ? true : false,
+    }
+
     try {
-        const { data: updatedJob, error: updateError } = await supabase
+        // 3. Execute the Single, Combined Update
+        const { data: jobData, error: updateError } = await supabase
             .from('Jobs')
-            .update(updatedData)
+            .update(updatesWithUserId) // ⭐️ FIX: Use the correct variable name here!
             .eq('id', jobId)
             .select()
             .single()
 
+        // 4. Handle Errors
         if (updateError) {
-            console.error('Error updating job:', updateError)
+            console.error('Supabase updateJob error:', updateError)
             return { success: false, data: null, error: updateError }
         }
-        try {
-            const { data: retiredFlag, error: retiredError } = await supabase
-                .from('Jobs')
-                .update({ archivedJob: false })
-                .eq('id', jobId)
-                .single()
-            if (retiredError) {
-                console.error('Error resetting retired flag:', retiredError)
-                return {
-                    success: false,
-                    data: retiredFlag,
-                    error: retiredError,
-                }
-            }
-        } catch (err) {
-            console.error('Exception updating job:', err)
-            return { success: false, data: null, error: err }
-        }
 
-        // No manual history logging - database triggers handle this automatically
-        return { success: true, data: updatedJob, error: null }
+        // 5. Success
+        // Database triggers automatically handle history logging.
+        return { success: true, data: jobData, error: null }
     } catch (err) {
         console.error('Exception updating job:', err)
         return { success: false, data: null, error: err }
     }
 }
-
 export async function resolveUserIdToUsername(userId) {
     if (!userId) return 'N/A'
 
