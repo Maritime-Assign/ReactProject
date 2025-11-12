@@ -647,7 +647,7 @@ const ViewHistory = () => {
                         .from('Jobs')
                         .select('id')
                         .in('id', uniqueJobIds)
-                        .eq('open', false) // <-- closed jobs
+                        .eq('open', ['Filled', 'Filled by Company']) // <-- closed jobs
                     if (!jobsError && jobsData) {
                         closedJobsCount = jobsData.length
                     } else if (jobsError) {
@@ -893,14 +893,14 @@ ${log.new_state}`
     // Check if a job is closed, a job is considered closed if it's not explicitly open
     const isJobClosed = (log) => {
         const s = log?.newStateFormatted || {}
-        return typeof s.open === 'boolean' ? s.open === false : true
+        return s.open === 'Filled' || s.open === 'Filled by Company'
     }
 
     // Function to edit a job's status to open, refresh the page on call
     const reopenJob = async (jobId) => {
         const { error } = await supabase
             .from('Jobs')
-            .update({ open: true })
+            .update({ open: 'Open' })
             .eq('id', jobId)
 
         if (error) {
@@ -997,7 +997,7 @@ ${log.new_state}`
             // Perform supabase update: set open true
             const { data, error } = await supabase
                 .from('Jobs')
-                .update({ open: true, archivedJob: false, claimedBy: null})
+                .update({ open: 'Open', archivedJob: false, claimedBy: null})
                 .eq('id', jobId)
             if (error) throw error
 
@@ -1082,9 +1082,9 @@ ${log.new_state}`
                 // 2) Query Jobs for those job ids and only where open === false (closed)
                 const { data: jobsData, error: jobsError } = await supabase
                     .from('Jobs')
-                    .select('id, FillDate, shipName, type, crewRelieved')
+                    .select('id, FillDate, Vessel, type, crewRelieved')
                     .in('id', uniqueJobIds)
-                    .eq('open', false)
+                    .eq('open', ['Filled', 'Filled by Company'])
 
                 if (jobsError) {
                     console.error(
