@@ -51,6 +51,18 @@ describe('ViewBoard integration', () => {
       msc: true,
       open: false,
     },
+    {
+      id: '3',
+      shipName: 'Archived Ship',
+      region: 'Pacific',
+      hall: 'C',
+      joinDate: '2024-08-01',
+      passThru: false,
+      nightCardEarlyReturn: false,
+      msc: false,
+      open: false,
+      archivedJob: true,
+    },
   ]
 
   beforeEach(() => {
@@ -95,5 +107,26 @@ describe('ViewBoard integration', () => {
     expect(container.querySelector('.space-y-4')).toBeNull()
     fireEvent.click(screen.getByText('Switch to list'))
     await waitFor(() => expect(container.querySelector('.space-y-4')).not.toBeNull())
+  })
+
+  it('does not display archived jobs by default', async () => {
+    renderViewBoard()
+    await waitFor(() => expect(mockGetJobsArray).toHaveBeenCalled())
+    expect(await screen.findByText('Voyager')).toBeInTheDocument()
+    expect(screen.getByText('Endeavor')).toBeInTheDocument()
+    expect(screen.queryByText('Archived Ship')).not.toBeInTheDocument()
+  })
+
+  it('displays archived job when searched for', async () => {
+    renderViewBoard()
+    await waitFor(() => expect(mockGetJobsArray).toHaveBeenCalled())
+    expect(await screen.findByText('Voyager')).toBeInTheDocument()
+    
+    const searchBox = screen.getByPlaceholderText('Search vessel, region, hall, or join date…')
+    fireEvent.change(searchBox, { target: { value: 'Archived' } })
+    
+    await waitFor(() => expect(screen.getByText('Archived Ship')).toBeInTheDocument())
+    expect(screen.queryByText('Voyager')).not.toBeInTheDocument()
+    expect(screen.queryByText('Endeavor')).not.toBeInTheDocument()
   })
 })
