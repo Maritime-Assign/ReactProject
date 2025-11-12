@@ -82,7 +82,7 @@ describe('ViewBoard integration', () => {
       passThru: false,
       nightCardEarlyReturn: false,
       msc: false,
-      open: true,
+      open: 'Open',
     },
     {
       id: '2',
@@ -93,7 +93,7 @@ describe('ViewBoard integration', () => {
       passThru: true,
       nightCardEarlyReturn: true,
       msc: true,
-      open: false,
+      open: 'Filled',
     },
     {
       id: '3',
@@ -104,7 +104,7 @@ describe('ViewBoard integration', () => {
       passThru: false,
       nightCardEarlyReturn: false,
       msc: false,
-      open: false,
+      open: 'Filled',
       archivedJob: true,
     },
   ]
@@ -182,7 +182,7 @@ describe('ViewBoard integration', () => {
     expect(await screen.findByText('Voyager')).toBeInTheDocument()
     
     // Simulate a job update via the onJobUpdate callback
-    const updatedJob = { ...jobs[0], shipName: 'Voyager Updated', open: false }
+    const updatedJob = { ...jobs[0], shipName: 'Voyager Updated', open: 'Filled' }
     mockOnJobUpdate(updatedJob)
     
     // Verify the updated job appears
@@ -200,7 +200,7 @@ describe('ViewBoard integration', () => {
       passThru: false,
       nightCardEarlyReturn: false,
       msc: false,
-      open: false,
+      open: 'Filled',
       archivedJob: true,
     }
     
@@ -211,7 +211,7 @@ describe('ViewBoard integration', () => {
     const updatedJobData = {
       ...archivedJob,
       shipName: 'Previously Archived - Now Active',
-      open: true,
+      open: 'Open',
       archivedJob: false, // updateJob sets this to false
     }
     
@@ -233,13 +233,13 @@ describe('ViewBoard integration', () => {
     // Trigger the save which simulates Tile calling updateJob then onJobUpdate
     await mockTriggerSaveByJobId['4']({
       shipName: 'Previously Archived - Now Active',
-      open: true,
+      open: 'Open',
     })
     
     // Verify updateJob was called with correct parameters
     expect(updateJob).toHaveBeenCalledWith('4', {
       shipName: 'Previously Archived - Now Active',
-      open: true,
+      open: 'Open',
     })
     
     // Verify the UI updated with the new job data
@@ -334,7 +334,7 @@ describe('ViewBoard integration', () => {
     })
 
     it('Tiles update correctly after job status changes from closed to open', async () => {
-      const updatedJob = { ...jobs[1], open: true }
+      const updatedJob = { ...jobs[1], open: 'Open' }
       
       vi.mocked(updateJob).mockResolvedValue({
         success: true,
