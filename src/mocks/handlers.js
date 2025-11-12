@@ -7,7 +7,7 @@ export const mockJobs = [
         id: 1,
         region: 'OAK',
         hall: 'OAK',
-        open: true,
+        open: 'Open',
         FillDate: null,
         dateCalled: '10/25/2025',
         shipName: 'USNS Yuma',
@@ -32,7 +32,7 @@ export const mockJobs = [
         id: 2,
         region: 'NYC',
         hall: 'NYC',
-        open: false, // This job is filled/closed
+        open: 'Filled by Company', // This job is filled/closed
         FillDate: '10/20/2025',
         dateCalled: '10/18/2025',
         shipName: 'M/V Liberty Ace',
@@ -57,8 +57,8 @@ export const mockJobs = [
         id: 3,
         region: 'LA',
         hall: 'LA',
-        open: true,
-        FillDate: null,
+        open: 'Filled',
+        FillDate: '12/25/2025',
         dateCalled: '11/04/2025',
         shipName: 'USNS Guadalupe',
         joinDate: '12/05/2025',
@@ -67,7 +67,7 @@ export const mockJobs = [
         days: '90-120',
         location: 'San Diego, CA',
         crewRelieved: 'Marcus Fenix',
-        notes: 'Early return from last assignment.',
+        notes: 'Ensure all crew members have completed the latest STCW safety training and emergency drills prior to departure. Verify that all lifeboats, life rafts, and fire suppression systems are fully operational and documented in the safety log. Review bridge resource management protocols and confirm readiness of personal protective equipment for engine room and deck operations.',
         company: 'PCS-MSC',
         rowIndex: 2,
         nightCardEarlyReturn: true, // Flag for Night Card/Early Return
