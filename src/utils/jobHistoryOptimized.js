@@ -346,7 +346,7 @@ export async function getJobStateComparison(previousState, newState) {
 
     // Define fields that hold a User ID and need resolution
     const USER_ID_FIELDS = new Set(['claimedBy', 'FillUser']) // Add any other user ID fields here
-    const EXCLUDED_KEYS = new Set(['changed_by_user_id']) // Exclude the redundant log author ID
+    const EXCLUDED_KEYS = new Set(['changed_by_user_id', 'updated_by']) // Add updated_by here // Exclude the redundant log author ID
 
     for (const key of allKeys) {
         if (EXCLUDED_KEYS.has(key)) {

@@ -1180,7 +1180,7 @@ ${log.new_state}`
                 for (const job of jobs) {
                     let historyQuery = supabase
                         .from('JobsHistory')
-                        .select('*')
+                        .select('*, changed_by_user_id:Users(username)')
                         .eq('job_id', String(job.id))
                         .order('change_time', { ascending: true })
 
@@ -1220,9 +1220,20 @@ ${log.new_state}`
                         continue
                     }
 
-                    const formattedHistory = (historyData || []).map(
-                        formatJobHistoryRecord
+                    const formattedHistory = await Promise.all(
+                        (historyData || []).map(async (record) => {
+                            const formatted = formatJobHistoryRecord(record)
+                            const changes = await getJobStateComparison(
+                                formatted.previousStateFormatted,
+                                formatted.newStateFormatted
+                            )
+                            return {
+                                ...formatted,
+                                changes, // Add pre-calculated changes
+                            }
+                        })
                     )
+
                     enriched.push({
                         id: job.id,
                         fillDate: job.fillDate,
@@ -2235,7 +2246,7 @@ ${log.new_state}`
                                                                                                     }
                                                                                                 </div>
                                                                                                 <div className='text-sm font-medium'>
-                                                                                                    {entry.changed_by_user_id ||
+                                                                                                    {entry.username ||
                                                                                                         'Unknown User'}
                                                                                                 </div>
                                                                                                 <div className='text-xs text-gray-500'>
@@ -2271,10 +2282,8 @@ ${log.new_state}`
                                                                                         <div className='mt-2 text-xs text-gray-700'>
                                                                                             {(() => {
                                                                                                 const changes =
-                                                                                                    getJobStateComparison(
-                                                                                                        entry.previousStateFormatted,
-                                                                                                        entry.newStateFormatted
-                                                                                                    )
+                                                                                                    entry.changes ||
+                                                                                                    []
                                                                                                 if (
                                                                                                     !changes ||
                                                                                                     changes.length ===
