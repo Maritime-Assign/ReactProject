@@ -30,10 +30,12 @@ const createOnSubmit = (user, setPopup) => async (values, actions) => {
     try {
         console.log('Submitting job with values:', values)
 
-        if (!user) {
+        if (!user || !user.id) {
             setPopup('error')
             return
         }
+
+        const userId = user.id
 
         // Prepare job data - convert form values to match database schema
         // Explicitly define only the fields we want to send (excluding auto-generated fields)
@@ -60,7 +62,7 @@ const createOnSubmit = (user, setPopup) => async (values, actions) => {
         console.log('Sending job data:', JSON.stringify(jobData, null, 2))
 
         // Add the job (history logging handled automatically by database triggers)
-        const result = await addJob(jobData)
+        const result = await addJob(jobData, userId)
 
         if (result.success) {
             setPopup('success')
@@ -217,7 +219,6 @@ const AddJob = () => {
         validateOnBlur: false,
     })
 
-
     useEffect(() => {
         if (Object.keys(errors).length > 0) {
             console.log('Formik validation errors:', errors)
@@ -341,10 +342,11 @@ const AddJob = () => {
             {/* Popup message */}
             {popup && (
                 <div
-                    className={`fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-md shadow-md text-white font-mont transition-all duration-700 ease-out ${popup === 'success'
-                        ? 'bg-green-600 opacity-100'
-                        : 'bg-red-600 opacity-100'
-                        }`}
+                    className={`fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-md shadow-md text-white font-mont transition-all duration-700 ease-out ${
+                        popup === 'success'
+                            ? 'bg-green-600 opacity-100'
+                            : 'bg-red-600 opacity-100'
+                    }`}
                 >
                     {popup === 'success'
                         ? 'Job added successfully!'
@@ -702,10 +704,11 @@ const AddJob = () => {
                     {/* Status Messages */}
                     {status && (
                         <div
-                            className={`mt-4 p-3 rounded-md text-center ${status.error
-                                ? 'bg-red-100 border border-red-400 text-red-700'
-                                : 'bg-green-100 border border-green-400 text-green-700'
-                                }`}
+                            className={`mt-4 p-3 rounded-md text-center ${
+                                status.error
+                                    ? 'bg-red-100 border border-red-400 text-red-700'
+                                    : 'bg-green-100 border border-green-400 text-green-700'
+                            }`}
                         >
                             {status.error || status.success}
                         </div>

@@ -264,9 +264,22 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
 
         setSaving(true)
 
+        let dataToSave = { ...formData }
+
+        // Check if the status in the form data is 'Open'
+        if (dataToSave.open === 'Open') {
+            // Explicitly set claimedBy to null if the status is 'Open'
+            dataToSave.claimedBy = null
+            console.log('Status is Open, setting claimedBy to null.')
+        }
+
         try {
             // Update the job
-            const result = await updateJob(jobData.id, formData)
+            const result = await updateJob(
+                jobData.id,
+                formData, // Contains all fields to update
+                user.id // <-- This must be a non-null/non-undefined UUID!
+            )
 
             if (result.success) {
                 setMessage('Job updated successfully!')
@@ -314,7 +327,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
             // Update job to set archivedJob to true
             const { data, error } = await supabase
                 .from('Jobs')
-                .update({ archivedJob: true, open: false })
+                .update({ archivedJob: true, open: 'Filled' })
                 .eq('id', jobData.id)
                 .select()
                 .single()
