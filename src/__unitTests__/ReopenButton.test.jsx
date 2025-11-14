@@ -15,7 +15,8 @@ vi.mock('../api/supabaseClient', () => {
             new_state: JSON.stringify({
                 position: 'Engineer',
                 location: 'Oakland',
-                open: false,
+                // <-- IMPORTANT: use the same "closed" string value the component expects
+                open: 'Filled',
             }),
         },
     ]
@@ -46,6 +47,7 @@ vi.mock('../api/supabaseClient', () => {
             return this
         }),
         range: vi.fn(async function () {
+            // return in the shape your component expects
             return { data: rows, count: rows.length, error: null }
         }),
     }
@@ -64,7 +66,7 @@ vi.mock('../api/supabaseClient', () => {
                           ...r,
                           new_state: JSON.stringify({
                               ...JSON.parse(r.new_state),
-                              open: true,
+                              open: 'Open',
                           }),
                       }
                     : r
@@ -91,7 +93,7 @@ vi.mock('../api/supabaseClient', () => {
                 new_state: JSON.stringify({
                     position: 'Engineer',
                     location: 'Oakland',
-                    open: false,
+                    open: 'Filled',
                 }),
             },
         ]

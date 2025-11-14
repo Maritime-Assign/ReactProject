@@ -176,6 +176,7 @@ describe('Add new job page', () => {
                     notes: null,
                 })
             )
+            
         },
         8000
     )
