@@ -172,17 +172,13 @@ describe('Add new job page', () => {
 
             // Confirm notes was null
             expect(addJob).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    notes: null,
-                })
+            expect.objectContaining({ notes: null }),
+            expect.anything()
             )
-            
+
         },
         8000
     )
-
-
-
 
 })
 
