@@ -13,6 +13,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import ViewBoard from '../pages/ViewBoard';
 import { MemoryRouter } from 'react-router-dom';
 import fetchJobs from '../components/jobDataAPI';
+import userEvent from '@testing-library/user-event';
 
 // mock fetchJobs
 vi.mock('../components/jobDataAPI', () => ({
@@ -34,8 +35,8 @@ vi.mock('../components/Tile', () => ({
 describe('ViewBoard', () => {
     // create a list of mock jobs for testing
     const mockJobs = [
-        { id: 1, shipName: 'test1', region: 'atlantic', hall: 't1', joinDate: '1111-01-22', open: true },
-        { id: 2, shipName: 'test2', region: 'aacific', hall: 't2', joinDate: '1111-02-22', open: false },
+        { id: 1, shipName: 'test1', region: 'atlantic', hall: 't1', joinDate: '1111-01-22', open: 'Open' },
+        { id: 2, shipName: 'test2', region: 'aacific', hall: 't2', joinDate: '1111-02-22', open: 'Filled' },
     ];
 
     // ensure that fetchjob runs with mock instead of real data
@@ -103,5 +104,39 @@ describe('ViewBoard', () => {
         // simulate clicking the edit button
         editButtons[0].click();
         expect(editButtons[0]).toBeEnabled();
+    });
+
+    test('filter between for open job only', async () => {
+        render(
+            <MemoryRouter>
+                <ViewBoard />
+            </MemoryRouter>
+        );
+
+        await screen.findByText('test1');
+        await screen.findByText('test2');
+
+        const openJobsBtn = await screen.findByRole('button', { name: /view open jobs/i });
+        await userEvent.click(openJobsBtn);
+
+        expect(screen.getByText('test1')).toBeInTheDocument();
+        expect(screen.queryByText('test2')).not.toBeInTheDocument();
+    });
+
+    test('test search bar function', async () => {
+        render(
+            <MemoryRouter>
+                <ViewBoard />
+            </MemoryRouter>
+        );
+
+        await screen.findByText('test1');
+        await screen.findByText('test2');
+
+        const searchInput = screen.getByPlaceholderText(/search vessel, region, hall, or join date/i);
+        await userEvent.type(searchInput, 'test1');
+
+        expect(screen.getByText('test1')).toBeInTheDocument();
+        expect(screen.queryByText('test2')).not.toBeInTheDocument();
     });
 });
