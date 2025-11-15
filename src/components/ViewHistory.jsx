@@ -88,17 +88,8 @@ const ViewHistory = () => {
     useEffect(() => {
         const handler = setTimeout(() => {
             const query = searchQuery.trim()
-            // Only clear filters if there is something to clear
-            if (query === '') {
-                if (lastFilters.current) {
-                    clearFilters()
-                    lastFilters.current = null
-                }
-            } else {
-                setDebouncedQuery(query)
-            }
+            setDebouncedQuery(query)
         }, 1000)
-
         // clear prior timeout
         return () => clearTimeout(handler)
     }, [searchQuery])
@@ -108,16 +99,37 @@ const ViewHistory = () => {
     const lastFilters = React.useRef(null)
     useEffect(() => {
         const query = debouncedQuery.trim()
+
+        // Handle Empty input
         if (!query) {
+            // Only fetch if we actually had filters applied/not empty
+            const hadFilters = !!lastFilters.current
+            || filters.jobId || filters.userId
+            || (filters.dateFrom && filters.dateTo)
+
+            if (hadFilters) {
             clearFilters()
+            } else {
+            // Nothing to clear, reset data without making backend call
+            setLogs([])
+            setGroupedLogs([])
+            setTotalCount(0)
+            setSummary({
+                totalActions: 0,
+                newJobs: 0,
+                updatedJobs: 0,
+                recentActivity: [],
+                closedJobs: 0,
+            })
+            setLoading(false)
+            }
+
             lastFilters.current = null
             return
         }
 
         const newFilters = detectSearchType(query)
-        if (
-            JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)
-        ) {
+        if (JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)) {
             handleSearch(query)
             lastFilters.current = newFilters
         }
@@ -762,26 +774,22 @@ const ViewHistory = () => {
     }
 
     const clearFilters = async () => {
-        // Only make api fetch call if there are valid filters to clear
-        if (
-            filters.jobId ||
-            filters.userId ||
-            (filters.dateFrom && filters.dateTo)
-        ) {
-            const clearedFilters = {
-                jobId: '',
-                dateFrom: '',
-                dateTo: '',
-                userId: '',
-            }
-            setFilters(clearedFilters)
-            setCurrentPage(1)
-            await fetchLogs(1, clearedFilters)
-            await fetchSummaryData(clearedFilters)
-
-            // Update url to remove query params and reset to page 1 when filter/search is cleared
-            navigate({ pathname: '/history', search: '?page=1'}, {replace: true})
+        // Create a blank filters object to remove all filters to ensure everything is fetched again
+        const clearedFilters = {
+            jobId: '',
+            dateFrom: '',
+            dateTo: '',
+            userId: '',
         }
+        // Update react state so app knows filters are cleared
+        setFilters(clearedFilters)
+        // Reset pagination
+        setCurrentPage(1)
+        // Full, unfiltered job history list
+        await fetchLogs(1, clearedFilters)
+        // Keep summary section in sync
+        await fetchSummaryData(clearedFilters)
+        navigate({ pathname: '/history', search: '?page=1' }, { replace: true })
     }
 
     // Handle pagination
