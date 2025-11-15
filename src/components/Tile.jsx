@@ -20,9 +20,16 @@ const Tile = ({ job, onJobUpdate }) => {
 
     const formatDate = (dateString) => {
         if (!dateString) return ''
-        const date = new Date(dateString)
-        if (isNaN(date)) return ''
-        return date.toLocaleDateString('en-US')
+        if (typeof dateString !== 'string') return ''
+
+        const parts = dateString.split('-')
+        if (parts.length !== 3) return ''
+
+        const [year, month, day] = parts
+
+        if (!year || !month || !day) return ''
+
+        return `${month}/${day}/${year}` // MM/DD/YYYY
     }
 
     return (

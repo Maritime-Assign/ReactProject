@@ -16,15 +16,16 @@ const ManageJobs = () => {
     useEffect(() => {
         async function loadJobs() {
             try {
-                const fetchedJobs = await fetchJobs() // Fetch jobs asynchronously
-                setJobs(fetchedJobs || []) // Ensure jobs is always an array
+                const fetchedJobs = await fetchJobs()
+                setJobs(fetchedJobs || [])
             } catch (error) {
                 console.error('Failed to fetch jobs:', error)
-                setJobs([]) // Set jobs to an empty array in case of an error
+                setJobs([])
+            } finally {
+                setLoading(false)
             }
         }
         loadJobs()
-        setLoading(false)
     }, [])
 
     const filteredJobs = jobs.filter((job) => {
@@ -63,6 +64,7 @@ const ManageJobs = () => {
             <div className='flex py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center'>
                 <button
                     onClick={() => navigate(-1)}
+                    aria-label='Back'
                     className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
                 >
                     <IoArrowBack className='w-6 h-6' />

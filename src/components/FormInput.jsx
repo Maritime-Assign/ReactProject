@@ -29,25 +29,25 @@ const FormInput = ({
     setFieldError,
 }) => {
     const handleChange = (e) => {
-        let val = e.target?.value ?? e;
+        let val = e.target?.value ?? e
 
-        // If the value is a Date object, reformat it to "mm/dd/yyyy" with zero padding
+        // If the value is a Date object, reformat it to "yyyy-mm-dd" for database
         if (val instanceof Date) {
-            const year = val.getFullYear();
-            const month = String(val.getMonth() + 1).padStart(2,'0'); // Adding 1 cause months are 0-indexed
-            const day = String(val.getDate()).padStart(2,'0'); //
-            val = `${month}/${day}/${year}`; // Reformatted date string and impliclity pruning timestamp
+            const year = val.getFullYear()
+            const month = String(val.getMonth() + 1).padStart(2, '0')
+            const day = String(val.getDate()).padStart(2, '0')
+            val = `${year}-${month}-${day}` // Format as YYYY-MM-DD for database
         }
 
-        onChange({ target: { name: e.target?.name ?? name, value: val } });
+        onChange({ target: { name: e.target?.name ?? name, value: val } })
 
         // Clear the error if the field is now valid
         if (submitCount > 0 && errors) {
             if (val && val.toString().trim() !== '') {
-                setFieldError(name, undefined);
+                setFieldError(name, undefined)
             }
         }
-    };
+    }
 
     const inputId = `input-${name}` // save an input id for later use if needed
 
@@ -95,7 +95,9 @@ const FormInput = ({
                     id={inputId} // 👈 new line
                     name={name}
                     selected={value}
-                    onChange={(date) => handleChange({ target: { name, value: date } })}
+                    onChange={(date) =>
+                        handleChange({ target: { name, value: date } })
+                    }
                     dateFormat='MM/dd/yyyy'
                     placeholderText={placeholder}
                     className={appliedClass}
