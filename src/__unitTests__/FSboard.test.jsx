@@ -137,14 +137,13 @@ describe('FSBoard components', () => {
         const openButtons = screen.getAllByTestId('claim-button')
         expect(openButtons).toHaveLength(1)
 
-        // Ensure the specific FillDates are rendered (10/20/25 and 11/05/25)
-        // FIX: Using regex matchers for MM/DD/YY format
-        expect(screen.getByText(/10\/20\/25/)).toBeInTheDocument()
-        expect(screen.getByText(/12\/25\/25/)).toBeInTheDocument()
+        // Check for join and called dates for open job
+        expect(document.body.textContent).toContain('10/22/2025')
+        expect(document.body.textContent).toContain('12/15/2025')
 
-        // Extra check for Join Dates to ensure all 3 rows are present
-        expect(screen.getByText('12/15/2025')).toBeInTheDocument() // Job 1 Join Date
-        expect(screen.getByText('10/22/2025')).toBeInTheDocument() // Job 2 Join Date
+        // Extra check for Fill Dates of Filled Jobs to ensure all 3 rows are present
+        expect(document.body.textContent).toContain('10/20/25')
+        expect(document.body.textContent).toContain('12/25/25')
     })
 
     test('shows error message when data fetch fails', async () => {

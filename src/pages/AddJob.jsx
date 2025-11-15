@@ -736,7 +736,7 @@ const AddJob = () => {
                 </form>
             </div>
             {showModal && (
-                <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
+                <div className='fixed inset-0 flex items-center justify-center bg-black/40 z-50'>
                     <div className='bg-white rounded-lg shadow-lg p-6 w-[28rem] relative max-h-[90vh] overflow-y-auto'>
                         <h2 className='text-2xl font-semibold mb-6 text-center text-mebablue-dark'>
                             Edit Dropdown Options
