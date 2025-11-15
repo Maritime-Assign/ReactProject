@@ -912,40 +912,122 @@ New State:
 ${log.new_state}`
     }
 
-    // Export functionality (basic CSV export)
-    const exportToCsv = () => {
-        const headers = [
-            'Date',
-            'User',
-            'Job ID',
-            'Action',
-            'Ship Name',
-            'Location',
-            'Changes Summary',
-        ]
-        const csvData = [
-            headers.join(','),
-            ...logs.map((log) =>
-                [
-                    log.formattedDate,
-                    log.username,
-                    log.job_id,
-                    log.actionType,
-                    'Unknown Ship',
-                    'Unknown Location',
-                    `"${log.changesSummary}"`,
-                ].join(',')
-            ),
-        ].join('\n')
+    // Escape CSV fields safely
+    // This makes the CSV Excel-safe, by prevents column breaking for data inside " "
+    const escapeCSV = (value) => {
+        // Handle empty case
+        if (value == null) {return ''}
 
-        const blob = new Blob([csvData], { type: 'text/csv' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `job_history_${new Date().toISOString().split('T')[0]}.csv`
-        a.click()
-        window.URL.revokeObjectURL(url)
+        let str = String(value)
+        // Escape double quotes by doubling them
+        str = str.replace(/"/g, '""')
+        // Wrap in " " if it contains comma, newline or quotes
+        if (/[",\n]/.test(str)) {
+            str = `"${str}"`
+        }
+        return str
     }
+
+    // Export functionality (basic CSV export)
+    const exportToCsv = async () => {
+        try {
+            const currentFilters = { ...filters }
+
+            // Build backend query for JobHistory table
+            // Fetch all filtered logs and ignore pagination
+            let query = supabase
+                .from('JobsHistory')
+                // Show linked username instead of hash
+                .select('*, changed_by_user_id:Users(username)')
+                .order('change_time', { ascending: false })
+
+            // Job ID filter
+            if (currentFilters.jobId) {
+                if (Array.isArray(currentFilters.jobId)) {
+                    query = query.in('job_id', currentFilters.jobId)
+                }
+                else {
+                    query = query.eq('job_id', currentFilters.jobId)
+                }
+            }
+            // User filter
+            if (currentFilters.userId && currentFilters.userId.length > 0) {
+                query = query.in('changed_by_user_id', currentFilters.userId)
+            }
+            // Date filter
+            if (currentFilters.dateFrom) {query = query.gte('change_time', currentFilters.dateFrom)}
+            if (currentFilters.dateTo) {query = query.lte('change_time', currentFilters.dateTo + 'T23:59:59')}
+            
+            // Start query
+            const { data: filteredLogs, error } = await query
+            if (error) {throw error}
+            if (!filteredLogs || filteredLogs.length === 0) {
+                // No matching logs for filter
+                console.log('No logs to export.')
+                return
+            }
+
+            // Fetch jobs for filtered logs
+            const jobIds = [...new Set(filteredLogs.map(log => log.job_id).filter(Boolean))]
+            let jobMap = {}
+            if (jobIds.length) {
+                const { data: jobs } = await supabase
+                    .from('Jobs')
+                    .select('id, shipName, location, open, archivedJob, type')
+                    .in('id', jobIds)
+                // Map job id to details
+                jobs.forEach(job => { jobMap[job.id] = job })
+            }
+
+            // Use jobs backend data to manually compute the frontend attribute "action" that is displayed on the page
+            const computeAction = (job) => {
+                if (!job) {return ''}
+                // Check archived first. Jobs can be open and archived or just opened.
+                if (job.archivedJob) {return 'Archived'}
+                if (job.open === 'Filled') {return 'Filled'}
+                // Reopened, created and updated is not tracked anywhere in the backend so 
+                // it cannot be computed for the whole dataset ahead of time
+                if (job.open === 'Open') {return 'Open'}
+                return job.type || ''
+            }
+
+            // Build CSV
+            const headers = ['Date', 'User', 'Job ID', 'Action', 'Ship Name', 'Location']
+            const csvData = [
+                headers.join(','),
+                ...filteredLogs.map(log => {
+                    const job = log.job_id ? jobMap[log.job_id] || {} : {}
+                    const rawDate = log.change_time ? new Date(log.change_time).toLocaleString() : ''
+                    const username = log.changed_by_user_id?.username || ''
+                    const action = computeAction(job)
+                    // Build csv and format correctly with escape helper
+                    return [
+                        escapeCSV(rawDate),
+                        escapeCSV(username),
+                        escapeCSV(log.job_id || ''),
+                        escapeCSV(action),
+                        escapeCSV(job.shipName || ''),
+                        escapeCSV(job.location || ''),
+                    ].join(',')
+                }),
+            ].join('\n')
+
+            // Trigger the CSV download
+            const blob = new Blob([csvData], { type: 'text/csv' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `job_history_filtered_${new Date().toISOString().split('T')[0]}.csv`
+            a.click()
+            // Free up memory
+            URL.revokeObjectURL(url)
+        } 
+        catch (err) {
+            console.error('CSV export failed:', err)
+        }
+    }
+
+
 
     const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
