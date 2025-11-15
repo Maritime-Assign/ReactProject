@@ -1514,7 +1514,18 @@ ${log.new_state}`
                     </button>
                     <button
                         onClick={exportToCsv}
-                        className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
+                        // Disable download button when search is invalid or produces no results
+                        disabled={
+                            (viewMode === 'grouped' && groupedLogs.length === 0) ||
+                            (viewMode === 'flat' && logs.length === 0)
+                        }
+                        className={`p-2 rounded text-white
+                            ${((viewMode === 'grouped' && groupedLogs.length === 0) ||
+                            (viewMode === 'flat' && logs.length === 0))
+                            ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                            : 'bg-mebablue-light hover:bg-blue-700 text-white'}
+                        `}
+                        //className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
                         title='Export CSV'
                     >
                         <IoDownload className='w-5 h-5' />
