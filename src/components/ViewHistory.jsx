@@ -88,18 +88,8 @@ const ViewHistory = () => {
     useEffect(() => {
         const handler = setTimeout(() => {
             const query = searchQuery.trim()
-            // Only clear filters if there is something to clear
-            if (query === '') {
-                setDebouncedQuery('')
-                if (lastFilters.current) {
-                    clearFilters()
-                    lastFilters.current = null
-                }
-            } else {
-                setDebouncedQuery(query)
-            }
+            setDebouncedQuery(query)
         }, 1000)
-
         // clear prior timeout
         return () => clearTimeout(handler)
     }, [searchQuery])
@@ -109,16 +99,37 @@ const ViewHistory = () => {
     const lastFilters = React.useRef(null)
     useEffect(() => {
         const query = debouncedQuery.trim()
+
+        // Handle Empty input
         if (!query) {
+            // Only fetch if we actually had filters applied/not empty
+            const hadFilters = !!lastFilters.current
+            || filters.jobId || filters.userId
+            || (filters.dateFrom && filters.dateTo)
+
+            if (hadFilters) {
             clearFilters()
+            } else {
+            // Nothing to clear, reset data without making backend call
+            setLogs([])
+            setGroupedLogs([])
+            setTotalCount(0)
+            setSummary({
+                totalActions: 0,
+                newJobs: 0,
+                updatedJobs: 0,
+                recentActivity: [],
+                closedJobs: 0,
+            })
+            setLoading(false)
+            }
+
             lastFilters.current = null
             return
         }
 
         const newFilters = detectSearchType(query)
-        if (
-            JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)
-        ) {
+        if (JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)) {
             handleSearch(query)
             lastFilters.current = newFilters
         }

@@ -163,8 +163,13 @@ describe("ViewHistory Search Bar: Positive Tests", () => {
         fireEvent.click(clearButton)
         await new Promise(r => setTimeout(r, 1100))
 
-        // Expect 4 total api fetches
-        expect(supabase.default.from).toHaveBeenCalledTimes(4)
+        // Expect 8 calls because each debounced search/clear triggers fetchLogs + fetchSummaryData (2 calls)
+        // This test runs 4 cycles: 4 x 2 = 8
+        // Type "VesselA" = 2 calls (logs + summary)
+        // Clear input = 2 calls (logs + summary)
+        // Type "VesselB" = 2 calls (logs + summary)
+        // Click clear = 2 calls (logs + summary)
+        expect(supabase.default.from).toHaveBeenCalledTimes(8)
 
     })
 
