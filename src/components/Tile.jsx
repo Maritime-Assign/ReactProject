@@ -1,4 +1,4 @@
-// tile component which takes in props as parameter (data)
+// Tile component - displays job information with edit functionality
 
 import React, { useState } from 'react'
 import EditJobModal from './EditJobModal'
@@ -6,17 +6,13 @@ import EditJobModal from './EditJobModal'
 const Tile = ({ job, onJobUpdate }) => {
     const [showModal, setShowModal] = useState(false)
 
-    var statusColor = 'bg-red-600'
+    var statusColor = 'text-red-600'
 
     if (job.open == 'Open') {
-        statusColor = 'bg-green-600'
+        statusColor = 'text-green-600'
     }
 
-    const boxStyle = () =>
-        'bg-mebablue-light px-3 py-1 rounded-md font-medium text-white font-mont'
-
     const handleJobSave = (updatedJob) => {
-        // Update the job in the parent component
         if (onJobUpdate) {
             onJobUpdate(updatedJob)
         }
@@ -24,99 +20,135 @@ const Tile = ({ job, onJobUpdate }) => {
 
     return (
         <>
-            <div className='flex flex-col bg-mebablue-hover w-full rounded-md'>
-                {/* top bar */}
-                <div className='bg-mebablue-dark w-full flex items-center justify-end gap-2 px-2 rounded-t-md'>
+            {/* Main card - fixed height */}
+            <div className='bg-white rounded-lg border border-gray-300 overflow-hidden h-full flex flex-col'>
+                {/* Header with edit button */}
+                <div className='flex items-center justify-between px-4 py-3 border-b border-gray-300 bg-gray-50 shrink-0'>
+                    <div className='flex items-center gap-4 grow'>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block'>
+                                Vessel
+                            </span>
+                            <h3 className='font-semibold text-gray-900 text-sm'>
+                                {job.shipName}
+                            </h3>
+                        </div>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block'>
+                                Status
+                            </span>
+                            <h3
+                                className={`${statusColor} text-sm font-semibold`}
+                            >
+                                {job.open == 'Open'
+                                    ? job.open
+                                    : job.open == 'Filled'
+                                    ? `Filled ${job.fillDate || ''}`
+                                    : 'Filled by CO'}
+                            </h3>
+                        </div>
+                        {/* Flags */}
+                        <div className='flex gap-2'>
+                            {job.Users?.abbreviation && (
+                                <span className='bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-medium'>
+                                    {job.Users.abbreviation}
+                                </span>
+                            )}
+                            {job.passThru && (
+                                <span className='bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-medium'>
+                                    Pass-Thru
+                                </span>
+                            )}
+                            {job.nightCardEarlyReturn && (
+                                <span className='bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-medium'>
+                                    Night Card
+                                </span>
+                            )}
+                            {job.msc && (
+                                <span className='bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium'>
+                                    MSC
+                                </span>
+                            )}
+                        </div>
+                    </div>
                     <button
                         onClick={() => setShowModal(true)}
-                        className='bg-mebablue-light rounded-md text-sm px-3 py-1 text-white font-medium hover:bg-mebablue-hover font-mont'
+                        className='text-sm px-3 py-1.5 text-gray-700 hover:text-gray-900 font-medium border border-gray-300 rounded hover:bg-gray-200 transition-colors ml-4'
                     >
-                        Edit Job
+                        Edit
                     </button>
                 </div>
-
-                {/* content */}
-                <div className='flex flex-col w-full h-full px-2 py-2 justify-center'>
-                    {/* Row 1 */}
-                    <div className='grid grid-cols-4 gap-2 py-2 font-medium text-white font-mont items-center'>
-                        <span className='bg-mebablue-light rounded-md px-2 py-1 text-center'>
-                            {job.shipName}
-                        </span>
-                        <span className='bg-mebablue-light px-2 py-1 rounded-md text-center'>
-                            {job.region}
-                        </span>
-                        <span className='bg-mebablue-light px-2 py-1 rounded-md text-center'>
-                            {job.hall}
-                        </span>
-                        <span
-                            className={`${statusColor} px-2 py-1 rounded-md text-white text-center`}
-                        >
-                            {(job.open == 'Open') ?  job.open : (job.open == 'Filled') ? `Filled ${job.fillDate || ''}` : 'Filled by CO'}
-                        </span>
-                    </div>
-
-                    {/* Row 2: Notes */}
-                    <div className='bg-mebablue-light rounded-md py-2 px-4 text-sm font-medium flex-col flex text-white'>
-                        <span className='font-medium font-mont'>
-                            Requirements/Notes:
-                        </span>
-                        <span className='font-mont'>- {job.notes}</span>
-                    </div>
-
-                    {/* Row 3: Details */}
-                    <div className='grid grid-cols-4 gap-2 font-medium text-sm py-2'>
-                        <div className={`${boxStyle()} col-span-2`}>
-                            Location: {job.location}
-                        </div>
-                        <div className={`${boxStyle()} col-span-2`}>
-                            Days: {job.days}
-                        </div>
-
-                        <div className={`${boxStyle()} col-span-2`}>
-                            Date Called: {job.dateCalled}
-                        </div>
-
-                        <div className={`${boxStyle()} col-span-2`}>
-                            Join Date: {job.joinDate}
-                        </div>
-
-                        <div className={`${boxStyle()} col-span-2`}>
-                            Company: {job.company}
-                        </div>
-
-                        <div className={`${boxStyle()} col-span-1`}>
-                            Billet: {job.billet}
-                        </div>
-                        <div className={`${boxStyle()} col-span-1`}>
-                            Type: {job.type}
-                        </div>
-                        <div className={`${boxStyle()} col-span-4`}>
-                            Crew Relieved: {job.crewRelieved}
-                        </div>
-                    </div>
-                    {/* ✅ Job Flags: stacked, left-aligned checkboxes when editing */}
-                    {/* Job Flags Display */}
-                    <div className='gap-2 flex items-center justify-center'>
-                        {job.passThru && (
-                            <span className='bg-green-600 text-white px-2 py-0.5 rounded text-xs col-span-1 text-center'>
-                                Pass-Thru
+                {/* Content - flex-grow to fill space */}
+                <div className='p-4 space-y-3 flex-grow overflow-auto'>
+                    {/* Key info badges with labels */}
+                    <div className='flex flex-wrap gap-3'>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Region
                             </span>
-                        )}
-                        {job.nightCardEarlyReturn && (
-                            <span className='bg-yellow-500 text-white px-2 py-0.5 rounded text-xs col-span-1'>
-                                Night Card Early Return
+                            <span className='bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm font-medium'>
+                                {job.region}
                             </span>
-                        )}
-                        {job.msc && (
-                            <span className='bg-blue-600 text-white px-2 py-0.5 rounded text-xs col-span-1'>
-                                MSC
+                        </div>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Hall
                             </span>
-                        )}
+                            <span className='bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm font-medium'>
+                                {job.hall}
+                            </span>
+                        </div>
                     </div>
+
+                    {/* Details grid */}
+                    <div className='grid grid-cols-2 gap-2 text-sm'>
+                        <div className='text-gray-600'>
+                            <span className='font-medium'>Location:</span>{' '}
+                            {job.location}
+                        </div>
+                        <div className='text-gray-600'>
+                            <span className='font-medium'>Days:</span>{' '}
+                            {job.days}
+                        </div>
+                        <div className='text-gray-600'>
+                            <span className='font-medium'>Called:</span>{' '}
+                            {job.dateCalled}
+                        </div>
+                        <div className='text-gray-600'>
+                            <span className='font-medium'>Join:</span>{' '}
+                            {job.joinDate}
+                        </div>
+                        <div className='text-gray-600'>
+                            <span className='font-medium'>Company:</span>{' '}
+                            {job.company}
+                        </div>
+                        <div className='text-gray-600'>
+                            <span className='font-medium'>Billet:</span>{' '}
+                            {job.billet}
+                        </div>
+                        <div className='text-gray-600'>
+                            <span className='font-medium'>Type:</span>{' '}
+                            {job.type}
+                        </div>
+                        <div className='text-gray-600'>
+                            <span className='font-medium'>Crew Relieved:</span>{' '}
+                            {job.crewRelieved}
+                        </div>
+                    </div>
+
+                    {/* Notes - fixed height with overflow */}
+                    {job.notes && (
+                        <div className='bg-blue-50 border border-blue-200 rounded p-3 max-h-20 overflow-auto'>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Notes
+                            </span>
+                            <p className='text-sm text-gray-700'>{job.notes}</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Edit Job Modal */}
+            {/* Modal */}
             {showModal && (
                 <EditJobModal
                     jobData={job}

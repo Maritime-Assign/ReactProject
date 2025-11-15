@@ -10,7 +10,7 @@ import OptionBar from './components/OptionBar'
 import Dashboard from './pages/Dashboard'
 import DashboardDispatch from './pages/DashboardDispatch'
 import DashboardDisplay from './pages/DashboardDisplay'
-import ViewBoard from './pages/ViewBoard'
+import ManageJobs from './pages/ManageJobs'
 import PasswordRecovery from './pages/PasswordRecovery'
 import Login from './pages/Login'
 import './App.css'
@@ -154,7 +154,7 @@ const App = () => {
                         path='/password-recovery'
                         element={<PasswordRecovery />}
                     />
-                    <Route path='/board' element={<ViewBoard />} />
+                    <Route path='/manage-jobs' element={<ManageJobs />} />
                     <Route path='/fsb' element={<FSboard />} />
                     <Route path='/addjob' element={<AddJob />} />
                     <Route path='/users-roles' element={<UsersAndRoles />} />
