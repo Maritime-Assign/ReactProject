@@ -13,11 +13,35 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
     const [showButton, setShowButton] = useState(false)
     const spanRef = useRef(null)
 
-    // format dates coming from supabase
     const formatDate = (dateString) => {
         if (!dateString) return ''
-        const [year, month, day] = dateString.split('-')
-        return `${month}/${day}/${year.slice(-2)}`
+        if (typeof dateString !== 'string') return ''
+
+        // Parse YYYY-MM-DD directly without Date object
+        const parts = dateString.split('-')
+        if (parts.length !== 3) return ''
+
+        const [year, month, day] = parts
+
+        if (!year || !month || !day) return ''
+
+        // Return MM/DD/YYYY format
+        return `${month}/${day}/${year}`
+    }
+
+    // Format with 2-digit year (for FillDate)
+    const formatDateShort = (dateString) => {
+        if (!dateString) return ''
+        if (typeof dateString !== 'string') return ''
+
+        const parts = dateString.split('-')
+        if (parts.length !== 3) return ''
+
+        const [year, month, day] = parts
+
+        if (!year || !month || !day) return ''
+
+        return `${month}/${day}/${year.slice(-2)}` // MM/DD/YY
     }
 
     // make sure the status matches incoming prop
@@ -180,13 +204,17 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                     <span className='text-red-700 text-center'>
                         Filled
                         <br />
-                        {props.FillDate ? `${formatDate(props.FillDate)}` : ''}
+                        {props.FillDate
+                            ? `${formatDateShort(props.FillDate)}`
+                            : ''}
                     </span>
                 ) : (
                     <span className='text-red-700 text-center'>
                         Filled by CO
                         <br />
-                        {props.FillDate ? `${formatDate(props.FillDate)}` : ''}
+                        {props.FillDate
+                            ? `${formatDateShort(props.FillDate)}`
+                            : ''}
                     </span>
                 )}
             </div>
@@ -207,13 +235,13 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                 <span>{props.hall}</span>
             </div>
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
-                <span>{props.dateCalled}</span>
+                <span>{formatDate(props.dateCalled)}</span>
             </div>
             <div className={`col-span-3 ${cellStyle} ${rowClass}`}>
                 <span>{props.shipName}</span>
             </div>
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
-                <span>{props.joinDate}</span>
+                <span>{formatDate(props.joinDate)}</span>
             </div>
             <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
                 <span>{props.billet}</span>
