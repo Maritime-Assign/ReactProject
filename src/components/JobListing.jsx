@@ -16,12 +16,8 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
     // format dates coming from supabase
     const formatDate = (dateString) => {
         if (!dateString) return ''
-        const date = new Date(dateString)
-        return date.toLocaleDateString('en-US', {
-            month: '2-digit',
-            day: '2-digit',
-            year: '2-digit',
-        })
+        const [year, month, day] = dateString.split('-')
+        return `${month}/${day}/${year.slice(-2)}`
     }
 
     // make sure the status matches incoming prop
@@ -44,6 +40,8 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
         }
     }, [error])
 
+    // Claim a job function with history logging
+    // Claim a job function with history logging
     // Claim a job function with history logging
     const claimJob = async () => {
         setClaim(true)
@@ -80,12 +78,18 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                 return
             }
 
+            // Get local date
+            const today = new Date()
+            const year = today.getFullYear()
+            const month = String(today.getMonth() + 1).padStart(2, '0')
+            const day = String(today.getDate()).padStart(2, '0')
+            const localDate = `${year}-${month}-${day}`
+
             // Build claim data
             const claimData = {
                 open: 'Filled',
-                FillDate: new Date().toISOString().split('T')[0],
+                FillDate: localDate,
                 claimedBy: user.id,
-                claimed_at: new Date().toISOString(),
             }
 
             // Update job and log the change
