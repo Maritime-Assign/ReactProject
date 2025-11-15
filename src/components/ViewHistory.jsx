@@ -90,6 +90,7 @@ const ViewHistory = () => {
             const query = searchQuery.trim()
             // Only clear filters if there is something to clear
             if (query === '') {
+                setDebouncedQuery('')
                 if (lastFilters.current) {
                     clearFilters()
                     lastFilters.current = null
@@ -762,23 +763,22 @@ const ViewHistory = () => {
     }
 
     const clearFilters = async () => {
-        // Only make api fetch call if there are valid filters to clear
-        if (
-            filters.jobId ||
-            filters.userId ||
-            (filters.dateFrom && filters.dateTo)
-        ) {
-            const clearedFilters = {
-                jobId: '',
-                dateFrom: '',
-                dateTo: '',
-                userId: '',
-            }
-            setFilters(clearedFilters)
-            setCurrentPage(1)
-            await fetchLogs(1, clearedFilters)
-            await fetchSummaryData(clearedFilters)
+        // Create a blank filters object to remove all filters to ensure everything is fetched again
+        const clearedFilters = {
+            jobId: '',
+            dateFrom: '',
+            dateTo: '',
+            userId: '',
         }
+        // Update react state so app knows filters are cleared
+        setFilters(clearedFilters)
+        // Reset pagination
+        setCurrentPage(1)
+        // Full, unfiltered job history list
+        await fetchLogs(1, clearedFilters)
+        // Keep summary section in sync
+        await fetchSummaryData(clearedFilters)
+        navigate({ pathname: '/history', search: '?page=1' }, { replace: true })
     }
 
     // Handle pagination
