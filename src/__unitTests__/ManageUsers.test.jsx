@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi, test } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import UsersAndRoles from '../pages/UsersAndRoles.jsx'
-import supabase from '../api/supabaseClient'
+import supabase from '../api/supabaseClient.js'
 import { faker } from '@faker-js/faker'
 
 // Create fake users
@@ -32,7 +32,7 @@ const helperRender = () => {
 }
 
 // Start tests
-describe('UsersAndRoles Page', () => {
+describe('ManageUsers Page', () => {
 
     test('Checks for Role, Name, and Username columns', () => {
         helperRender()
