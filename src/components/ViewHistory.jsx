@@ -1519,11 +1519,11 @@ ${log.new_state}`
                             (viewMode === 'grouped' && groupedLogs.length === 0) ||
                             (viewMode === 'flat' && logs.length === 0)
                         }
-                        className={`p-2 rounded text-white
+                        className={`bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white
                             ${((viewMode === 'grouped' && groupedLogs.length === 0) ||
                             (viewMode === 'flat' && logs.length === 0))
                             ? 'bg-gray-400 cursor-not-allowed text-gray-200'
-                            : 'bg-mebablue-light hover:bg-blue-700 text-white'}
+                            : 'bg-mebablue-light hover:bg-mebablue text-white'}
                         `}
                         //className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
                         title='Export CSV'
