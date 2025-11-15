@@ -18,13 +18,19 @@ const Tile = ({ job, onJobUpdate }) => {
         }
     }
 
+    const formatDate = (dateString) => {
+        if (!dateString) return ''
+        const [year, month, day] = dateString.split('-')
+        return `${month}/${day}/${year}`
+    }
+
     return (
         <>
             {/* Main card - fixed height */}
             <div className='bg-white rounded-lg border border-gray-300 overflow-hidden h-full flex flex-col'>
                 {/* Header with edit button */}
                 <div className='flex items-center justify-between px-4 py-3 border-b border-gray-300 bg-gray-50 shrink-0'>
-                    <div className='flex items-center gap-4 grow'>
+                    <div className='flex items-start gap-4 grow'>
                         <div>
                             <span className='text-xs text-gray-500 font-medium block'>
                                 Vessel
@@ -37,18 +43,32 @@ const Tile = ({ job, onJobUpdate }) => {
                             <span className='text-xs text-gray-500 font-medium block'>
                                 Status
                             </span>
-                            <h3
+                            <div
                                 className={`${statusColor} text-sm font-semibold`}
                             >
-                                {job.open == 'Open'
-                                    ? job.open
-                                    : job.open == 'Filled'
-                                    ? `Filled ${job.fillDate || ''}`
-                                    : 'Filled by CO'}
-                            </h3>
+                                {job.open == 'Open' ? (
+                                    job.open
+                                ) : job.open == 'Filled' ? (
+                                    <>
+                                        <div>Filled</div>
+                                        <div className='text-xs'>
+                                            {formatDate(job.FillDate)}
+                                        </div>
+                                    </>
+                                ) : job.open == 'Filled by Company' ? (
+                                    <>
+                                        <div>Filled by CO</div>
+                                        <div className='text-xs'>
+                                            {formatDate(job.FillDate)}
+                                        </div>
+                                    </>
+                                ) : (
+                                    job.open
+                                )}
+                            </div>
                         </div>
                         {/* Flags */}
-                        <div className='flex gap-2'>
+                        <div className='flex gap-2 self-center'>
                             {job.Users?.abbreviation && (
                                 <span className='bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-medium'>
                                     {job.Users.abbreviation}
@@ -112,11 +132,11 @@ const Tile = ({ job, onJobUpdate }) => {
                         </div>
                         <div className='text-gray-600'>
                             <span className='font-medium'>Called:</span>{' '}
-                            {job.dateCalled}
+                            {formatDate(job.dateCalled)}
                         </div>
                         <div className='text-gray-600'>
-                            <span className='font-medium'>Join:</span>{' '}
-                            {job.joinDate}
+                            <span className='font-medium'>Joined:</span>{' '}
+                            {formatDate(job.joinDate)}
                         </div>
                         <div className='text-gray-600'>
                             <span className='font-medium'>Company:</span>{' '}
@@ -138,7 +158,7 @@ const Tile = ({ job, onJobUpdate }) => {
 
                     {/* Notes - fixed height with overflow */}
                     {job.notes && (
-                        <div className='bg-blue-50 border border-blue-200 rounded p-3 max-h-20 overflow-auto'>
+                        <div className='bg-blue-50 border border-blue-200 rounded px-3 py-2 max-h-20 overflow-auto'>
                             <span className='text-xs text-gray-500 font-medium block mb-1'>
                                 Notes
                             </span>

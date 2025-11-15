@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { UserAuth } from '../auth/AuthContext'
 import { updateJob } from '../utils/jobHistoryOptimized'
 import supabase from '../api/supabaseClient'
+import { Check } from 'lucide-react'
 
 const EditJobModal = ({ jobData, onClose, onSave }) => {
     const { user } = UserAuth()
@@ -126,6 +127,8 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
         passThru: jobData?.passThru || false,
         nightCardEarlyReturn: jobData?.nightCardEarlyReturn || false,
         msc: jobData?.msc || false,
+        FillDate: jobData?.FillDate || null,
+        claimedBy: jobData?.claimedBy || null,
     })
 
     const [message, setMessage] = useState('')
@@ -162,6 +165,10 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                 passThru: jobData.passThru || false,
                 nightCardEarlyReturn: jobData.nightCardEarlyReturn || false,
                 msc: jobData.msc || false,
+                FillDate: jobData.FillDate
+                    ? formatDate(jobData.FillDate)
+                    : null,
+                claimedBy: jobData.claimedBy || null,
             })
         }
     }, [jobData])
@@ -265,32 +272,45 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
         setSaving(true)
 
         let dataToSave = { ...formData }
-
         // Check if the status in the form data is 'Open'
         if (dataToSave.open === 'Open') {
-            // Explicitly set claimedBy to null if the status is 'Open'
             dataToSave.claimedBy = null
-            console.log('Status is Open, setting claimedBy to null.')
+            dataToSave.FillDate = null
+        } else if (
+            (dataToSave.open === 'Filled' ||
+                dataToSave.open === 'Filled by Company') &&
+            jobData.open === 'Open' // Status CHANGED from Open
+        ) {
+            const today = new Date()
+            today.setMinutes(today.getMinutes() - today.getTimezoneOffset())
+            dataToSave.FillDate = today.toISOString().split('T')[0]
+            dataToSave.claimedBy = user.id
         }
 
         try {
             // Update the job
             const result = await updateJob(
                 jobData.id,
-                formData, // Contains all fields to update
+                dataToSave, // Contains all fields to update
                 user.id // <-- This must be a non-null/non-undefined UUID!
             )
 
             if (result.success) {
+                // Fetch the updated job with Users relationship
+                const { data: updatedJobWithUser } = await supabase
+                    .from('Jobs')
+                    .select('*, Users:claimedBy (abbreviation)')
+                    .eq('id', jobData.id)
+                    .single()
+
                 setMessage('Job updated successfully!')
                 setMessageType('success')
 
-                // Call onSave callback with updated data
+                // Call onSave with the full data including Users
                 if (onSave) {
-                    onSave(result.data)
+                    onSave(updatedJobWithUser || result.data)
                 }
 
-                // Close modal after a brief delay
                 setTimeout(() => {
                     onClose()
                 }, 1500)
@@ -369,44 +389,78 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
     }
 
     return (
-        <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4'>
-            <div className='bg-mebablue-hover max-w-[900px] w-full max-h-[90vh] overflow-y-auto rounded-md shadow-2xl'>
-                <div className='flex justify-center py-4 bg-mebablue-dark rounded-t-md w-full shadow-xl sticky top-0 z-10'>
-                    <span className='text-white text-2xl font-semibold'>
+        <div className='fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4'>
+            <div className='bg-white max-w-[900px] w-full max-h-[90vh] overflow-y-auto rounded-md shadow-2xl'>
+                <div className='flex justify-center py-4 bg-mebablue-dark rounded-t-md w-full shadow-xl sticky top-0 z-10 border-b border-mebagold'>
+                    <span className='text-white text-2xl font-medium'>
                         Edit Job
                     </span>
                 </div>
 
                 {/* Tile Content container*/}
-                <div className='flex flex-col w-full h-full px-4 mx-auto py-4'>
-                    {/* Row 1: Ship Name, regions, Halls, Status 3 Col Grid*/}
-                    <div className='grid grid-cols-3 gap-2 py-2 font-semibold text-white'>
-                        <div>
-                            <input
-                                type='text'
-                                value={formData.shipName}
-                                onChange={(e) =>
-                                    handleInputChange(
-                                        'shipName',
-                                        e.target.value
-                                    )
-                                }
-                                placeholder='Ship Name'
-                                className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white placeholder-gray-300 w-full'
-                            />
-                            {errors.shipName && (
-                                <span className='text-red-400 text-xs block mt-1'>
-                                    {errors.shipName}
+                {/* Tile Content container*/}
+                <div className='flex flex-col w-full h-full px-4 mx-auto py-4 gap-3'>
+                    {/* Header row: Ship Name, Status, Flags */}
+                    <div className='flex items-start justify-between gap-4 pb-3 border-b border-gray-300'>
+                        <div className='flex gap-4'>
+                            <div>
+                                <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                    Vessel
                                 </span>
-                            )}
+                                <input
+                                    type='text'
+                                    value={formData.shipName}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            'shipName',
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder='Ship Name'
+                                    className='bg-white border border-gray-300 outline-none focus:border-mebagold outline-none focus:border-mebagold px-3 py-1.5 rounded-md text-gray-900 placeholder-gray-400 text-sm font-semibold'
+                                />
+                                {errors.shipName && (
+                                    <span className='text-red-500 text-xs block mt-1'>
+                                        {errors.shipName}
+                                    </span>
+                                )}
+                            </div>
+                            <div>
+                                <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                    Status
+                                </span>
+                                <select
+                                    value={formData.open}
+                                    onChange={(e) => {
+                                        handleInputChange(
+                                            'open',
+                                            e.target.value
+                                        )
+                                    }}
+                                    className='text-gray-900 px-3 py-1.5 rounded-md text-sm font-semibold border border-gray-300 outline-none focus:border-mebagold bg-white'
+                                >
+                                    <option value='Open'>Open</option>
+                                    <option value='Filled'>Filled</option>
+                                    <option value='Filled by Company'>
+                                        Filled by Company
+                                    </option>
+                                </select>
+                            </div>
                         </div>
-                        <div className='grid grid-cols-2 gap-1'>
+                    </div>
+
+                    {/* Region and Hall */}
+                    <div className='flex gap-3'>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Region
+                            </span>
                             <select
                                 value={formData.region}
                                 onChange={(e) =>
                                     handleInputChange('region', e.target.value)
                                 }
-                                className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white text-sm'
+                                className='bg-gray-100 border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-sm text-gray-700'
                             >
                                 <option value='' disabled>
                                     Select Region
@@ -417,12 +471,17 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                                     </option>
                                 ))}
                             </select>
+                        </div>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Hall
+                            </span>
                             <select
                                 value={formData.hall}
                                 onChange={(e) =>
                                     handleInputChange('hall', e.target.value)
                                 }
-                                className='bg-mebablue-light px-2 py-1 rounded-md text-center text-white text-sm'
+                                className='bg-gray-100 border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-sm text-gray-700'
                             >
                                 <option value='' disabled>
                                     Select Hall
@@ -434,42 +493,14 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                                 ))}
                             </select>
                         </div>
-                        {/* if job is open render box green and display 'Open' if filled render red and display 'Filled + date' */}
-                        <select
-                            value={formData.open}
-                            onChange={(e) => {
-                                handleInputChange('open', e.target.value)
-                            }}
-                            className={`${statusColor} px-2 py-1 rounded-md text-white text-center`}
-                        >
-                            <option value='Open'>Open</option>
-                            <option value='Filled'>Filled</option>
-                            <option value='Filled by Company'>
-                                Filled by Company
-                            </option>
-                        </select>
                     </div>
 
-                    {/* Row 2: Notes */}
-                    <div className='bg-mebablue-light rounded-md py-2 px-4 text-sm font-medium flex-col flex text-white items-center w-full mx-auto'>
-                        <span className='font-semibold'>
-                            Requirements/Notes:
-                        </span>
-                        <textarea
-                            value={formData.notes}
-                            onChange={(e) =>
-                                handleInputChange('notes', e.target.value)
-                            }
-                            placeholder='Enter notes/requirements'
-                            maxLength={250}
-                            rows={2}
-                            className='bg-mebablue-light py-1 rounded-md text-white outline-none w-full mx-auto placeholder-gray-300'
-                        />
-                    </div>
-
-                    {/* Row 3: Details 4 col Grid */}
-                    <div className='grid grid-cols-4 gap-2 font-medium text-sm py-2 w-full mx-auto'>
-                        <div className='col-span-2'>
+                    {/* Details grid */}
+                    <div className='grid grid-cols-2 gap-3 text-sm'>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Location
+                            </span>
                             <input
                                 type='text'
                                 value={formData.location}
@@ -480,32 +511,37 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                                     )
                                 }
                                 placeholder='Location'
-                                className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white placeholder-gray-300 w-full'
+                                className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             />
                             {errors.location && (
-                                <span className='text-red-400 text-xs block mt-1'>
+                                <span className='text-red-500 text-xs block mt-1'>
                                     {errors.location}
                                 </span>
                             )}
                         </div>
-                        <div className='col-span-2'>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Days
+                            </span>
                             <input
-                                type='number'
+                                type='text'
                                 value={formData.days}
                                 onChange={(e) =>
                                     handleInputChange('days', e.target.value)
                                 }
                                 placeholder='Days'
-                                min='0'
-                                className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white placeholder-gray-300 w-full'
+                                className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             />
                             {errors.days && (
-                                <span className='text-red-400 text-xs block mt-1'>
+                                <span className='text-red-500 text-xs block mt-1'>
                                     {errors.days}
                                 </span>
                             )}
                         </div>
-                        <div className='col-span-2'>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Date Called
+                            </span>
                             <input
                                 type='date'
                                 value={formData.dateCalled}
@@ -515,15 +551,18 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                                         e.target.value
                                     )
                                 }
-                                className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
+                                className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             />
                             {errors.dateCalled && (
-                                <span className='text-red-400 text-xs block mt-1'>
+                                <span className='text-red-500 text-xs block mt-1'>
                                     {errors.dateCalled}
                                 </span>
                             )}
                         </div>
-                        <div className='col-span-2'>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Join Date
+                            </span>
                             <input
                                 type='date'
                                 value={formData.joinDate}
@@ -533,15 +572,18 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                                         e.target.value
                                     )
                                 }
-                                className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
+                                className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             />
                             {errors.joinDate && (
-                                <span className='text-red-400 text-xs block mt-1'>
+                                <span className='text-red-500 text-xs block mt-1'>
                                     {errors.joinDate}
                                 </span>
                             )}
                         </div>
-                        <div className='col-span-2'>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Company
+                            </span>
                             <input
                                 type='text'
                                 value={formData.company}
@@ -549,21 +591,24 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                                     handleInputChange('company', e.target.value)
                                 }
                                 placeholder='Company'
-                                className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white placeholder-gray-300 w-full'
+                                className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             />
                             {errors.company && (
-                                <span className='text-red-400 text-xs block mt-1'>
+                                <span className='text-red-500 text-xs block mt-1'>
                                     {errors.company}
                                 </span>
                             )}
                         </div>
-                        <div className='col-span-1'>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Billet
+                            </span>
                             <select
                                 value={formData.billet}
                                 onChange={(e) =>
                                     handleInputChange('billet', e.target.value)
                                 }
-                                className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
+                                className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             >
                                 <option value='' disabled>
                                     Select Billet
@@ -575,18 +620,21 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                                 ))}
                             </select>
                             {errors.billet && (
-                                <span className='text-red-400 text-xs block mt-1'>
+                                <span className='text-red-500 text-xs block mt-1'>
                                     {errors.billet}
                                 </span>
                             )}
                         </div>
-                        <div className='col-span-1'>
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Type
+                            </span>
                             <select
                                 value={formData.type}
                                 onChange={(e) =>
                                     handleInputChange('type', e.target.value)
                                 }
-                                className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white w-full'
+                                className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             >
                                 <option value='' disabled>
                                     Select Type
@@ -598,57 +646,122 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                                 ))}
                             </select>
                             {errors.type && (
-                                <span className='text-red-400 text-xs block mt-1'>
+                                <span className='text-red-500 text-xs block mt-1'>
                                     {errors.type}
                                 </span>
                             )}
                         </div>
-                        <input
-                            type='text'
-                            value={formData.crewRelieved}
+                        <div>
+                            <span className='text-xs text-gray-500 font-medium block mb-1'>
+                                Crew Relieved
+                            </span>
+                            <input
+                                type='text'
+                                value={formData.crewRelieved}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        'crewRelieved',
+                                        e.target.value
+                                    )
+                                }
+                                placeholder='Crew Relieved'
+                                maxLength={100}
+                                className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
+                            />
+                        </div>
+                    </div>
+
+                    {/* Notes */}
+                    <div className='bg-blue-50 border border-blue-200 rounded p-3'>
+                        <span className='text-xs text-gray-500 font-medium block mb-1'>
+                            Notes
+                        </span>
+                        <textarea
+                            value={formData.notes}
                             onChange={(e) =>
-                                handleInputChange(
-                                    'crewRelieved',
-                                    e.target.value
-                                )
+                                handleInputChange('notes', e.target.value)
                             }
-                            placeholder='Crew Relieved'
-                            maxLength={100}
-                            className='bg-mebablue-light px-3 py-1 rounded-md font-semibold text-white col-span-4 placeholder-gray-300'
+                            placeholder='Enter notes/requirements'
+                            maxLength={250}
+                            rows={3}
+                            className='w-full bg-blue-50 text-gray-700 text-sm outline-none resize-none placeholder-gray-400'
                         />
                     </div>
                 </div>
-
-                {/* Job Flags (inline and scoped to their checkboxes) */}
-                <div className='flex flex-wrap items-center gap-6 mt-3 px-4 text-white text-sm font-medium'>
+                {/* Job Flags */}
+                <div className='flex flex-wrap items-center gap-4 px-4 pb-4 border-b border-gray-300'>
                     {[
-                        { name: 'passThru', label: 'Pass-Thru' },
+                        {
+                            name: 'passThru',
+                            label: 'Pass-Thru',
+                            bgColor: 'bg-purple-100',
+                            textColor: 'text-purple-700',
+                            hoverColor: 'hover:bg-purple-200',
+                            checkColor: 'border-purple-600 bg-purple-600',
+                        },
                         {
                             name: 'nightCardEarlyReturn',
                             label: 'Night Card Early Return',
+                            bgColor: 'bg-yellow-100',
+                            textColor: 'text-yellow-700',
+                            hoverColor: 'hover:bg-yellow-200',
+                            checkColor: 'border-yellow-600 bg-yellow-600',
                         },
-                        { name: 'msc', label: 'MSC' },
-                    ].map(({ name, label }) => (
-                        <label
-                            key={name}
-                            className='flex items-center space-x-2 bg-mebablue-light/30 hover:bg-mebablue-light/50 px-3 py-1 rounded-md transition-all cursor-pointer'
-                            aria-label={label}
-                        >
-                            <input
-                                type='checkbox'
-                                checked={formData[name]}
-                                onChange={(e) =>
-                                    handleInputChange(name, e.target.checked)
-                                }
-                                className='h-4 w-4 accent-mebablue-dark'
-                            />
-                            <span>{label}</span>
-                        </label>
-                    ))}
+                        {
+                            name: 'msc',
+                            label: 'MSC',
+                            bgColor: 'bg-blue-100',
+                            textColor: 'text-blue-700',
+                            hoverColor: 'hover:bg-blue-200',
+                            checkColor: 'border-blue-600 bg-blue-600',
+                        },
+                    ].map(
+                        ({
+                            name,
+                            label,
+                            bgColor,
+                            textColor,
+                            hoverColor,
+                            checkColor,
+                        }) => (
+                            <label
+                                key={name}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium cursor-pointer transition-colors ${bgColor} ${textColor} ${hoverColor}`}
+                                aria-label={label}
+                            >
+                                <input
+                                    type='checkbox'
+                                    checked={formData[name]}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            name,
+                                            e.target.checked
+                                        )
+                                    }
+                                    className='hidden'
+                                />
+                                <div
+                                    className={`h-4 w-4 rounded border flex items-center justify-center ${
+                                        formData[name]
+                                            ? checkColor
+                                            : 'border-gray-400 bg-white'
+                                    }`}
+                                >
+                                    {formData[name] && (
+                                        <Check
+                                            className='w-3 h-3 text-white'
+                                            strokeWidth={3}
+                                        />
+                                    )}
+                                </div>
+                                <span>{label}</span>
+                            </label>
+                        )
+                    )}
                 </div>
 
                 {/* Action Buttons */}
-                <div className='flex justify-between gap-4 p-4 bg-mebablue-hover sticky bottom-0'>
+                <div className='flex justify-between gap-4 p-4 bg-white sticky bottom-0'>
                     <button
                         className='bg-red-500 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 hover:bg-red-600'
                         onClick={() => setShowConfirmArchive(true)}
@@ -685,7 +798,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
 
                 {/* Message Popup */}
                 {message && (
-                    <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
+                    <div className='fixed inset-0 flex items-center justify-center bg-black/40 z-50'>
                         <div
                             className={`p-6 rounded-md shadow-lg max-w-sm w-full border ${
                                 messageType === 'success'
@@ -731,7 +844,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
 
                 {/* Confirm Archive Dialog */}
                 {showConfirmArchive && (
-                    <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
+                    <div className='fixed inset-0 flex items-center justify-center bg-black/40 z-50'>
                         <div className='bg-white p-6 rounded-md shadow-lg max-w-sm w-full border border-orange-300'>
                             <h2 className='text-xl font-semibold text-orange-800'>
                                 Confirm Archive

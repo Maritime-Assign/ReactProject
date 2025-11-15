@@ -74,46 +74,32 @@ const ManageJobs = () => {
                         Manage Jobs
                     </span>
                 </div>
-                {/* Search Bar */}
-                <div className='grow mx-4 relative overflow-visible'>
-                    <input
-                        type='text'
-                        placeholder='Search vessel, region, hall, or join date…'
-                        className='w-full py-2 pl-4 pr-10 rounded-lg text-sm text-gray-700 bg-white focus:outline-none border-2 border-mebablue-dark focus:border-mebagold'
-                        value={searchWord}
-                        onChange={(e) => setSearchWord(e.target.value)}
-                    />
-                    {/* Spinner | Clear button */}
-                    <div className='absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center'>
-                        {loading ? (
-                            <div className='animate-spin border-2 border-gray-300 border-t-blue-500 rounded-full w-4 h-4'></div>
-                        ) : searchWord ? (
-                            <button
-                                data-testid='clearButton'
-                                onClick={() => {
-                                    setSearchWord('')
-                                }}
-                                className='text-gray-400 hover:text-gray-600 bg-white rounded-full p-1'
-                            >
-                                <IoClose className='w-4 h-4' />
-                            </button>
-                        ) : null}
-                    </div>
-                </div>
             </div>
-            <Filter setView={setView} setFilterOpen={setFilterOpen} />
+            <Filter
+                setView={setView}
+                setFilterOpen={setFilterOpen}
+                searchWord={searchWord}
+                setSearchWord={setSearchWord}
+                loading={loading}
+            />
             <div className='w-full'>
                 <div className='grid md:grid-cols-2 grid-cols-1 gap-4'>
                     {(filterOpen === true
                         ? filteredJobs.filter((j) => j.open == 'Open')
                         : filterOpen === 'filled'
                         ? filteredJobs.filter((j) => j.open.includes('Filled'))
-                        : filteredJobs
+                        : filteredJobs.sort((a, b) => {
+                              // Sort by dateCalled (oldest first)
+                              return (
+                                  new Date(a.dateCalled) -
+                                  new Date(b.dateCalled)
+                              )
+                          })
                     ).map((job) => (
                         <Tile
                             key={job.id}
                             job={job}
-                            onJobUpdate={handleJobUpdate} // 🔑 pass handler
+                            onJobUpdate={handleJobUpdate}
                         />
                     ))}
                 </div>
