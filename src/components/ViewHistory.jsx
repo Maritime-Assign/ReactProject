@@ -778,6 +778,9 @@ const ViewHistory = () => {
             setCurrentPage(1)
             await fetchLogs(1, clearedFilters)
             await fetchSummaryData(clearedFilters)
+
+            // Update url to remove query params and reset to page 1 when filter/search is cleared
+            navigate({ pathname: '/history', search: '?page=1'}, {replace: true})
         }
     }
 
