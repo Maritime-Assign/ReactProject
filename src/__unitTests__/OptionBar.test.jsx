@@ -73,6 +73,42 @@ describe('OptionBar Component', () => {
     expect(screen.getByText('Job Board')).toBeInTheDocument()
   })
 
+  test('renders NavBar with correct items for dispatch role', () => {
+    UserAuth.mockReturnValue({
+      user: { email: 'dispatch@example.com' },
+      role: 'dispatch',
+      loadingSession: false,
+      signOut: vi.fn(),
+    })
+
+    render(
+      <MemoryRouter>
+        <OptionBar />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByText('Home')).toBeInTheDocument()
+    expect(screen.getByText('Job Board')).toBeInTheDocument()
+  })
+
+  test('does not render NavBar for display role', () => {
+    UserAuth.mockReturnValue({
+      user: { email: 'display@example.com' },
+      role: 'display',
+      loadingSession: false,
+      signOut: vi.fn(),
+    })
+
+    render(
+      <MemoryRouter>
+        <OptionBar />
+      </MemoryRouter>
+    )
+
+    expect(screen.queryByText('Home')).not.toBeInTheDocument()
+    expect(screen.queryByText('Job Board')).not.toBeInTheDocument()
+  })
+
   test('calls signOut when Logout button is clicked', async () => {
     const mockSignOut = vi.fn()
     UserAuth.mockReturnValue({
@@ -93,28 +129,29 @@ describe('OptionBar Component', () => {
 
     expect(mockSignOut).toHaveBeenCalledTimes(1)
   })
-    test('does not render navigation bar content on the login page', () => {
-    UserAuth.mockReturnValue({
-        user: null,
-        role: null,
-        loadingSession: false,
-        signOut: vi.fn(),
-    })
+  
+  test('does not render navigation bar content on the login page', () => {
+  UserAuth.mockReturnValue({
+      user: null,
+      role: null,
+      loadingSession: false,
+      signOut: vi.fn(),
+  })
 
-    render(
-        <MemoryRouter initialEntries={['/login']}>
-        <OptionBar />
-        </MemoryRouter>
-    )
+  render(
+      <MemoryRouter initialEntries={['/login']}>
+      <OptionBar />
+      </MemoryRouter>
+  )
 
-    // Ensure the navigation bar content is not rendered
-    expect(screen.queryByText('Home')).not.toBeInTheDocument()
-    expect(screen.queryByText('Job Board')).not.toBeInTheDocument()
-    expect(screen.queryByText('Signed in as:')).not.toBeInTheDocument()
+  // Ensure the navigation bar content is not rendered
+  expect(screen.queryByText('Home')).not.toBeInTheDocument()
+  expect(screen.queryByText('Job Board')).not.toBeInTheDocument()
+  expect(screen.queryByText('Signed in as:')).not.toBeInTheDocument()
 
-    // Ensure the logo is still rendered
-    expect(screen.getByAltText('Maritime Assign Logo')).toBeInTheDocument()
-    })
+  // Ensure the logo is still rendered
+  expect(screen.getByAltText('Maritime Assign Logo')).toBeInTheDocument()
+  })
 
   describe('role-based rendering', () => {
     const rolesConfig = [
