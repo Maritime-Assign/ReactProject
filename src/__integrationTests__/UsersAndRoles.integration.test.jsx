@@ -48,11 +48,16 @@ describe('UsersAndRoles Page', () => {
         for (const user of fakeUsers) {
             // Locate first name cell
             const locateFirstName = await screen.findByText(user.first_name)
+            const locateRole = user.role ? user.role[0].toUpperCase() + user.role.slice(1) : ''
 
             // Locate parent row for fake user
-            const row = locateFirstName.closest('.grid-row')
-            expect(row).toBeInTheDocument()
-
+            let row = locateFirstName
+            while (row && row !== document.body && !(row.textContent?.includes(user.username) && row.textContent?.includes(locateRole))) 
+            {
+              row = row.parentElement
+            }
+            expect(row).toBeTruthy()
+            
             // Specify queries to fake user row
             const userRow = within(row)
             // Check is username is present
