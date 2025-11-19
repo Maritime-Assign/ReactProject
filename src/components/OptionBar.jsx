@@ -37,7 +37,7 @@ const OptionBar = () => {
 
     if (loadingSession) return <LoadingSpinner />
 
-    // Dynamically set dashboard path based on role
+    // Dynamically set dashboard path based on user role
     const dashboardPath =
         role === 'admin'
             ? '/admin/dashboard'
