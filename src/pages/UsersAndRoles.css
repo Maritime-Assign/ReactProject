@@ -54,22 +54,13 @@ font-family: 'Monteserrat', sans-serif;
     align-items: center;
     padding: 10px;
   }
-  
-  .grid-header {
-    background-color: #fff    ;
-    font-weight: bold;
-  }
+
   /*prevent layout being changed by overflow*/
   .grid-cell {
     padding: 5px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  /*alternating grey and white results for easier viewing*/
-  .grid-row:nth-child(even) {
-    background-color: #e6e8f4;
   }
   
   .edit-button {
