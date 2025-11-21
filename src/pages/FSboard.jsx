@@ -43,7 +43,6 @@ const FSboard = () => {
         }
 
         fetchJobs()
-        console.log('fetchJobs called')
 
         // skip auto-refresh interval in tests
         let intervalId
@@ -64,6 +63,10 @@ const FSboard = () => {
     if (error) {
         return <div>Error: {error}</div> // Show an error message if fetching fails
     }
+    
+    // sort fetched jobs by oldest to newest before display
+    // applies to regular and passThru
+    jobs.sort((a, b) => new Date(a.dateCalled) - new Date(b.dateCalled));
 
     const regularJobs = jobs.filter((j) => j.passThru === false)
     const passThruJobs = jobs.filter((j) => j.passThru === true)
