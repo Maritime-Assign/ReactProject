@@ -3,11 +3,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useContext } from 'react';
-import './UsersAndRoles.css';
+import styles from './UsersAndRoles.module.css';
 import { FaEdit, FaUserPlus, FaUserMinus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import supabase from '../api/supabaseClient';
-import ImageDropdown from '../components/ImageDropdown/ImageDropdown'
 import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from 'react-router-dom'
   

@@ -11,7 +11,7 @@ import LogoutIcon from '@mui/icons-material/Logout'
 // pictures as objects
 import logo from '../assets/maritimelogo5.png'
 // styles file
-import './OptionBar.css'
+import styles from './OptionBar.module.css'
 // import link to nav to internal pages
 import { Link, useLocation } from 'react-router-dom'
 // import user auth context to manage login state
@@ -51,19 +51,19 @@ const OptionBar = () => {
         navItems = [
             {
                 text: 'Home',
-                icon: <HomeIcon className='navBarIcon' />,
+                icon: <HomeIcon className={styles.navBarIcon} />,
                 to: dashboardPath,
             },
             {
                 text: 'Job Board',
-                icon: <WorkIcon className='navBarIcon' />,
+                icon: <WorkIcon className={styles.navBarIcon} />,
                 to: '/fsb',
             },
         ]
     }
 
     return (
-        <nav className='navbar'>
+        <nav className={styles.navbar}>
             <Logo />
             {isLoggedIn && <NavBar items={navItems} />}
             {!isLoginPage && (
@@ -79,15 +79,15 @@ const OptionBar = () => {
 // logo component renders a container div with an image element
 // both the container and the image have their own CSS linked with className
 const Logo = () => (
-    <div className='logoContainer'>
-        <img src={logo} alt='Maritime Assign Logo' className='maritimeLogo' />
+    <div className={styles.logoContainer}>
+        <img src={logo} alt='Maritime Assign Logo' className={styles.maritimeLogo} />
     </div>
 )
 
 // navbar component renders a button for each of the nav items.
 // navbar has its own css
 const NavBar = ({ items }) => (
-    <Box className='navBarContainer'>
+    <Box className={styles.navBarContainer}>
         {items.map((item, index) => (
             <NavButton key={index} item={item} />
         ))}
@@ -97,10 +97,10 @@ const NavBar = ({ items }) => (
 // button components that are rendered from NavBar
 // renders a button with icon and text with its own css
 const NavButton = ({ item }) => (
-    <Button className='navButton'>
-        <Link to={item.to} className='navLink'>
+    <Button className={styles.navButton}>
+        <Link to={item.to} className={styles.navLink}>
             {item.icon}
-            <span className='navButtonText'>{item.text}</span>
+            <span className={styles.navButtonText}>{item.text}</span>
         </Link>
     </Button>
 )
@@ -113,28 +113,28 @@ const SessionManager = ({ isLoggedIn, handleLogout }) => {
     return (
         <div>
             {isLoggedIn ? (
-                <div className='sessionContainer'>
-                    <div className='userInfo'>
-                        <span className='signedInLabel'>Signed in as:</span>
-                        <span className='usernameText'>
+                <div className={styles.sessionContainer}>
+                    <div className={styles.userInfo}>
+                        <span className={styles.signedInLabel}>Signed in as:</span>
+                        <span className={styles.usernameText}>
                             {user?.email?.split('@')[0] || 'User'}
                         </span>
                     </div>
-                    <Button onClick={handleLogout} className='navButton'>
-                        <LogoutIcon className='navBarIcon' />
-                        <span className='navButtonText'>Logout</span>
+                    <Button onClick={handleLogout} className={styles.navButton}>
+                        <LogoutIcon className={styles.navBarIcon} />
+                        <span className={styles.navButtonText}>Logout</span>
                     </Button>
                 </div>
             ) : (
-                <div className='sessionContainer'>
-                    <div className='userInfo'>
-                        <span className='signedInLabel'>Signed in as:</span>
-                        <span className='usernameText'>Guest</span>
+                <div className={styles.sessionContainer}>
+                    <div className={styles.userInfo}>
+                        <span className={styles.signedInLabel}>Signed in as:</span>
+                        <span className={styles.usernameText}>Guest</span>
                     </div>
-                    <Link to='/login' className='navLink'>
-                        <Button className='navButton'>
-                            <LoginIcon className='navBarIcon' />
-                            <span className='navButtonText'>Login</span>
+                    <Link to='/login' className={styles.navLink}>
+                        <Button className={styles.navButton}>
+                            <LoginIcon className={styles.navBarIcon} />
+                            <span className={styles.navButtonText}>Login</span>
                         </Button>
                     </Link>
                 </div>
