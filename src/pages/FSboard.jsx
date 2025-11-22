@@ -66,7 +66,7 @@ const FSboard = () => {
     
     // sort fetched jobs by oldest to newest before display
     // applies to regular and passThru
-    jobs.sort((a, b) => new Date(a.dateCalled) - new Date(b.dateCalled));
+    jobs.sort((a, b) => new Date(a.joinDate) - new Date(b.joinDate));
 
     const regularJobs = jobs.filter((j) => j.passThru === false)
     const passThruJobs = jobs.filter((j) => j.passThru === true)
