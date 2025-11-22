@@ -159,6 +159,53 @@ const ViewHistory = () => {
         }
 
         // If "numeric/" then handle date formats
+        // Handle date range searches: MM/DD/YYYY-MM/DD/YYYY | M/D/YYYY-M/D/YYYY
+        // This also handles partial date range searches
+        if (/^\d{1,2}(\/\d{1,2})?(\/\d{4})?\s*-\s*\d{1,2}(\/\d{1,2})?(\/\d{4})?$/.test(trimmed)) {
+            const [startStr, endStr] = trimmed.split(/\s*-\s*/).map(s => s.trim())
+
+            function parsePartialDate(dateStr, isEnd = false) {
+                const parts = dateStr.split('/')
+                let year, month, day
+
+                if (parts.length === 3) {
+                    [month, day, year] = parts
+                } else if (parts.length === 2) {
+                    [month, day] = parts
+                    year = new Date().getFullYear()
+                } else if (parts.length === 1) {
+                    [month] = parts
+                    year = new Date().getFullYear()
+                }
+
+                month = month ? month.padStart(2, '0') : '01'
+
+                if (!day) {
+                    if (isEnd) {
+                        const lastDay = new Date(year, parseInt(month, 10), 0).getDate()
+                        day = String(lastDay).padStart(2, '0')
+                    } else {
+                        day = '01'
+                    }
+                } else {
+                    day = day.padStart(2, '0')
+                }
+
+                return { year, month, day }
+            }
+
+            const start = parsePartialDate(startStr)
+            const end = parsePartialDate(endStr, true)
+
+            return {
+                type: 'dateRange',
+                value: {
+                    start: `${start.year}-${start.month}-${start.day}`,
+                    end: `${end.year}-${end.month}-${end.day}`
+                }
+            }
+        }
+
         // Handle MM/DD/YYYY | M/D/YYYY
         if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) {
             const [month, day, year] = trimmed.split('/')
@@ -318,6 +365,14 @@ const ViewHistory = () => {
                 }
                 break
             }
+            // Handle date range filter
+            case 'dateRange' : {
+                const {start, end} = result.value
+                newFilters.dateFrom = start
+                newFilters.dateTo = end
+                break
+            }
+
             // Format date into what backend expects
             case 'date': {
                 const dateObj = result.value
