@@ -63,6 +63,7 @@ const HistoryPopout = ({ jobId, onClose, initialData = null }) => {
     const [currentPage, setCurrentPage] = useState(1)
     const [totalCount, setTotalCount] = useState(0)
     const [copySuccess, setCopySuccess] = useState('')
+    const [isOpen, setIsOpen] = useState(true)
 
     const ITEMS_PER_PAGE = 10
 
@@ -129,6 +130,19 @@ const HistoryPopout = ({ jobId, onClose, initialData = null }) => {
             fetchHistory(1)
         }
     }, [jobId])
+
+    //Close modal on ESC key press
+    useEffect(() => {
+        if (!isOpen) return
+        const onKey = (e) => {
+            if (e.key === 'Escape') {
+                setIsOpen(false)
+                onClose()
+            }
+        }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+    }, [isOpen])
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage)
