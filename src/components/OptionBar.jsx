@@ -97,12 +97,12 @@ const NavBar = ({ items }) => (
 // button components that are rendered from NavBar
 // renders a button with icon and text with its own css
 const NavButton = ({ item }) => (
-    <Button className={styles.navButton}>
-        <Link to={item.to} className={styles.navLink}>
+    <Link to={item.to} className={styles.navLink}>
+        <Button className={styles.navButton}>
             {item.icon}
             <span className={styles.navButtonText}>{item.text}</span>
-        </Link>
-    </Button>
+        </Button>
+    </Link>
 )
 
 // session manager component deals with the authentication login/logout ui
