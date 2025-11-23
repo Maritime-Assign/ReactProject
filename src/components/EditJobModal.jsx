@@ -15,6 +15,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
     const [billetLoading, setBilletLoading] = useState(true)
     const [typeOptions, setTypeOptions] = useState([])
     const [typeLoading, setTypeLoading] = useState(true)
+    const [isOpen, setIsOpen] = useState(true)
 
     function visible(items = []) {
         return items
@@ -379,6 +380,19 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
             setShowConfirmArchive(false)
         }
     }
+
+    //Close modal on ESC key press
+    useEffect(() => {
+        if (!isOpen) return
+        const onKey = (e) => {
+            if (e.key === 'Escape') {
+                setIsOpen(false)
+                onClose()
+            }
+        }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+    }, [isOpen])
 
     // Status color green if state is true, red if false (open vs filled)
     //const statusColor = (formData.open = 'Open') ? 'bg-green-600' : 'bg-red-600'
