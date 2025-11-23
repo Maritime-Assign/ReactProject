@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, test } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import UsersAndRoles from '../pages/UsersAndRoles.jsx'
+import ManageUsers from '../pages/ManageUsers.jsx'
 import supabase from '../api/supabaseClient.js'
 import { faker } from '@faker-js/faker'
 
@@ -26,13 +26,13 @@ beforeEach(() => {
 const helperRender = () => {
   return render(
     <MemoryRouter>
-      <UsersAndRoles />
+      <ManageUsers />
     </MemoryRouter>
   )
 }
 
 // Start tests
-describe('UsersAndRoles Page', () => {
+describe('MangageUsers Page', () => {
 
     test('Checks for Role, Name, and Username columns', () => {
         helperRender()

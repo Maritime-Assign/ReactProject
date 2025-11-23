@@ -104,7 +104,7 @@ describe('EditUser Integration Test', () => {
 
     await waitFor(() => {
       expect(window.alert).toHaveBeenCalledWith('User deleted successfully')
-      expect(mockNavigate).toHaveBeenCalledWith('/users-roles')
+      expect(mockNavigate).toHaveBeenCalledWith('/manageusers')
     })
   })
 })

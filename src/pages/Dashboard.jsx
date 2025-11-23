@@ -84,7 +84,7 @@ const Dashboard = ({ allowedTiles }) => {
                     )}
                     {allowedTiles.includes('manageUsers') && (
                         <Link
-                            to='/users-roles'
+                            to='/manageusers'
                             className={
                                 dashButton +
                                 ' inline-flex flex-col items-center'

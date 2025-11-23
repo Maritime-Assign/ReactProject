@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useContext } from 'react';
-import styles from './UsersAndRoles.module.css';
+import styles from './ManageUsers.module.css';
 import { FaEdit, FaUserPlus, FaUserMinus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import supabase from '../api/supabaseClient';
@@ -22,7 +22,7 @@ const getAllUsers = async () => {
 };
 
 // define functionality
-const UsersAndRoles = () => {
+const ManageUsers = () => {
     const [searchWord, setSearchWord] = useState('');
     const [users, setUsers] = useState([]);
     const navigate = useNavigate()
@@ -79,7 +79,7 @@ const UsersAndRoles = () => {
             
                 <div className='grow text-center'>
                     <span className='text-white text-2xl font-medium'>
-                        Role Manager
+                        Manage Users
                     </span>
                 </div>
 
@@ -132,4 +132,4 @@ const UsersAndRoles = () => {
     );
 };
 
-export default UsersAndRoles;
+export default ManageUsers;

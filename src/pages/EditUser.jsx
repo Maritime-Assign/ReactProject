@@ -10,7 +10,7 @@ const EditUser = () => {
     const navigate = useNavigate()
 
     if (!state) {
-        navigate('/users-roles') // fall back if no state is passed
+        navigate('/manageusers') // fall back if no state is passed
         return null
     }
 
@@ -140,7 +140,7 @@ const EditUser = () => {
                     }
             }
 
-            navigate('/users-roles')
+            navigate('/manageusers')
             alert('User deleted successfully')
         }
     }
@@ -269,7 +269,7 @@ const EditUser = () => {
 
                 {/*Buttons to confirm or cancel the edits made to a user*/}
                 <div className='flex flex-row gap-4 p-4'>
-                    <Link to='/users-roles'>
+                    <Link to='/manageusers'>
                         <button className='px-4 h-12 bg-mebablue-light rounded-md text-white hover:bg-mebablue-hover'>
                             Cancel Changes
                         </button>

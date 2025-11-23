@@ -56,7 +56,7 @@ describe('Admin Dash Positive Tests', () => {
         // Check that the links for each tile are correct
         expect(getLinkFromLabel(/Manage Users/i)).toHaveAttribute(
             'href',
-            '/users-roles'
+            '/manageusers'
         )
         expect(getLinkFromLabel(/Add User/i)).toHaveAttribute(
             'href',
@@ -113,7 +113,7 @@ describe('Admin Dash Positive Tests', () => {
         )
         expect(getLinkFromLabel(/Manage Users/i)).toHaveAttribute(
             'href',
-            '/users-roles'
+            '/manageusers'
         )
         expect(getLinkFromLabel(/Add User/i)).toHaveAttribute(
             'href',
