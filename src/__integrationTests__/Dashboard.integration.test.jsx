@@ -10,7 +10,7 @@ describe('Dashboard navigation', () => {
         '/addjob': 'Add Job Listing',
         '/fsb': 'View Job Board',
         '/history': 'View Changes',
-        '/users-roles': 'Manage Users',
+        '/manageusers': 'Manage Users',
         '/add-user': 'Add User',
     }
 
@@ -24,7 +24,7 @@ describe('Dashboard navigation', () => {
                 return 'viewJobBoard'
             case '/history':
                 return 'viewChanges'
-            case '/users-roles':
+            case '/manageusers':
                 return 'manageUsers'
             case '/add-user':
                 return 'addUser'

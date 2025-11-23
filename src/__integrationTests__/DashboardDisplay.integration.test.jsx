@@ -11,7 +11,7 @@ describe('Dashboard navigation (Dispatch)', () => {
         '/addjob': 'Add Job Listing',
         '/fsb': 'View Job Board',
         '/history': 'View Changes',
-        '/users-roles': 'Manage Users',
+        '/manageusers': 'Manage Users',
         '/add-user': 'Add User',
     }
 

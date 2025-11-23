@@ -16,7 +16,7 @@ import Login from './pages/Login'
 import './App.css'
 import AddJob from './pages/AddJob'
 import FSboard from './pages/FSboard'
-import UsersAndRoles from './pages/UsersAndRoles'
+import ManageUsers from './pages/ManageUsers'
 import EditJob from './pages/EditJob'
 import ViewHistory from './components/ViewHistory'
 import AddUser from './pages/AddUser'
@@ -157,7 +157,7 @@ const App = () => {
                     <Route path='/manage-jobs' element={<ManageJobs />} />
                     <Route path='/fsb' element={<FSboard />} />
                     <Route path='/addjob' element={<AddJob />} />
-                    <Route path='/users-roles' element={<UsersAndRoles />} />
+                    <Route path='/manageusers' element={<ManageUsers />} />
                     <Route path='/editjob' element={<EditJob />} />
                     <Route path='/add-user' element={<AddUser />} />
                     <Route path='/set-password' element={<SetPassword />} />
