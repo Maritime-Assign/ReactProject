@@ -21,6 +21,10 @@ It was created to improve reliability, security, efficiency, and real-time visib
 - To reduce data-entry mistakes and prevent unauthorized edits
 - To provide a scalable, secure, cloud-hosted solution for MEBA’s operational needs
 
+
+### Live Deployment
+The MaritimeAssign application is deployed and accessible at: https://meba.pages.dev/
+
 ### DB Schema
 <div align="center">
   <img src="src/assets/screenshots/DB SCHEMA.png" alt="Login Page" width="600"/>
@@ -68,32 +72,40 @@ Here are some screenshots of the project in action:
 ### Team / Contributors
 | Name              | Contact                                                   |
 | ----------------- | --------------------------------------------------------- |
+| Byron Saylor      | [byrontsaylor@gmail.com](mailto:byrontsaylor@gmail.com)   |
 | Kevin Jackson     | [kevinjackson@csus.edu](mailto:kevinjackson@csus.edu)     |
 | Delon Chisolm     | [delonschisolm@gmail.com](mailto:delonschisolm@gmail.com) |
 | Nick Janota       | [jnjanota@gmail.com](mailto:jnjanota@gmail.com)           |
 | William Scott     | [wscott@csus.edu](mailto:wscott@csus.edu)                 |
 | Phong Ho          | [lyhongyen1979@gmail.com](mailto:lyhongyen1979@gmail.com) |
-| Alexandra Allwein | [aallwein1@gmail.com](mailto:aallwein@csus.edu)         |
+| Alexandra Allwein | [aallwein@csus.edu](mailto:aallwein@csus.edu)         |
 | Ismaeel Khan      | [IsmaeelNKhan@gmail.com](mailto:IsmaeelNKhan@gmail.com)   |
 | Derek Tran        | [derektran@csus.edu](mailto:derektran@csus.edu)           |
-| Byron Saylor      | [byrontsaylor@gmail.com](mailto:byrontsaylor@gmail.com)   |
 
+### Testing and Development
 
-
-### Running the Project for Testing and Development!!
+This project uses Vitest + React Testing Library.
 
 You can build the project using one of the following methods:
 
-#### Option 1: Build with command line
+1. Run all tests: `npm run test`
+2. Watch mode: `npm run test:watch`
+3. Coverage report: `npm run coverage`
 
-1. Install Node.js (Version 22 or any even-numbered version).
-2. Run `npm install -g npm@11.2.0` to update npm.
-3. Install Vite globally: `npm install -g vite`.
-4. Install Supabase.js globally: `npm install -g supabase-js`.
-5. Install project dependencies: `npm install`.
-6. Start the development server: `npm run dev`.
-7. The project will be available at `http://localhost:5173`.
+### Setup Instructions (Local Development)
 
-#### Option 2: Build with Docker
+1. Clone the repository
+- `git clone https://github.com/Maritime-Assign/ReactProject.git`
+- `cd ReactProject`
+2. Install dependencies: `npm install`
+3. Create environment variables
+- `VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key`
+
+4. Start the development server: `npm run dev`
+5. Build the project: `npm run build`
+6. Preview the production build locally: `npm run preview`
+
+### Build with Docker
 
 Refer to the [Docker Instructions](https://github.com/Maritime-Assign/ReactProject/blob/main/README.Docker.md) for detailed steps.
