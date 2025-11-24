@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 
 @theme {
-    --breakpoint-md: 54rem;
     --color-mebablue-dark: #252761;
     --color-mebablue-light: #4e5598;
     --color-mebagold: #ffce1e;

@@ -205,17 +205,17 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
         rowIndex % 2 === 0
             ? 'bg-slate-200 border-b border-slate-300'
             : 'bg-slate-100 border-b border-slate-300'
-    const cellStyle = 'items-center justify-center flex h-14'
+    const cellStyle = 'items-center justify-center flex h-10 md:h-14'
 
     const displayNotes = props.notes?.trim() || null
 
     return (
-        <div className='grid grid-cols-27 w-full text-[8px] lg:text-[0.8125rem] font-mont font-semibold overflow-visible h-12 md:h-14'>
+        <div className='grid grid-cols-27 w-full text-[8px] md:text-[0.8125rem] font-mont font-semibold overflow-visible h-10 md:h-14'>
             {/*Disable the button if the user's role is display*/}
             <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
                 {status ? (
                     role == 'display' ? (
-                        <div className='inline-flex items-center justify-center bg-linear-to-r from-green-500 to-green-600 text-white px-2 py-1 rounded font-medium text-[8px] lg:text-sm'>
+                        <div className='inline-flex items-center justify-center bg-linear-to-r from-green-500 to-green-600 text-white px-2 py-1 rounded font-medium text-[8px] md:text-sm'>
                             Open
                         </div>
                     ) : (
@@ -225,7 +225,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                             disabled={makingClaim}
                             className='inline-flex items-center justify-center px-1 md:px-2 py-1 rounded bg-linear-to-r from-green-500 to-green-600
                                      text-white hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed
-                                       transition-all duration-200 ease-out font-medium text-[8px] lg:text-sm hover:cursor-pointer'
+                                       transition-all duration-200 ease-out font-medium text-[8px] md:text-sm hover:cursor-pointer'
                         >
                             {makingClaim ? 'Filling...' : 'Open'}
                         </button>
@@ -268,7 +268,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                 <span>{formatDate(props.dateCalled)}</span>
             </div>
             <div className={`col-span-3 ${cellStyle} ${rowClass}`}>
-                <span>{props.shipName}</span>
+                <span className='truncate block'>{props.shipName}</span>
             </div>
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
                 <span>{formatDate(props.joinDate)}</span>
