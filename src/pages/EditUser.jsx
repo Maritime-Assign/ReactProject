@@ -3,6 +3,7 @@ import supabase from '../api/supabaseClient'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useFormStatus } from 'react-dom'
+import { IoArrowBack } from 'react-icons/io5'
 
 const EditUser = () => {
     //Convert the data of a user and make it editable
@@ -190,82 +191,96 @@ const EditUser = () => {
     }
 
     return (
-        <div className='flex justify-center flex-col py-4 mb-4 w-[1280px] m-auto'>
-            <span className='p-4 text-2xl text-[#242762] font-medium'>
-                Edit User
-            </span>
-            {/*Front end mockup for editing a user's info*/}
-            <form onSubmit={submitEdits}>
-                {/*User's name section*/}
-                <div className='grid grid-cols-[320px_1fr] grid-rows-2 p-4 gap-2'>
-                    <div>
-                        <span className='text-xl text-[#242762] text-semibold'>
-                            Username
-                        </span>
-                        <div className='flex content-center py-3 gap-3'>
-                            <input
-                                type='text'
-                                placeholder='Enter username here'
-                                value={user.username}
-                                onChange={updateUsername}
-                                className='w-[300px] h-[48px] text-center bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <span className='text-xl text-[#242762] text-semibold'>
-                            Password
-                        </span>
-                        <div className='flex content-center py-3 gap-3'>
-                            <input
-                                type='text'
-                                placeholder='Enter password here'
-                                value={user.password}
-                                onChange={updatePassword}
-                                className='w-[300px] h-[48px] text-center bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <span className='text-xl text-[#242762] text-semibold'>
-                            Abbreviation
-                        </span>
-                        <div className='flex content-center py-3 gap-3'>
-                            <input
-                                type='text'
-                                placeholder='Enter 3 character abbreviation here'
-                                value={user.abbreviation}
-                                onChange={updateAbbrev}
-                                className='w-[300px] h-[48px] text-center bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-                            />
-                            {abbrevError && (
-                                <p className='text-sm text-red-500'>{abbrevError}</p>
-                            )}
-                        </div>
-                    </div>
+        <div className='w-full pt-4 flex flex-col max-w-[1280px] mx-auto font-mont'>
+            {/* Header */}
+            <div className='flex py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center mb-4'>
+                <button
+                    onClick={() => navigate(-1)}
+                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
+                >
+                    <IoArrowBack className='w-6 h-6' />
+                </button>
+                <div className='w-full text-center'>
+                    <span className='text-white text-2xl font-medium'>
+                        Edit User
+                    </span>
                 </div>
+            </div>
 
-                {/*User's assigned role section*/}
-                <div className='grid grid-flex-rows p-4 gap-2'>
-                    {/*User role selection section*/}
-                    <div>
-                        <span className='py-2 text-[#242762] text-xl text-semibold'>
-                            User Role
-                        </span>
-                        <label className='flex content-center gap-3 py-3'>
-                            <select
-                                className='border-1 bg-neutral-100'
-                                name='newUserRole'
-                                defaultValue={user.role}
-                                onChange={updateRole}
-                            >
-                                <option value='admin'>Admin</option>
-                                <option value='dispatch'>Dispatch</option>
-                                <option value='display'>Display</option>
-                            </select>
-                        </label>
+            {/* Form Container */}
+            <div className='bg-white rounded-lg shadow p-6'>
+                <form onSubmit={submitEdits}>
+                    {/*User's name section*/}
+                    <div className='grid grid-cols-[320px_1fr] grid-rows-2 gap-6 mb-6'>
+                        <div>
+                            <span className='text-xl text-mebablue-dark font-semibold'>
+                                Username
+                            </span>
+                            <div className='flex content-center py-3 gap-3'>
+                                <input
+                                    type='text'
+                                    placeholder='Enter username here'
+                                    value={user.username}
+                                    onChange={updateUsername}
+                                    className='w-[300px] h-[48px] px-3 bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <span className='text-xl text-mebablue-dark font-semibold'>
+                                Password
+                            </span>
+                            <div className='flex content-center py-3 gap-3'>
+                                <input
+                                    type='password'
+                                    placeholder='Enter password here'
+                                    value={user.password}
+                                    onChange={updatePassword}
+                                    className='w-[300px] h-[48px] px-3 bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <span className='text-xl text-mebablue-dark font-semibold'>
+                                Abbreviation
+                            </span>
+                            <div className='flex flex-col py-3 gap-2'>
+                                <input
+                                    type='text'
+                                    placeholder='Enter 3 character abbreviation here'
+                                    value={user.abbreviation}
+                                    onChange={updateAbbrev}
+                                    maxLength={3}
+                                    className='w-[300px] h-[48px] px-3 bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                />
+                                {abbrevError && (
+                                    <p className='text-sm text-red-500'>{abbrevError}</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                </div>
+
+                    {/*User's assigned role section*/}
+                    <div className='mb-6'>
+                        {/*User role selection section*/}
+                        <div>
+                            <span className='text-xl text-mebablue-dark font-semibold block mb-3'>
+                                User Role
+                            </span>
+                            <label className='flex content-center gap-3'>
+                                <select
+                                    className='w-[300px] h-[48px] px-3 bg-neutral-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                    name='newUserRole'
+                                    defaultValue={user.role}
+                                    onChange={updateRole}
+                                >
+                                    <option value='admin'>Admin</option>
+                                    <option value='dispatch'>Dispatch</option>
+                                    <option value='display'>Display</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
 
                 {/*Buttons to confirm or cancel the edits made to a user*/}
                 <div className='flex flex-row gap-4 p-4'>
@@ -289,8 +304,9 @@ const EditUser = () => {
                     >
                         Delete User
                     </button>
-                </div>
-            </form>
+                    </div>
+                </form>
+            </div>
         </div>
     )
 }
