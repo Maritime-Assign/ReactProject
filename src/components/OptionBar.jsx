@@ -84,8 +84,12 @@ const OptionBar = () => {
 // both the container and the image have their own CSS linked with className
 const Logo = () => (
     <div className='flex flex-row items-center justify-center gap-2'>
-        <img src={logo} alt='Maritime Assign Logo' className='w-16 h-17' />
-        <span className='font-mont font-regular text-mebablue-dark text-4xl'>
+        <img
+            src={logo}
+            alt='Maritime Assign Logo'
+            className='w-12 h-13 sm:w-14 sm:h-15 md:w-16 md:h-17'
+        />
+        <span className='font-mont font-regular text-mebablue-dark text-xl sm:text-2xl md:text-3xl lg:text-4xl'>
             Maritime Assign
         </span>
     </div>
