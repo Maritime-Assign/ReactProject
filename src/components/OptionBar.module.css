@@ -16,6 +16,11 @@
     height: 80px;
 }
 
+.navbarCentered {
+    justify-content: center !important;
+    transform: translateY(100px);
+}
+
 .logoContainer {
     flex: 0 0 auto; /* stop flex-grow */
 }
@@ -57,15 +62,12 @@
 /* Match navButtonText appearance */
 .signedInLabel,
 .usernameText {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 400;
-  color: #252761;
-  font-size: 1rem; /* consistent with your nav labels */
-  margin-left: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    color: #252761;
+    font-size: 1rem; /* consistent with your nav labels */
+    margin-left: 10px;
 }
-
-
-
 
 .navButton:hover {
     color: #252761;
