@@ -159,6 +159,56 @@ const ViewHistory = () => {
         }
 
         // If "numeric/" then handle date formats
+        // Handle date range searches: MM/DD/YYYY-MM/DD/YYYY | M/D/YYYY-M/D/YYYY
+        // This also handles partial date range searches
+        if (/^\d{1,2}(\/\d{1,2})?(\/\d{4})?\s*-\s*\d{1,2}(\/\d{1,2})?(\/\d{4})?$/.test(trimmed)) {
+            const [startStr, endStr] = trimmed.split(/\s*-\s*/).map(s => s.trim())
+
+            function parsePartialDate(dateStr, isEnd = false) {
+                const parts = dateStr.split('/')
+                let year, month, day
+
+                if (parts.length === 3) {
+                    [month, day, year] = parts
+                } else if (parts.length === 2) {
+                    [month, day] = parts
+                    year = new Date().getFullYear()
+                } else if (parts.length === 1) {
+                    [month] = parts
+                    year = new Date().getFullYear()
+                }
+
+                month = month ? month.padStart(2, '0') : '01'
+
+                if (!day) {
+                    if (isEnd) {
+                        const lastDay = new Date(year, parseInt(month, 10), 0).getDate()
+                        day = String(lastDay).padStart(2, '0')
+                    } else {
+                        day = '01'
+                    }
+                } else {
+                    day = day.padStart(2, '0')
+                }
+                // return ISO formatted string
+                return `${year}-${month}-${day}`
+            }
+
+            let start = parsePartialDate(startStr)
+            let end = parsePartialDate(endStr, true)
+
+            // Handle if user searched date range - end is earlier than the start
+            if (new Date(start) > new Date(end)) {
+                // Swap them
+                [start, end] = [end, start]
+            }
+
+            return {
+                type: 'dateRange',
+                value: {start, end}
+            }
+        }
+
         // Handle MM/DD/YYYY | M/D/YYYY
         if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) {
             const [month, day, year] = trimmed.split('/')
@@ -318,6 +368,14 @@ const ViewHistory = () => {
                 }
                 break
             }
+            // Handle date range filter
+            case 'dateRange' : {
+                const {start, end} = result.value
+                newFilters.dateFrom = start
+                newFilters.dateTo = end
+                break
+            }
+
             // Format date into what backend expects
             case 'date': {
                 const dateObj = result.value
@@ -452,6 +510,7 @@ const ViewHistory = () => {
         setError(null)
 
         try {
+            // Get pagination offset
             const offset = (page - 1) * ITEMS_PER_PAGE
 
             // 1. QUERY TO GET ALL RELEVANT JOB IDs (ORDERED BY RECENT ACTIVITY)
@@ -464,6 +523,7 @@ const ViewHistory = () => {
 
             // Apply filters (Job ID, Date Range, User ID) to the initial query
             // This narrows down which history entries are considered.
+            // Filter by job id
             if (currentFilters.jobId) {
                 if (
                     Array.isArray(currentFilters.jobId) &&
@@ -480,31 +540,27 @@ const ViewHistory = () => {
                     )
                 }
             }
-
+            // Filter by date - start
             if (currentFilters.dateFrom) {
-                jobIdsQuery = jobIdsQuery.gte(
-                    'change_time',
-                    currentFilters.dateFrom
-                )
+                const fromDate = new Date(`${currentFilters.dateFrom}T00:00:00`)
+                jobIdsQuery = jobIdsQuery.gte('change_time', fromDate.toISOString())
             }
 
+            // Filter by date - end
             if (currentFilters.dateTo) {
-                // Append time to ensure the entire 'dateTo' day is included
-                jobIdsQuery = jobIdsQuery.lte(
-                    'change_time',
-                    currentFilters.dateTo + 'T23:59:59'
-                )
+                const toDate = new Date(`${currentFilters.dateTo}T23:59:59.999`)
+                jobIdsQuery = jobIdsQuery.lte('change_time', toDate.toISOString())
             }
 
+            // Filter by user who made change
             if (currentFilters.userId && currentFilters.userId.length > 0) {
-                jobIdsQuery = jobIdsQuery.in(
-                    'changed_by_user_id',
-                    currentFilters.userId
-                )
+                jobIdsQuery = jobIdsQuery.in('changed_by_user_id', currentFilters.userId)
             }
 
+            // Query
             const { data: allJobIds, error: jobIdsError } = await jobIdsQuery
 
+            // Error handling
             if (jobIdsError) {
                 setError(`Failed to load job IDs: ${jobIdsError.message}`)
                 console.error('Job IDs error:', jobIdsError)
@@ -549,14 +605,13 @@ const ViewHistory = () => {
                 // Re-apply date/user filters here for maximum consistency, although
                 // the initial jobIdsQuery should have already filtered out invalid records.
                 if (currentFilters.dateFrom) {
-                    query = query.gte('change_time', currentFilters.dateFrom)
+                    const fromDate = new Date(`${currentFilters.dateFrom}T00:00:00`)
+                    query = query.gte('change_time', fromDate.toISOString())
                 }
 
                 if (currentFilters.dateTo) {
-                    query = query.lte(
-                        'change_time',
-                        currentFilters.dateTo + 'T23:59:59'
-                    )
+                    const toDate = new Date(`${currentFilters.dateTo}T23:59:59.999`)
+                    query = query.lte('change_time', toDate.toISOString())
                 }
 
                 if (currentFilters.userId && currentFilters.userId.length > 0) {
@@ -622,14 +677,13 @@ const ViewHistory = () => {
             }
 
             if (currentFilters.dateFrom) {
-                query = query.gte('change_time', currentFilters.dateFrom)
+                const fromDate = new Date(`${currentFilters.dateFrom}T00:00:00`)
+                query = query.gte('change_time', fromDate.toISOString())
             }
 
             if (currentFilters.dateTo) {
-                query = query.lte(
-                    'change_time',
-                    currentFilters.dateTo + 'T23:59:59'
-                )
+                const toDate = new Date(`${currentFilters.dateTo}T23:59:59.999`)
+                query = query.lte('change_time', toDate.toISOString())
             }
 
             if (currentFilters.userId && currentFilters.userId.length > 0) {
@@ -645,7 +699,7 @@ const ViewHistory = () => {
                 setError(`Failed to load job history: ${fetchError.message}`)
                 console.error('Fetch error details:', fetchError)
                 setLoading(false)
-                return
+                return { logs: [], totalCount: 0 }
             }
 
             const formattedLogs = data ? data.map(formatJobHistoryRecord) : []
@@ -654,6 +708,7 @@ const ViewHistory = () => {
             setError('An error occurred while loading flat data')
             console.error(err)
             setLoading(false)
+            return { logs: [], totalCount: 0 }
         }
     }
 
@@ -678,14 +733,13 @@ const ViewHistory = () => {
             }
 
             if (currentFilters.dateFrom) {
-                query = query.gte('change_time', currentFilters.dateFrom)
+                const fromDate = new Date(`${currentFilters.dateFrom}T00:00:00`)
+                query = query.gte('change_time', fromDate.toISOString())
             }
 
             if (currentFilters.dateTo) {
-                query = query.lte(
-                    'change_time',
-                    currentFilters.dateTo + 'T23:59:59'
-                )
+                const toDate = new Date(`${currentFilters.dateTo}T23:59:59.999`)
+                query = query.lte('change_time', toDate.toISOString())
             }
             if (currentFilters.userId && currentFilters.userId.length > 0) {
                 query = query.in('changed_by_user_id', currentFilters.userId)
@@ -966,9 +1020,19 @@ ${log.new_state}`
                 query = query.in('changed_by_user_id', currentFilters.userId)
             }
             // Date filter
-            if (currentFilters.dateFrom) {query = query.gte('change_time', currentFilters.dateFrom)}
-            if (currentFilters.dateTo) {query = query.lte('change_time', currentFilters.dateTo + 'T23:59:59')}
+            //if (currentFilters.dateFrom) {query = query.gte('change_time', currentFilters.dateFrom)}
+            //if (currentFilters.dateTo) {query = query.lte('change_time', currentFilters.dateTo + 'T23:59:59')}
             
+            if (currentFilters.dateFrom) {
+                const fromDate = new Date(`${currentFilters.dateFrom}T00:00:00`)
+                query = query.gte('change_time', fromDate.toISOString())
+            }
+
+            if (currentFilters.dateTo) {
+                const toDate = new Date(`${currentFilters.dateTo}T23:59:59.999`)
+                query = query.lte('change_time', toDate.toISOString())
+            }
+
             // Start query
             const { data: filteredLogs, error } = await query
             if (error) {throw error}
