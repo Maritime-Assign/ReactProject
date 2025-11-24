@@ -1,34 +1,35 @@
-# MaritimeAssign - React
+# Maritime Assign 
 <p align="center">
   <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/MebaLogoOfficial.png?raw=true" alt="Official_Logo" width="300" height="300"/>
 </p>
 
 
-# Project Synopsis
-### Our Client: MEBA
-The Marine Engineers’ Beneficial Association (henceforth referred to as MEBA) is a United States-based maritime labor union. They work with maritime employees across the country, pushing for fair workplace practices and providing an important facet of national defense. MEBA operates a job distribution network, acting as the middleman for the routing of maritime jobs to qualified candidates.
+# Project Overview and Purpose
 
-### The Problem:
-As the association continues to grow larger and larger, the technologies that they previously relied on start to show their limitations. As such technologies were not designed with MEBA's functionality in mind, the association started to encounter various inconveniences that could become a larger problem down the line.
+MaritimeAssign is a web-based job management platform built for the Marine Engineers’ Beneficial Association (MEBA) to replace their outdated Google Sheets-based job board. The application centralizes job listings, streamlines dispatch workflows, and provides secure role-based access for union members, dispatchers, and administrators.
+It was created to improve reliability, security, efficiency, and real-time visibility for a nationwide maritime job distribution system.
 
-### The Solution:
-This project is tailored to address MEBA's problem, MaritimeAssign is a website that is designed to streamline all processes for all MEBA's employees. It will preserve key functions of previously used technologies while also implementing new features that seek to improve security as well as general quality of life such as:
-    - Log in and view current job listings (both available and claimed).
-    - Edit specific columns or entire rows of data, provided they have the necessary privileges granted by an admin.
-    - Access a display-only page for viewing data in a union hall setting.
+### What it does:
+- Provides a real-time job board with filtering, editing, and claiming capabilities
+- Secures access using Supabase authentication and role-based permissions
+- Logs all changes through a searchable, filterable job history system
+- Offers a display-only union hall mode for public viewing
+- Allows admins to manage users, roles, and job dropdown configurations
 
-### ERD
+### Why it was created:
+- To replace MEBA’s error-prone, manual Google Sheets workflow
+- To reduce data-entry mistakes and prevent unauthorized edits
+- To provide a scalable, secure, cloud-hosted solution for MEBA’s operational needs
+
+
+### Live Deployment
+The MaritimeAssign application is deployed and accessible at: https://meba.pages.dev/
+
+### DB Schema
 <div align="center">
-    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/ERD.png?raw=true" alt="ERD" width="800"/>
+  <img src="src/assets/screenshots/DB SCHEMA.png" alt="Login Page" width="600"/>
 </div>
 
-### Jira Timeline
-
-Below is a visual representation of our project timeline managed in Jira:
-
-<div align="center">
-    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/Timeline TY Phong.png?raw=true" alt="Jira Timeline" width="800"/>
-</div>
 
 ### Project Screenshots
 
@@ -36,33 +37,75 @@ Here are some screenshots of the project in action:
 
 #### Login Page
 <div align="center">
-    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/login_page.png?raw=true" alt="Login Page" width="600"/>
+  <img src="src/assets/screenshots/LoginPage.png" alt="Login Page" width="600"/>
 </div>
+
+
 
 #### Data Editing
 <div align="center">
-    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/data_editing.png?raw=true" alt="Data Editing" width="600"/>
+  <img src="src/assets/screenshots/AddJob.png" alt="Login Page" width="600"/>
+</div>
+<div align="center">
+  <img src="src/assets/screenshots/EditJob.png" alt="Login Page" width="600"/>
+</div>
+<div align="center">
+  <img src="src/assets/screenshots/EditJobPopup.png" alt="Login Page" width="600"/>
+</div>
+<div align="center">
+  <img src="src/assets/screenshots/AddUser.png" alt="Login Page" width="600"/>
 </div>
 
 #### Union Hall Display
 <div align="center">
-    <img src="https://github.com/Maritime-Assign/ReactProject/blob/main/src/assets/screenshots/union_hall_display.png?raw=true" alt="Union Hall Display" width="600"/>
+  <img src="src/assets/screenshots/FSBoard.png" alt="Login Page" width="600"/>
 </div>
 
-### Running the Project for Testing and Development
+#### Viewing Job History
+<div align="center">
+  <img src="src/assets/screenshots/ViewHistory.png" alt="Login Page" width="600"/>
+</div>
+<div align="center">
+  <img src="src/assets/screenshots/FullHistory.png" alt="Login Page" width="600"/>
+</div>
+
+### Team / Contributors
+| Name              | Contact                                                   |
+| ----------------- | --------------------------------------------------------- |
+| Byron Saylor      | [byrontsaylor@gmail.com](mailto:byrontsaylor@gmail.com)   |
+| Kevin Jackson     | [kevinjackson@csus.edu](mailto:kevinjackson@csus.edu)     |
+| Delon Chisolm     | [delonschisolm@gmail.com](mailto:delonschisolm@gmail.com) |
+| Nick Janota       | [jnjanota@gmail.com](mailto:jnjanota@gmail.com)           |
+| William Scott     | [wscott@csus.edu](mailto:wscott@csus.edu)                 |
+| Phong Ho          | [lyhongyen1979@gmail.com](mailto:lyhongyen1979@gmail.com) |
+| Alexandra Allwein | [aallwein@csus.edu](mailto:aallwein@csus.edu)         |
+| Ismaeel Khan      | [IsmaeelNKhan@gmail.com](mailto:IsmaeelNKhan@gmail.com)   |
+| Derek Tran        | [derektran@csus.edu](mailto:derektran@csus.edu)           |
+
+### Testing and Development
+
+This project uses Vitest + React Testing Library.
 
 You can build the project using one of the following methods:
 
-#### Option 1: Build with command line
+1. Run all tests: `npm run test`
+2. Watch mode: `npm run test:watch`
+3. Coverage report: `npm run coverage`
 
-1. Install Node.js (Version 22 or any even-numbered version).
-2. Run `npm install -g npm@11.2.0` to update npm.
-3. Install Vite globally: `npm install -g vite`.
-4. Install Supabase.js globally: `npm install -g supabase-js`.
-5. Install project dependencies: `npm install`.
-6. Start the development server: `npm run dev`.
-7. The project will be available at `http://localhost:5173`.
+### Setup Instructions (Local Development)
 
-#### Option 2: Build with Docker
+1. Clone the repository
+- `git clone https://github.com/Maritime-Assign/ReactProject.git`
+- `cd ReactProject`
+2. Install dependencies: `npm install`
+3. Create environment variables
+- `VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key`
+
+4. Start the development server: `npm run dev`
+5. Build the project: `npm run build`
+6. Preview the production build locally: `npm run preview`
+
+### Build with Docker
 
 Refer to the [Docker Instructions](https://github.com/Maritime-Assign/ReactProject/blob/main/README.Docker.md) for detailed steps.
