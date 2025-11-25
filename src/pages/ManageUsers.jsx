@@ -74,7 +74,7 @@ const ManageUsers = () => {
                     onClick={() => navigate(-1)} // navigate back one page
                     className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
                 >
-                    <IoArrowBack classname = "w-6 h-6" />
+                    <IoArrowBack className='w-6 h-6' />
                 </button>
             
                 <div className='grow text-center'>

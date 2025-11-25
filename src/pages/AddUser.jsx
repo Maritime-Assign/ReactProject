@@ -168,18 +168,9 @@ const AddUser = () => {
                 {/* Left-aligned back button */}
                 <button
                     onClick={() => navigate(-1)} // navigate back one page
-                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark'
+                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
                 >
-                    <svg
-                        className='w-6 h-6 hover:w-6.5 hover:h-6.5 transition-all ease-in-out text-center items-center justify-center drop-shadow-md'
-                        width='20'
-                        height='20'
-                        viewBox='0 0 24 24'
-                        fill='currentColor'
-                    >
-                        <IoArrowBack />
-                        {/* <path d='M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z' /> */}
-                    </svg>
+                    <IoArrowBack className='w-6 h-6' />
                 </button>
 
                 {/* Centered page header */}

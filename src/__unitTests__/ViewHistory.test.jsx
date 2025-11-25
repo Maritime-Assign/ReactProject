@@ -22,7 +22,7 @@ vi.mock('../api/supabaseClient', () => {
         {
             id: 100,
             job_id: '1',
-            changed_by_user_id: 'user1',
+            changed_by_user_id: { username: 'user1' },
             change_time: '2024-01-01T12:00:00',
             previous_state: null,
             new_state: '{"position":"Engineer","location":"Oakland"}',
@@ -53,6 +53,9 @@ vi.mock('../api/supabaseClient', () => {
                 return this
             },
             range() {
+                return this
+            },
+            limit() {
                 return this
             },
             gte(_, v) {
@@ -116,18 +119,29 @@ vi.mock('../api/supabaseClient', () => {
 
                     // Keep compatibility with filters if needed
                     const inFilter = this._filters.in
-                    const eqs = (this._filters.eq || []).reduce((acc, [k, v]) => {
-                        acc[k] = v
-                        return acc
-                    }, {})
-
-                    // If you want to return jobsClosedRows only for specific filters:
-                    // if (inFilter && inFilter.vals && inFilter.vals.includes('1')) {
-                    //   result = { data: jobsClosedRows, error: null }
-                    // }
-
+                    const eqs = (this._filters.eq || []).reduce(
+                        (acc, [k, v]) => {
+                            acc[k] = v
+                            return acc
+                        },
+                        {}
+                    )
+                    
+                    // Check if there's an 'in' filter
+                    if (inFilter) {
+                        // Check if the filter is for closed jobs (open field with 'Filled' or'Filled by Company')
+                        if (
+                            inFilter.field === 'open' &&
+                            (inFilter.vals.includes('Filled') || inFilter.vals.includes('Filled by Company'))
+                        ) {
+                            // Return closed jobs data
+                            result = { data: jobsClosedRows, error: null }
+                        } else if (inFilter.field === 'id' && inFilter.vals.includes(1)) {
+                            // Return closed jobs when filtering by job id 1
+                            result = { data: jobsClosedRows, error: null }
+                        }
+                    }
                 }
-
 
                 return Promise.resolve(result).then(resolve)
             },
@@ -260,7 +274,9 @@ describe('View Changes Page Tests', () => {
         await user.click(jobToggleButton)
 
         // The history entry 'user1' from our mocked historyRows should appear
-        expect(await screen.findByText(/user1/)).toBeInTheDocument()
+        // There may be multiple instances, so use getAllByText
+        const user1Elements = await screen.findAllByText(/user1/)
+        expect(user1Elements.length).toBeGreaterThan(0)
     })
 
     // --- Final test: ensure clicking Open? then Confirm triggers supabase update ---
@@ -328,6 +344,7 @@ describe('View Changes Page Tests', () => {
 
         // Assert supabase.update was called and payload contained an "open" truthy value.
         await waitFor(() => {
+            // update should have been called with { open: 'Open' }
             expect(updateSpy).toHaveBeenCalled()
 
             // Accept either boolean true or string 'Open' (or any truthy 'open') depending on implementation

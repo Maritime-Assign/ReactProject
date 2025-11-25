@@ -25,14 +25,16 @@ const Login = () => {
             setPasswordError(null)
 
             setLoading(true)
-
+    
             try {
                 if (!username.trim()) {
                     setUsernameError('Username Required')
+                    setLoading(false)
                     return
                 }
                 if (!password.trim()) {
                     setPasswordError('Password Required')
+                    setLoading(false)
                     return
                 }
                 // Verify user exists
@@ -44,12 +46,14 @@ const Login = () => {
 
                 if (fetchError || !userRecord) {
                     setUsernameError('Username Not Found')
+                    setLoading(false)
                     return
                 }
 
                 const result = await signInUser(username, password)
                 if (!result.success) {
                     setPasswordError('Invalid Password')
+                    setLoading(false)
                     return
                 }
 
@@ -94,7 +98,7 @@ const Login = () => {
                     Login
                 </div>
                 <div className={styles.underline}></div>
-                <div className='flex flex-col gap-4 mt-4'>
+                <form onSubmit={handleLogIn} noValidate className='flex flex-col gap-4 mt-4'>
                     <div
                         className={`flex border border-neutral-300 rounded-md h-12 w-100 focus-within:border-mebagold ${
                             usernameError
@@ -141,26 +145,27 @@ const Login = () => {
                             onClick={toggleShowPassword}
                         />
                     </div>
-                </div>
-                {/*  Temporarily hide forgot password button, no longer works with usernames  */}
-                {/* <div className='pt-4'>
-                    <Link to='/password-recovery'>
-                        <button className='bg-mebablue-light rounded-md px-4 py-2 w-100 cursor-pointer'>
-                            <span className='text-lg font-mont text-white'>
-                                Forgot Password?
-                            </span>
-                        </button>
-                    </Link>
-                </div> */}
+                    
+                    {/*  Temporarily hide forgot password button, no longer works with usernames  */}
+                    {/* <div className='pt-4'>
+                        <Link to='/password-recovery'>
+                            <button className='bg-mebablue-light rounded-md px-4 py-2 w-100 cursor-pointer'>
+                                <span className='text-lg font-mont text-white'>
+                                    Forgot Password?
+                                </span>
+                            </button>
+                        </Link>
+                    </div> */}
 
-                <div className='pt-4'>
-                    <button
-                        className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont hover:bg-mebablue-light'
-                        onClick={handleLogIn}
-                    >
-                        Login
-                    </button>
-                </div>
+                    <div className='pt-4'>
+                        <button
+                            type='submit'
+                            className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont hover:bg-mebablue-light'
+                        >
+                            Login
+                        </button>
+                    </div>
+                </form>
                 {(usernameError || passwordError) && (
                     <p className='text-red-400 text-lg font-mont font-medium pt-2'>
                         {usernameError || passwordError}
