@@ -83,13 +83,13 @@ const OptionBar = () => {
 // logo component renders a container div with an image element
 // both the container and the image have their own CSS linked with className
 const Logo = () => (
-    <div className='flex flex-row items-center justify-center gap-2'>
+    <div className='inline-flex flex-row items-center justify-center gap-2'>
         <img
             src={logo}
             alt='Maritime Assign Logo'
-            className='w-12 h-13 sm:w-14 sm:h-15 md:w-16 md:h-17'
+            className='w-12 aspect-7/8 sm:w-14 md:w-16'
         />
-        <span className='font-mont font-regular text-mebablue-dark text-xl sm:text-2xl md:text-3xl lg:text-4xl'>
+        <span className='font-mont font-regular text-mebablue-dark text-xl md:text-2xl [@media(min-width:998px)]:text-3xl xl:text-4xl'>
             Maritime Assign
         </span>
     </div>
