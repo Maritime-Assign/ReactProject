@@ -29,7 +29,7 @@ const Filter = ({ setFilterOpen, searchWord, setSearchWord, loading }) => {
                 {/* Toggle filter buttons */}
                 <div className='flex gap-1 bg-gray-100 rounded-lg p-1'>
                     <button
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                             activeFilter === 'all'
                                 ? 'bg-white text-gray-900 shadow-sm'
                                 : 'text-gray-600 hover:text-gray-900'
@@ -39,7 +39,7 @@ const Filter = ({ setFilterOpen, searchWord, setSearchWord, loading }) => {
                         All Jobs
                     </button>
                     <button
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                             activeFilter === 'open'
                                 ? 'bg-white text-gray-900 shadow-sm'
                                 : 'text-gray-600 hover:text-gray-900'
@@ -49,7 +49,7 @@ const Filter = ({ setFilterOpen, searchWord, setSearchWord, loading }) => {
                         Open
                     </button>
                     <button
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                             activeFilter === 'filled'
                                 ? 'bg-white text-gray-900 shadow-sm'
                                 : 'text-gray-600 hover:text-gray-900'
@@ -85,7 +85,7 @@ const Filter = ({ setFilterOpen, searchWord, setSearchWord, loading }) => {
 
                 {/* Add Job button */}
                 <button
-                    className='bg-gray-100 text-mebablue-dark px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2 font-medium text-sm border border-gray-300'
+                    className='bg-gray-100 text-mebablue-dark px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2 font-medium text-sm border border-gray-300 cursor-pointer'
                     onClick={handleAddJob}
                 >
                     <MdAddBox className='text-xl text-mebablue-dark' />

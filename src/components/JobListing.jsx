@@ -287,7 +287,12 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
             </div>
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
                 <span
-                    className={props.msc ? `bg-blue-300 px-1 py-1 rounded` : ``}
+                    title={props.company}
+                    className={
+                        props.msc
+                            ? `bg-blue-300 px-1 py-1 rounded truncate`
+                            : `truncate`
+                    }
                 >
                     {props.company}
                 </span>
