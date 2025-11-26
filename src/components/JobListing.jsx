@@ -277,13 +277,13 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                 <span>{props.billet}</span>
             </div>
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
-                <span>{props.type}</span>
+                <span className='truncate'>{props.type}</span>
             </div>
             <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
                 <span>{props.days}</span>
             </div>
             <div className={`col-span-3 ${cellStyle} ${rowClass}`}>
-                <span>{props.location}</span>
+                <span className='truncate'>{props.location}</span>
             </div>
             <div className={`col-span-2 ${cellStyle} ${rowClass}`}>
                 <span
