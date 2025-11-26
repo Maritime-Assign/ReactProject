@@ -1395,7 +1395,7 @@ ${log.new_state}`
         try {
             const dt = new Date(d)
             if (isNaN(dt.getTime())) return String(d)
-            return dt.toLocaleString()
+            return dt.toLocaleDateString()
         } catch {
             return String(d)
         }

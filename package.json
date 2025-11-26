@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "db:dump": "node supabase/db-dump.js",
+    "db:local-parity": "node supabase/db-local-parity.js",
     "test": "vitest"
   },
   "dependencies": {

@@ -13,7 +13,7 @@ dist-ssr
 *.local
 
 # CLI
-*.sql
+*.*sql
 
 
 # Editor directories and files
