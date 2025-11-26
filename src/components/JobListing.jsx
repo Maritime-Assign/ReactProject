@@ -298,7 +298,7 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                 </span>
             </div>
             <div className={`col-span-3 ${cellStyle} ${rowClass}`}>
-                <span>{props.crewRelieved}</span>
+                <span className='truncate'>{props.crewRelieved}</span>
             </div>
             <div className={`relative col-span-4 ${cellStyle} ${rowClass}`}>
                 {/* Hidden measuring span — only if there's text */}

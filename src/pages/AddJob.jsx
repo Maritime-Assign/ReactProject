@@ -10,7 +10,7 @@ import branchNames from '../data/branchNames'
 import { useFormik } from 'formik'
 import jobValidationSchema from '../data/jobValidationSchema'
 import { useNavigate } from 'react-router-dom'
-import { IoArrowBack } from 'react-icons/io5'
+import { IoArrowBack, IoSettingsSharp } from 'react-icons/io5'
 import { UserAuth } from '../auth/AuthContext'
 import { addJob } from '../utils/jobHistoryOptimized'
 import React, { useState, useEffect, useActionState } from 'react'
@@ -370,17 +370,30 @@ const AddJob = () => {
                 </div>
 
                 {/* Right-aligned Edit Dropdown Options button */}
-                <button
-                    onClick={() => setShowModal(true)}
-                    className='absolute right-4 bg-mebagold text-mebablue-dark px-4 py-2 rounded-md font-semibold shadow hover:bg-yellow-400 transition'
-                >
-                    Edit Dropdown Options
-                </button>
+
+                <div className='absolute right-4'>
+                    {/* 1. Full Text Button (Desktop/Tablet) */}
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className='hidden md:block bg-mebagold text-mebablue-dark px-4 py-2 rounded-md font-semibold shadow hover:bg-yellow-400 transition'
+                    >
+                        Edit Dropdown Options
+                    </button>
+
+                    {/* 2. Icon-Only Button (Mobile) */}
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className='block md:hidden bg-mebagold shadow-md rounded-md p-2 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
+                        aria-label='Edit Dropdown Options'
+                    >
+                        <IoSettingsSharp className='w-6 h-6' />
+                    </button>
+                </div>
             </div>
             {/* Form */}
             <div className='my-4 w-full font-mont bg-white rounded-lg shadow p-4'>
                 <form onSubmit={handleSubmit} autoComplete='off'>
-                    <div className='grid grid-cols-2 gap-6'>
+                    <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                         <div className='flex flex-col items-center'>
                             <FormInput
                                 type='select'
@@ -675,7 +688,7 @@ const AddJob = () => {
                             </div>
                         </div>
 
-                        <div className='col-span-2 flex flex-col items-center'>
+                        <div className='col-span-1 md:col-span-2 flex flex-col items-center'>
                             <FormInput
                                 multiline
                                 type='text'

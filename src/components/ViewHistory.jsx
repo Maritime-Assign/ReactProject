@@ -103,25 +103,27 @@ const ViewHistory = () => {
         // Handle Empty input
         if (!query) {
             // Only fetch if we actually had filters applied/not empty
-            const hadFilters = !!lastFilters.current
-            || filters.jobId || filters.userId
-            || (filters.dateFrom && filters.dateTo)
+            const hadFilters =
+                !!lastFilters.current ||
+                filters.jobId ||
+                filters.userId ||
+                (filters.dateFrom && filters.dateTo)
 
             if (hadFilters) {
-            clearFilters()
+                clearFilters()
             } else {
-            // Nothing to clear, reset data without making backend call
-            setLogs([])
-            setGroupedLogs([])
-            setTotalCount(0)
-            setSummary({
-                totalActions: 0,
-                newJobs: 0,
-                updatedJobs: 0,
-                recentActivity: [],
-                closedJobs: 0,
-            })
-            setLoading(false)
+                // Nothing to clear, reset data without making backend call
+                setLogs([])
+                setGroupedLogs([])
+                setTotalCount(0)
+                setSummary({
+                    totalActions: 0,
+                    newJobs: 0,
+                    updatedJobs: 0,
+                    recentActivity: [],
+                    closedJobs: 0,
+                })
+                setLoading(false)
             }
 
             lastFilters.current = null
@@ -129,7 +131,9 @@ const ViewHistory = () => {
         }
 
         const newFilters = detectSearchType(query)
-        if (JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)) {
+        if (
+            JSON.stringify(newFilters) !== JSON.stringify(lastFilters.current)
+        ) {
             handleSearch(query)
             lastFilters.current = newFilters
         }
@@ -161,20 +165,26 @@ const ViewHistory = () => {
         // If "numeric/" then handle date formats
         // Handle date range searches: MM/DD/YYYY-MM/DD/YYYY | M/D/YYYY-M/D/YYYY
         // This also handles partial date range searches
-        if (/^\d{1,2}(\/\d{1,2})?(\/\d{4})?\s*-\s*\d{1,2}(\/\d{1,2})?(\/\d{4})?$/.test(trimmed)) {
-            const [startStr, endStr] = trimmed.split(/\s*-\s*/).map(s => s.trim())
+        if (
+            /^\d{1,2}(\/\d{1,2})?(\/\d{4})?\s*-\s*\d{1,2}(\/\d{1,2})?(\/\d{4})?$/.test(
+                trimmed
+            )
+        ) {
+            const [startStr, endStr] = trimmed
+                .split(/\s*-\s*/)
+                .map((s) => s.trim())
 
             function parsePartialDate(dateStr, isEnd = false) {
                 const parts = dateStr.split('/')
                 let year, month, day
 
                 if (parts.length === 3) {
-                    [month, day, year] = parts
+                    ;[month, day, year] = parts
                 } else if (parts.length === 2) {
-                    [month, day] = parts
+                    ;[month, day] = parts
                     year = new Date().getFullYear()
                 } else if (parts.length === 1) {
-                    [month] = parts
+                    ;[month] = parts
                     year = new Date().getFullYear()
                 }
 
@@ -182,7 +192,11 @@ const ViewHistory = () => {
 
                 if (!day) {
                     if (isEnd) {
-                        const lastDay = new Date(year, parseInt(month, 10), 0).getDate()
+                        const lastDay = new Date(
+                            year,
+                            parseInt(month, 10),
+                            0
+                        ).getDate()
                         day = String(lastDay).padStart(2, '0')
                     } else {
                         day = '01'
@@ -200,12 +214,12 @@ const ViewHistory = () => {
             // Handle if user searched date range - end is earlier than the start
             if (new Date(start) > new Date(end)) {
                 // Swap them
-                [start, end] = [end, start]
+                ;[start, end] = [end, start]
             }
 
             return {
                 type: 'dateRange',
-                value: {start, end}
+                value: { start, end },
             }
         }
 
@@ -369,8 +383,8 @@ const ViewHistory = () => {
                 break
             }
             // Handle date range filter
-            case 'dateRange' : {
-                const {start, end} = result.value
+            case 'dateRange': {
+                const { start, end } = result.value
                 newFilters.dateFrom = start
                 newFilters.dateTo = end
                 break
@@ -543,18 +557,27 @@ const ViewHistory = () => {
             // Filter by date - start
             if (currentFilters.dateFrom) {
                 const fromDate = new Date(`${currentFilters.dateFrom}T00:00:00`)
-                jobIdsQuery = jobIdsQuery.gte('change_time', fromDate.toISOString())
+                jobIdsQuery = jobIdsQuery.gte(
+                    'change_time',
+                    fromDate.toISOString()
+                )
             }
 
             // Filter by date - end
             if (currentFilters.dateTo) {
                 const toDate = new Date(`${currentFilters.dateTo}T23:59:59.999`)
-                jobIdsQuery = jobIdsQuery.lte('change_time', toDate.toISOString())
+                jobIdsQuery = jobIdsQuery.lte(
+                    'change_time',
+                    toDate.toISOString()
+                )
             }
 
             // Filter by user who made change
             if (currentFilters.userId && currentFilters.userId.length > 0) {
-                jobIdsQuery = jobIdsQuery.in('changed_by_user_id', currentFilters.userId)
+                jobIdsQuery = jobIdsQuery.in(
+                    'changed_by_user_id',
+                    currentFilters.userId
+                )
             }
 
             // Query
@@ -605,12 +628,16 @@ const ViewHistory = () => {
                 // Re-apply date/user filters here for maximum consistency, although
                 // the initial jobIdsQuery should have already filtered out invalid records.
                 if (currentFilters.dateFrom) {
-                    const fromDate = new Date(`${currentFilters.dateFrom}T00:00:00`)
+                    const fromDate = new Date(
+                        `${currentFilters.dateFrom}T00:00:00`
+                    )
                     query = query.gte('change_time', fromDate.toISOString())
                 }
 
                 if (currentFilters.dateTo) {
-                    const toDate = new Date(`${currentFilters.dateTo}T23:59:59.999`)
+                    const toDate = new Date(
+                        `${currentFilters.dateTo}T23:59:59.999`
+                    )
                     query = query.lte('change_time', toDate.toISOString())
                 }
 
@@ -981,7 +1008,9 @@ ${log.new_state}`
     // This makes the CSV Excel-safe, by prevents column breaking for data inside " "
     const escapeCSV = (value) => {
         // Handle empty case
-        if (value == null) {return ''}
+        if (value == null) {
+            return ''
+        }
 
         let str = String(value)
         // Escape double quotes by doubling them
@@ -1010,8 +1039,7 @@ ${log.new_state}`
             if (currentFilters.jobId) {
                 if (Array.isArray(currentFilters.jobId)) {
                     query = query.in('job_id', currentFilters.jobId)
-                }
-                else {
+                } else {
                     query = query.eq('job_id', currentFilters.jobId)
                 }
             }
@@ -1022,7 +1050,7 @@ ${log.new_state}`
             // Date filter
             //if (currentFilters.dateFrom) {query = query.gte('change_time', currentFilters.dateFrom)}
             //if (currentFilters.dateTo) {query = query.lte('change_time', currentFilters.dateTo + 'T23:59:59')}
-            
+
             if (currentFilters.dateFrom) {
                 const fromDate = new Date(`${currentFilters.dateFrom}T00:00:00`)
                 query = query.gte('change_time', fromDate.toISOString())
@@ -1035,7 +1063,9 @@ ${log.new_state}`
 
             // Start query
             const { data: filteredLogs, error } = await query
-            if (error) {throw error}
+            if (error) {
+                throw error
+            }
             if (!filteredLogs || filteredLogs.length === 0) {
                 // No matching logs for filter
                 console.log('No logs to export.')
@@ -1043,7 +1073,11 @@ ${log.new_state}`
             }
 
             // Fetch jobs for filtered logs
-            const jobIds = [...new Set(filteredLogs.map(log => log.job_id).filter(Boolean))]
+            const jobIds = [
+                ...new Set(
+                    filteredLogs.map((log) => log.job_id).filter(Boolean)
+                ),
+            ]
             let jobMap = {}
             if (jobIds.length) {
                 const { data: jobs } = await supabase
@@ -1051,28 +1085,47 @@ ${log.new_state}`
                     .select('id, shipName, location, open, archivedJob, type')
                     .in('id', jobIds)
                 // Map job id to details
-                jobs.forEach(job => { jobMap[job.id] = job })
+                jobs.forEach((job) => {
+                    jobMap[job.id] = job
+                })
             }
 
             // Use jobs backend data to manually compute the frontend attribute "action" that is displayed on the page
             const computeAction = (job) => {
-                if (!job) {return ''}
+                if (!job) {
+                    return ''
+                }
                 // Check archived first. Jobs can be open and archived or just opened.
-                if (job.archivedJob) {return 'Archived'}
-                if (job.open === 'Filled') {return 'Filled'}
-                // Reopened, created and updated is not tracked anywhere in the backend so 
+                if (job.archivedJob) {
+                    return 'Archived'
+                }
+                if (job.open === 'Filled') {
+                    return 'Filled'
+                }
+                // Reopened, created and updated is not tracked anywhere in the backend so
                 // it cannot be computed for the whole dataset ahead of time
-                if (job.open === 'Open') {return 'Open'}
+                if (job.open === 'Open') {
+                    return 'Open'
+                }
                 return job.type || ''
             }
 
             // Build CSV
-            const headers = ['Date', 'User', 'Job ID', 'Action', 'Ship Name', 'Location']
+            const headers = [
+                'Date',
+                'User',
+                'Job ID',
+                'Action',
+                'Ship Name',
+                'Location',
+            ]
             const csvData = [
                 headers.join(','),
-                ...filteredLogs.map(log => {
+                ...filteredLogs.map((log) => {
                     const job = log.job_id ? jobMap[log.job_id] || {} : {}
-                    const rawDate = log.change_time ? new Date(log.change_time).toLocaleString() : ''
+                    const rawDate = log.change_time
+                        ? new Date(log.change_time).toLocaleString()
+                        : ''
                     const username = log.changed_by_user_id?.username || ''
                     const action = computeAction(job)
                     // Build csv and format correctly with escape helper
@@ -1092,17 +1145,16 @@ ${log.new_state}`
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
-            a.download = `job_history_filtered_${new Date().toISOString().split('T')[0]}.csv`
+            a.download = `job_history_filtered_${
+                new Date().toISOString().split('T')[0]
+            }.csv`
             a.click()
             // Free up memory
             URL.revokeObjectURL(url)
-        } 
-        catch (err) {
+        } catch (err) {
             console.error('CSV export failed:', err)
         }
     }
-
-
 
     const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
@@ -1523,7 +1575,7 @@ ${log.new_state}`
     return (
         <div className='w-full pt-4 flex flex-col max-w-[1280px] mx-auto font-mont'>
             {/* Header */}
-            <div className='flex py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center mb-4'>
+            <div className='flex flex-col sm:flex-row gap-2 sm:gap-0 py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center mb-4'>
                 <button
                     onClick={() => navigate(-1)}
                     className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
@@ -1531,13 +1583,13 @@ ${log.new_state}`
                     <IoArrowBack className='w-6 h-6' />
                 </button>
                 {/*Title text*/}
-                <div className='grow text-center'>
-                    <span className='text-white text-2xl font-medium'>
-                        Job Board History & Changes
+                <div className='grow text-center sm:ml-20 py-2 sm:py-0'>
+                    <span className='text-white text-xl md:text-2xl font-medium'>
+                        History & Changes
                     </span>
                 </div>
                 {/* Search Bar */}
-                <div className='grow mx-4 relative overflow-visible'>
+                <div className='w-full sm:grow sm:w-auto mx-4 relative overflow-visible px-4'>
                     <input
                         type='text'
                         placeholder='Search by Username, Job ID, Date, or Vessel'
@@ -1564,7 +1616,7 @@ ${log.new_state}`
                 </div>
 
                 {/* icons */}
-                <div className='flex gap-2 mr-4'>
+                <div className='flex gap-2 sm:mr-4 mt-2 sm:mt-0'>
                     <button
                         onClick={toggleViewMode}
                         className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
@@ -1588,14 +1640,18 @@ ${log.new_state}`
                         onClick={exportToCsv}
                         // Disable download button when search is invalid or produces no results
                         disabled={
-                            (viewMode === 'grouped' && groupedLogs.length === 0) ||
+                            (viewMode === 'grouped' &&
+                                groupedLogs.length === 0) ||
                             (viewMode === 'flat' && logs.length === 0)
                         }
                         className={`bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white
-                            ${((viewMode === 'grouped' && groupedLogs.length === 0) ||
-                            (viewMode === 'flat' && logs.length === 0))
-                            ? 'bg-mebablue-light cursor-not-allowed'
-                            : 'bg-mebablue-light hover:bg-mebablue'}
+                            ${
+                                (viewMode === 'grouped' &&
+                                    groupedLogs.length === 0) ||
+                                (viewMode === 'flat' && logs.length === 0)
+                                    ? 'bg-mebablue-light cursor-not-allowed'
+                                    : 'bg-mebablue-light hover:bg-mebablue'
+                            }
                         `}
                         //className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
                         title='Export CSV'
