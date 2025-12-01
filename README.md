@@ -76,7 +76,7 @@ Here are some screenshots of the project in action:
 | Kevin Jackson     | [kevinjackson@csus.edu](mailto:kevinjackson@csus.edu)     |
 | Delon Chisolm     | [delonschisolm@gmail.com](mailto:delonschisolm@gmail.com) |
 | Nick Janota       | [jnjanota@gmail.com](mailto:jnjanota@gmail.com)           |
-| William Scott     | [wscott@csus.edu](mailto:wscott@csus.edu)                 |
+| William Scott     | [wsc0tt@outlook.com](mailto:wsc0tt@outlook.com)                 |
 | Phong Ho          | [lyhongyen1979@gmail.com](mailto:lyhongyen1979@gmail.com) |
 | Alexandra Allwein | [aallwein@csus.edu](mailto:aallwein@csus.edu)         |
 | Ismaeel Khan      | [IsmaeelNKhan@gmail.com](mailto:IsmaeelNKhan@gmail.com)   |
@@ -91,6 +91,7 @@ You can build the project using one of the following methods:
 1. Run all tests: `npm run test`
 2. Watch mode: `npm run test:watch`
 3. Coverage report: `npm run coverage`
+4. Vitest Browser GUI `npx vitest --ui`
 
 ### Setup Instructions (Local Development)
 
