@@ -9,7 +9,7 @@ const FSBheader = () => {
                 <span>Status</span>
             </div>
             <div className={`col-span-1 ${cellStyle}`}>
-                <FaUser size={15} />
+                <FaUser className='w-2 h-2 lg:w-4 lg:h-4' />
             </div>
             <div className={`col-span-1 ${cellStyle}`}>
                 <span>Region</span>
@@ -19,7 +19,8 @@ const FSBheader = () => {
             </div>
 
             <div className={`col-span-2 ${cellStyle}`}>
-                <span>Date Called</span>
+                <span className='block lg:hidden'>Called</span>
+                <span className='hidden lg:block'>Date Called</span>
             </div>
             <div className={`col-span-3 ${cellStyle}`}>
                 <span>Vessel</span>

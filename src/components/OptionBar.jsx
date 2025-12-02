@@ -9,7 +9,7 @@ import WorkIcon from '@mui/icons-material/Work'
 import LoginIcon from '@mui/icons-material/Login'
 import LogoutIcon from '@mui/icons-material/Logout'
 // pictures as objects
-import logo from '../assets/maritimelogo5.png'
+import logo from '../assets/Trademark_Logo.png'
 // styles file
 import styles from './OptionBar.module.css'
 // import link to nav to internal pages
@@ -63,7 +63,11 @@ const OptionBar = () => {
     }
 
     return (
-        <nav className={styles.navbar}>
+        <nav
+            className={`${styles.navbar} ${
+                !isLoggedIn || isLoginPage ? styles.navbarCentered : ''
+            }`}
+        >
             <Logo />
             {isLoggedIn && <NavBar items={navItems} />}
             {!isLoginPage && (
@@ -79,8 +83,15 @@ const OptionBar = () => {
 // logo component renders a container div with an image element
 // both the container and the image have their own CSS linked with className
 const Logo = () => (
-    <div className={styles.logoContainer}>
-        <img src={logo} alt='Maritime Assign Logo' className={styles.maritimeLogo} />
+    <div className='inline-flex flex-row items-center justify-center gap-2'>
+        <img
+            src={logo}
+            alt='Maritime Assign Logo'
+            className='w-12 aspect-7/8 sm:w-14 md:w-16'
+        />
+        <span className='font-mont font-regular text-mebablue-dark text-xl md:text-2xl [@media(min-width:998px)]:text-3xl xl:text-4xl'>
+            Maritime Assign
+        </span>
     </div>
 )
 
@@ -115,7 +126,9 @@ const SessionManager = ({ isLoggedIn, handleLogout }) => {
             {isLoggedIn ? (
                 <div className={styles.sessionContainer}>
                     <div className={styles.userInfo}>
-                        <span className={styles.signedInLabel}>Signed in as:</span>
+                        <span className={styles.signedInLabel}>
+                            Signed in as:
+                        </span>
                         <span className={styles.usernameText}>
                             {user?.email?.split('@')[0] || 'User'}
                         </span>
@@ -128,7 +141,9 @@ const SessionManager = ({ isLoggedIn, handleLogout }) => {
             ) : (
                 <div className={styles.sessionContainer}>
                     <div className={styles.userInfo}>
-                        <span className={styles.signedInLabel}>Signed in as:</span>
+                        <span className={styles.signedInLabel}>
+                            Signed in as:
+                        </span>
                         <span className={styles.usernameText}>Guest</span>
                     </div>
                     <Link to='/login' className={styles.navLink}>

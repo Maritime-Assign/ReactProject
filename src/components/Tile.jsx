@@ -101,7 +101,7 @@ const Tile = ({ job, onJobUpdate }) => {
                     </div>
                     <button
                         onClick={() => setShowModal(true)}
-                        className='text-sm px-3 py-1.5 text-gray-700 hover:text-gray-900 font-medium border border-gray-300 rounded hover:bg-gray-200 transition-colors ml-4'
+                        className='cursor-pointer text-sm px-3 py-1.5 text-gray-700 hover:text-gray-900 font-medium border border-gray-300 rounded hover:bg-gray-200 transition-colors ml-4'
                     >
                         Edit
                     </button>

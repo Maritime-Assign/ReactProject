@@ -25,7 +25,7 @@ const Login = () => {
             setPasswordError(null)
 
             setLoading(true)
-    
+
             try {
                 if (!username.trim()) {
                     setUsernameError('Username Required')
@@ -92,15 +92,19 @@ const Login = () => {
     }
 
     return (
-        <div className='w-full h-[calc(100vh-100px)] flex items-center justify-center'>
-            <div className='w-fit p-12 shadow-[0_0_10px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center rounded-md'>
+        <div className='w-full flex flex-col items-center justify-center pt-20 pb-8 sm:items-center sm:justify-center h-[calc(100vh-100px)]'>
+            <div className='w-full max-w-sm mx-4 p-6 shadow-[0_0_10px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center rounded-md sm:max-w-lg sm:p-12'>
                 <div className='text-2xl font-mont font-medium text-mebablue-dark mb-3'>
                     Login
                 </div>
                 <div className={styles.underline}></div>
-                <form onSubmit={handleLogIn} noValidate className='flex flex-col gap-4 mt-4'>
+                <form
+                    onSubmit={handleLogIn}
+                    noValidate
+                    className='flex flex-col gap-4 mt-4 w-full'
+                >
                     <div
-                        className={`flex border border-neutral-300 rounded-md h-12 w-100 focus-within:border-mebagold ${
+                        className={`flex border border-neutral-300 rounded-md h-12 w-full focus-within:border-mebagold ${
                             usernameError
                                 ? 'border-red-500'
                                 : 'border-neutral-300'
@@ -120,7 +124,7 @@ const Login = () => {
                         />
                     </div>
                     <div
-                        className={`w-100 h-12 flex flex-row border border-neutral-300 rounded-md items-center focus-within:border-mebagold ${
+                        className={`w-full h-12 flex flex-row border border-neutral-300 rounded-md items-center focus-within:border-mebagold ${
                             passwordError
                                 ? 'border-red-500'
                                 : 'border-neutral-300'
@@ -145,22 +149,11 @@ const Login = () => {
                             onClick={toggleShowPassword}
                         />
                     </div>
-                    
-                    {/*  Temporarily hide forgot password button, no longer works with usernames  */}
-                    {/* <div className='pt-4'>
-                        <Link to='/password-recovery'>
-                            <button className='bg-mebablue-light rounded-md px-4 py-2 w-100 cursor-pointer'>
-                                <span className='text-lg font-mont text-white'>
-                                    Forgot Password?
-                                </span>
-                            </button>
-                        </Link>
-                    </div> */}
 
                     <div className='pt-4'>
                         <button
                             type='submit'
-                            className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-100 cursor-pointer font-mont hover:bg-mebablue-light'
+                            className='bg-mebablue-dark rounded-md px-4 py-2 text-lg text-white w-full cursor-pointer font-mont hover:bg-mebablue-light'
                         >
                             Login
                         </button>
