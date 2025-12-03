@@ -23,6 +23,8 @@ const FSboard = () => {
     useEffect(() => {
     let isMounted = true
     const fetchedOnce = { current: false }
+    let isMounted = true
+    const fetchedOnce = { current: false }
 
     async function init() {
         // Get session BEFORE anything else
