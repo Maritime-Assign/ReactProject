@@ -81,7 +81,6 @@ const onSubmit = async (values, actions) => {
         const getSessionRes = await supabase.auth.getSession()
         const adminSession = getSessionRes?.data?.session || null
 
-
         // Sign up user in Supabase Auth with metadata
         const { data: authData, error: signUpError } =
             await supabase.auth.signUp({
@@ -97,18 +96,20 @@ const onSubmit = async (values, actions) => {
                 },
             })
 
-            console.log('signUp authData:', authData)
-            console.log('signUp user_metadata:', authData?.user?.user_metadata)
-
+        console.log('signUp authData:', authData)
+        console.log('signUp user_metadata:', authData?.user?.user_metadata)
 
         if (signUpError) {
             console.error('Supabase signUp error:', signUpError)
             actions.setStatus({ submitError: signUpError.message })
-             if (adminSession) {
+            if (adminSession) {
                 try {
                     await supabase.auth.setSession(adminSession)
                 } catch (e) {
-                    console.warn('Failed to restore admin session after signUp error', e)
+                    console.warn(
+                        'Failed to restore admin session after signUp error',
+                        e
+                    )
                 }
             }
             return
@@ -168,7 +169,7 @@ const AddUser = () => {
                 {/* Left-aligned back button */}
                 <button
                     onClick={() => navigate(-1)} // navigate back one page
-                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
+                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300 cursor-pointer'
                 >
                     <IoArrowBack className='w-6 h-6' />
                 </button>
@@ -226,8 +227,11 @@ const AddUser = () => {
                             name='abbreviation'
                             value={values.abbreviation}
                             placeholder='Enter 3 character capitalized abbreviation'
-                            onChange={e => {
-                                const cleaned = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3)
+                            onChange={(e) => {
+                                const cleaned = e.target.value
+                                    .toUpperCase()
+                                    .replace(/[^A-Z]/g, '')
+                                    .slice(0, 3)
                                 setFieldValue('abbreviation', cleaned)
                             }}
                             onBlur={handleBlur}
@@ -282,20 +286,26 @@ const AddUser = () => {
                     </div>
 
                     {/* submit-level status messages (accessible) */}
-                    <div className="flex justify-center mt-3">
+                    <div className='flex justify-center mt-3'>
                         {status?.submitError && (
-                        <div role="alert" data-testid="submit-error" className="text-red-600">
-                            {status.submitError}
-                        </div>
+                            <div
+                                role='alert'
+                                data-testid='submit-error'
+                                className='text-red-600'
+                            >
+                                {status.submitError}
+                            </div>
                         )}
                         {status?.submitSuccess && (
-                        <div role="status" data-testid="submit-success" className="text-green-600">
-                            {status.submitSuccess}
-                        </div>
+                            <div
+                                role='status'
+                                data-testid='submit-success'
+                                className='text-green-600'
+                            >
+                                {status.submitSuccess}
+                            </div>
                         )}
                     </div>
-                    
-                    
 
                     {/* Submit button */}
                     <div className='flex flex-row space-x-4 mt-4 justify-center'>

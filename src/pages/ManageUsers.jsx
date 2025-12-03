@@ -73,7 +73,7 @@ const ManageUsers = () => {
             <div className='flex py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center'>
                 <button
                     onClick={() => navigate(-1)} // navigate back one page
-                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
+                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300 cursor-pointer'
                 >
                     <IoArrowBack className='w-6 h-6' />
                 </button>
@@ -96,7 +96,7 @@ const ManageUsers = () => {
                 {/*Button that links to the add user page; Add link later*/}
                 <Link className='flex gap-2 mr-4' to={'/add-user'}>
                     <button
-                        className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
+                        className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white cursor-pointer'
                         title='Add User'
                     >
                         <FaUserPlus className='w-5 h-5' />
@@ -134,10 +134,10 @@ const ManageUsers = () => {
                             {/*Button that links to the edit user page*/}
                             <Link to={'/edituser'} state={user}>
                                 <button
-                                    className='text-mebablue-dark hover:text-mebablue-hover edit role'
+                                    className='text-mebablue-dark hover:text-mebablue-hover edit role cursor-pointer'
                                     title='Edit Role'
                                 >
-                                    <FaEdit />
+                                    <FaEdit className='w-4 h-4' />
                                 </button>
                             </Link>
                         </div>

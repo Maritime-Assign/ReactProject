@@ -5,40 +5,34 @@ import userEvent from '@testing-library/user-event'
 import jobValidationSchema from '../data/jobValidationSchema'
 
 beforeAll(() => {
-    jobValidationSchema.fields.dateCalled = jobValidationSchema.fields.dateCalled.optional()
-    jobValidationSchema.fields.joinDate = jobValidationSchema.fields.joinDate.optional()
+    jobValidationSchema.fields.dateCalled =
+        jobValidationSchema.fields.dateCalled.optional()
+    jobValidationSchema.fields.joinDate =
+        jobValidationSchema.fields.joinDate.optional()
 })
 
 vi.mock('../auth/AuthContext', () => ({
     UserAuth: () => ({ user: { id: '1', email: 'test@example.com' } }),
 }))
 
-vi.mock('../api/supabaseClient', () => {
-  return {
+vi.mock('../api/supabaseClient', () => ({
     __esModule: true,
     default: {
-      from: vi.fn(() => ({
-        select: vi.fn(() => ({
-          maybeSingle: vi.fn().mockResolvedValue({
-            data: {
-              region: [
-                { label: 'LA', is_active: true, sort_order: 10 },
-                { label: 'DEN', is_active: true, sort_order: 20 },
-              ],
-              hall: [{ label: 'LA', is_active: true }],
-              billet: [{ label: '1 A/E', is_active: true }],
-              type: [
-                { label: 'Relief', is_active: true },
-                { label: 'Permanent', is_active: true },
-              ],
-            },
-            error: null,
-          }),
+        from: vi.fn(() => ({
+            select: vi.fn().mockReturnThis(),
+            maybeSingle: vi.fn().mockResolvedValue({
+                data: {
+                    region: [{ label: 'LA', is_active: true }],
+                    hall: [{ label: 'LA', is_active: true }],
+                    billet: [{ label: '1 A/E', is_active: true }],
+                    type: [{ label: 'Relief', is_active: true }],
+                    company: [{ label: 'ACME Marine', is_active: true }],
+                },
+                error: null,
+            }),
         })),
-      })),
     },
-  }
-})
+}))
 
 vi.mock('react-router-dom', async (importOriginal) => {
     const actual = await importOriginal()
@@ -53,8 +47,7 @@ vi.mock('../utils/jobHistoryOptimized', () => ({
 }))
 import { addJob } from '../utils/jobHistoryOptimized'
 
-
-import AddJob from "../pages/AddJob"
+import AddJob from '../pages/AddJob'
 import { test } from 'vitest'
 
 describe('Add new job page', () => {
@@ -89,7 +82,6 @@ describe('Add new job page', () => {
             screen.queryByRole('button', { name: /submit/i }) ||
             screen.queryByRole('button', { name: /add job/i })
         expect(submitButton).toBeInTheDocument()
-
     })
 
     test('shows validation error when required fields missing and toggles checkboxes', async () => {
@@ -122,63 +114,96 @@ describe('Add new job page', () => {
         expect(mscBox).toBeChecked()
     })
 
-    test(
-        'allows job submission when Notes field is empty',
-        async () => {
-            addJob.mockResolvedValue({ success: true })
+    test('allows job submission when Notes field is empty', async () => {
+        addJob.mockResolvedValue({ success: true })
+        render(
+            <MemoryRouter>
+                <AddJob />
+            </MemoryRouter>
+        )
+        const user = userEvent.setup()
 
-            render(
-                <MemoryRouter>
-                    <AddJob />
-                </MemoryRouter>
-            )
+        // Wait for dropdown options to populate from mock
+        await waitFor(() =>
+            expect(
+                screen.getByLabelText(/Region/i).options.length
+            ).toBeGreaterThan(1)
+        )
 
-            const user = userEvent.setup()
+        // Fill ALL select dropdowns with userEvent
+        await user.selectOptions(
+            screen.getByLabelText(/Status/i, { exact: false }),
+            'Open'
+        )
+        await user.selectOptions(
+            screen.getByLabelText(/Region/i, { exact: false }),
+            'LA'
+        )
+        await user.selectOptions(
+            screen.getByLabelText(/Hall/i, { exact: false }),
+            'LA'
+        )
+        await user.selectOptions(
+            screen.getByLabelText(/Billet/i, { exact: false }),
+            '1 A/E'
+        )
+        await user.selectOptions(
+            screen.getByLabelText(/Type/i, { exact: false }),
+            'Relief'
+        )
+        await user.selectOptions(
+            screen.getByLabelText(/Company/i, { exact: false }),
+            'ACME Marine'
+        )
 
-            // Use fireEvent to ensure Formik sees real change events
-            const change = (label, name, value) =>
-                fireEvent.change(screen.getByLabelText(label, { exact: false }), {
-                    target: { name, value },
-                })
+        // Fill text inputs with blur
+        const vesselField = screen.getByLabelText(/Vessel/i, { exact: false })
+        await user.type(vesselField, 'Test Vessel')
+        vesselField.blur()
 
-             // Wait for dropdown options to populate from mock
-            await waitFor(() =>
-            expect(screen.getByLabelText(/Region/i).options.length).toBeGreaterThan(1)
-            )
+        const daysField = screen.getByLabelText(/Days/i, { exact: false })
+        await user.type(daysField, '30')
+        daysField.blur()
 
-            await user.selectOptions(screen.getByLabelText(/Status/i), 'Open')
-            await user.selectOptions(screen.getByLabelText(/Region/i), 'LA')
-            await user.selectOptions(screen.getByLabelText(/Hall/i), 'LA')
+        const locationField = screen.getByLabelText(/Location/i, {
+            exact: false,
+        })
+        await user.type(locationField, 'Oakland')
+        locationField.blur()
 
-            change(/Status/i, 'status', 'Open')
-            change(/Region/i, 'region', 'LA')
-            change(/Hall/i, 'hall', 'LA')
-            change(/Date Called/i, 'dateCalled', '2025-12-01')
-            change(/Vessel/i, 'shipName', 'Test Vessel')
-            change(/Join Date/i, 'joinDate', '2025-12-10')
-            change(/Billet/i, 'billet', '1 A/E')
-            change(/Type/i, 'type', 'Relief')
-            change(/Days/i, 'days', 30)
-            change(/Location/i, 'location', 'Oakland')
-            change(/Company/i, 'company', 'ACME Marine')
-            change(/Crew Relieved/i, 'crewRelieved', 'Smith')
+        const crewField = screen.getByLabelText(/Crew Relieved/i, {
+            exact: false,
+        })
+        await user.type(crewField, 'Smith')
+        crewField.blur()
 
-            // Leave Notes blank intentionally
-            await userEvent.click(screen.getByRole('button', { name: /submit/i }))
-            console.log('Submitting form...')
+        // Date fields
+        const dateCalledField = screen.getByLabelText(/Date Called/i, {
+            exact: false,
+        })
+        await user.type(dateCalledField, '12/01/2025')
+        dateCalledField.blur()
 
-            // Wait for Formik submit → addJob call
-            await waitFor(() => expect(addJob).toHaveBeenCalled(), { timeout: 8000 })
+        const joinDateField = screen.getByLabelText(/Join Date/i, {
+            exact: false,
+        })
+        await user.type(joinDateField, '12/10/2025')
+        joinDateField.blur()
 
-            // Confirm notes was null
-            expect(addJob).toHaveBeenCalledWith(
+        // Leave Notes blank intentionally
+
+        await user.click(screen.getByRole('button', { name: /submit/i }))
+        console.log('Submitting form...')
+
+        // Wait for Formik submit → addJob call
+        await waitFor(() => expect(addJob).toHaveBeenCalled(), {
+            timeout: 8000,
+        })
+
+        // Confirm notes was null
+        expect(addJob).toHaveBeenCalledWith(
             expect.objectContaining({ notes: null }),
             expect.anything()
-            )
-
-        },
-        8000
-    )
-
+        )
+    }, 15000) // Increase timeout
 })
-

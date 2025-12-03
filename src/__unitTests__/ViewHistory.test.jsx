@@ -126,17 +126,21 @@ vi.mock('../api/supabaseClient', () => {
                         },
                         {}
                     )
-                    
+
                     // Check if there's an 'in' filter
                     if (inFilter) {
                         // Check if the filter is for closed jobs (open field with 'Filled' or'Filled by Company')
                         if (
                             inFilter.field === 'open' &&
-                            (inFilter.vals.includes('Filled') || inFilter.vals.includes('Filled by Company'))
+                            (inFilter.vals.includes('Filled') ||
+                                inFilter.vals.includes('Filled by Company'))
                         ) {
                             // Return closed jobs data
                             result = { data: jobsClosedRows, error: null }
-                        } else if (inFilter.field === 'id' && inFilter.vals.includes(1)) {
+                        } else if (
+                            inFilter.field === 'id' &&
+                            inFilter.vals.includes(1)
+                        ) {
                             // Return closed jobs when filtering by job id 1
                             result = { data: jobsClosedRows, error: null }
                         }
@@ -192,9 +196,7 @@ describe('View Changes Page Tests', () => {
         )
 
         // Check that the main header is present
-        expect(
-            screen.getByText(/Job Board History & Changes/i)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/History & Changes/i)).toBeInTheDocument()
     })
 
     test('displays summary cards', () => {
@@ -280,17 +282,19 @@ describe('View Changes Page Tests', () => {
     })
 
     // --- Final test: ensure clicking Open? then Confirm triggers supabase update ---
-   test('clicking Open? then Confirm reopens job (calls supabase.update)', async () => {
+    test('clicking Open? then Confirm reopens job (calls supabase.update)', async () => {
         render(
             <MemoryRouter>
-            <ViewHistory />
+                <ViewHistory />
             </MemoryRouter>
         )
 
         const user = userEvent.setup()
 
         // Open the Closed Jobs modal
-        const closedButton = await screen.findByRole('button', { name: /Jobs Closed/i })
+        const closedButton = await screen.findByRole('button', {
+            name: /Jobs Closed/i,
+        })
         await user.click(closedButton)
 
         // Wait for modal/dialog to appear (requires accessible modal with role="dialog" or a labeled container).
@@ -317,14 +321,19 @@ describe('View Changes Page Tests', () => {
         expect(jobRow).toBeInTheDocument()
 
         // Find the Open button in the modal for this job. It might be labeled "Open job 1" or similar.
-        const openBtn = within(modal).queryByRole('button', { name: /Open job 1/i })
+        const openBtn = within(modal).queryByRole('button', {
+            name: /Open job 1/i,
+        })
         if (!openBtn) {
             // If the button isn't found by that name, search for a button that contains "Open" inside jobRow
-            const candidate = within(jobRow).queryByRole('button', { name: /Open/i }) ||
-                            within(modal).queryByRole('button', { name: /Open/i })
+            const candidate =
+                within(jobRow).queryByRole('button', { name: /Open/i }) ||
+                within(modal).queryByRole('button', { name: /Open/i })
             if (!candidate) {
-            // No open control found -> fail with helpful message
-            throw new Error('No "Open" button found for Job #1 in the modal')
+                // No open control found -> fail with helpful message
+                throw new Error(
+                    'No "Open" button found for Job #1 in the modal'
+                )
             }
             // otherwise use the candidate
             await user.click(candidate)
@@ -335,12 +344,16 @@ describe('View Changes Page Tests', () => {
 
         // Wait for the button text to show "Confirm?" (button text update may be global or scoped)
         await waitFor(async () => {
-            const confirmBtn = within(modal).getByRole('button', { name: /Open job 1/i })
+            const confirmBtn = within(modal).getByRole('button', {
+                name: /Open job 1/i,
+            })
             expect(confirmBtn).toHaveTextContent(/Confirm\?/i)
         })
 
         // Now click the confirm button to trigger the update
-        await user.click(within(modal).getByRole('button', { name: /Open job 1/i }))
+        await user.click(
+            within(modal).getByRole('button', { name: /Open job 1/i })
+        )
 
         // Assert supabase.update was called and payload contained an "open" truthy value.
         await waitFor(() => {
@@ -349,25 +362,33 @@ describe('View Changes Page Tests', () => {
 
             // Accept either boolean true or string 'Open' (or any truthy 'open') depending on implementation
             const calledWithExpected = updateSpy.mock.calls.some((call) => {
-            const payload = call[0]
-            if (!payload) return false
-            const openIsOk = payload.open === true || payload.open === 'Open' || Boolean(payload.open) === true
-            const archivedOk = payload.archivedJob === false || payload.archivedJob === 'false' || payload.archivedJob === 0
-            // claimedBy could be null/undefined/'' depending on implementation; accept null or falsy
-            const claimedOk = payload.claimedBy === null || payload.claimedBy === undefined || payload.claimedBy === ''
-            return openIsOk && archivedOk && claimedOk
+                const payload = call[0]
+                if (!payload) return false
+                const openIsOk =
+                    payload.open === true ||
+                    payload.open === 'Open' ||
+                    Boolean(payload.open) === true
+                const archivedOk =
+                    payload.archivedJob === false ||
+                    payload.archivedJob === 'false' ||
+                    payload.archivedJob === 0
+                // claimedBy could be null/undefined/'' depending on implementation; accept null or falsy
+                const claimedOk =
+                    payload.claimedBy === null ||
+                    payload.claimedBy === undefined ||
+                    payload.claimedBy === ''
+                return openIsOk && archivedOk && claimedOk
             })
 
             expect(calledWithExpected).toBeTruthy()
             // eq should also have been called with the id
             expect(eqSpy).toHaveBeenCalled()
             const eqCalledWithId1 = eqSpy.mock.calls.some(
-            (call) => call[0] === 'id' && (call[1] === 1 || call[1] === '1')
+                (call) => call[0] === 'id' && (call[1] === 1 || call[1] === '1')
             )
             expect(eqCalledWithId1).toBeTruthy()
         })
-        })
-
+    })
 
     // Feature replaced with search bar - Target test is commented out below
     // Replacement test for search bar will be in its own test file

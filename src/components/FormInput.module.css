@@ -22,9 +22,9 @@
 }
 
 .selectBase {
-    @apply text-mebablue-dark w-sm p-3 rounded-md border-1 border-neutral-300 focus:border focus:border-mebagold focus:outline-none;
+    @apply text-mebablue-dark w-sm p-3 rounded-md border-1 border-neutral-300 focus:border focus:border-mebagold focus:outline-none cursor-pointer;
 }
 
 .selectError {
-    @apply w-sm p-3 rounded-md border-1 border-red-500;
+    @apply w-sm p-3 rounded-md border-1 border-red-500 cursor-pointer;
 }

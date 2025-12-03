@@ -386,7 +386,7 @@ const AddJob = () => {
                 {/* Left-aligned back button */}
                 <button
                     onClick={() => navigate(-1)} // navigate back one page
-                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
+                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300 cursor-pointer'
                 >
                     <IoArrowBack className='w-6 h-6' />
                 </button>
@@ -404,7 +404,7 @@ const AddJob = () => {
                     {/* 1. Full Text Button (Desktop/Tablet) */}
                     <button
                         onClick={() => setShowModal(true)}
-                        className='hidden md:block bg-mebagold text-mebablue-dark px-4 py-2 rounded-md font-semibold shadow hover:bg-yellow-400 transition'
+                        className='hidden md:block bg-mebagold text-mebablue-dark px-4 py-2 rounded-md font-semibold shadow hover:bg-yellow-400 transition cursor-pointer'
                     >
                         Edit Dropdown Options
                     </button>
@@ -412,7 +412,7 @@ const AddJob = () => {
                     {/* 2. Icon-Only Button (Mobile) */}
                     <button
                         onClick={() => setShowModal(true)}
-                        className='block md:hidden bg-mebagold shadow-md rounded-md p-2 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
+                        className='block md:hidden bg-mebagold shadow-md rounded-md p-2 text-2xl text-center text-mebablue-dark hover:bg-yellow-300 cursor-pointer'
                         aria-label='Edit Dropdown Options'
                     >
                         <IoSettingsSharp className='w-6 h-6' />
@@ -426,7 +426,7 @@ const AddJob = () => {
                         <div className='flex flex-col items-center'>
                             <FormInput
                                 type='select'
-                                label='Status'
+                                label='Status*'
                                 name='status'
                                 value={values.status}
                                 placeholder='Select Status'
@@ -445,7 +445,7 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='select'
-                                label='Region'
+                                label='Region*'
                                 name='region'
                                 value={values.region}
                                 placeholder='Select Region'
@@ -464,7 +464,7 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='select'
-                                label='Hall'
+                                label='Hall*'
                                 name='hall'
                                 value={values.hall}
                                 placeholder='Select Hall'
@@ -483,7 +483,7 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='date'
-                                label='Date Called'
+                                label='Date Called*'
                                 name='dateCalled'
                                 value={values.dateCalled}
                                 required
@@ -502,7 +502,7 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='text'
-                                label='Vessel'
+                                label='Vessel*'
                                 name='shipName'
                                 value={values.shipName}
                                 placeholder='Enter Ship Name'
@@ -520,7 +520,7 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='date'
-                                label='Join Date'
+                                label='Join Date*'
                                 name='joinDate'
                                 value={values.joinDate}
                                 placeholder='Select a Date'
@@ -540,7 +540,7 @@ const AddJob = () => {
                         <div className='flex flex-col items-center'>
                             <FormInput
                                 type='select'
-                                label='Billet'
+                                label='Billet*'
                                 name='billet'
                                 value={values.billet}
                                 placeholder='Select Billet'
@@ -559,7 +559,7 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='select'
-                                label='Type'
+                                label='Type*'
                                 name='type'
                                 value={values.type}
                                 required
@@ -579,7 +579,7 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='text'
-                                label='Days'
+                                label='Days*'
                                 name='days'
                                 value={values.days}
                                 required
@@ -598,7 +598,7 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='text'
-                                label='Location'
+                                label='Location*'
                                 name='location'
                                 value={values.location}
                                 required
@@ -617,7 +617,7 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='select'
-                                label='Company'
+                                label='Company*'
                                 name='company'
                                 value={values.company}
                                 required
