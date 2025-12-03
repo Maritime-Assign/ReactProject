@@ -98,7 +98,7 @@ const fetchDropdownRow = async () => {
 
     const { data: inserted, error: insErr } = await supabase
         .from('job_dropdown_options')
-        .insert({ region: [], hall: [], billet: [], type: [] })
+        .insert({ region: [], company: [], hall: [], billet: [], type: [] })
         .select()
         .single()
 
@@ -210,9 +210,9 @@ const AddJob = () => {
             joinDate: '',
             billet: '',
             type: '',
+            company: '',
             days: '',
             location: '',
-            company: '',
             crewRelieved: '',
             notes: '',
             passThru: false,
@@ -239,6 +239,8 @@ const AddJob = () => {
     const [billetLoading, setBilletLoading] = useState(true)
     const [typeOptions, setTypeOptions] = useState([])
     const [typeLoading, setTypeLoading] = useState(true)
+    const [companyOptions, setCompanyOptions] = useState([])
+    const [companyLoading, setCompanyLoading] = useState(true)
 
     function visible(items = []) {
         return items
@@ -327,11 +329,31 @@ const AddJob = () => {
         }
     }
 
+    async function loadCompanyOptions() {
+        try {
+            const { data, error } = await supabase
+                .from('job_dropdown_options')
+                .select('company')
+                .maybeSingle()
+
+            if (error) {
+                console.error('Load company options error:', error)
+                setCompanyOptions([])
+            } else {
+                const items = Array.isArray(data?.company) ? data.company : []
+                setCompanyOptions(visible(items))
+            }
+        } finally {
+            setCompanyLoading(false)
+        }
+    }
+
     useEffect(() => {
         loadRegionOptions()
         loadHallOptions()
         loadBilletOptions()
         loadTypeOptions()
+        loadCompanyOptions()
     }, [])
 
     useEffect(() => {
@@ -340,6 +362,7 @@ const AddJob = () => {
             loadHallOptions()
             loadBilletOptions()
             loadTypeOptions()
+            loadCompanyOptions()
         }
     }, [showModal])
 
@@ -593,18 +616,19 @@ const AddJob = () => {
                                 setFieldError={setFieldError}
                             />
                             <FormInput
-                                type='text'
+                                type='select'
                                 label='Company'
                                 name='company'
                                 value={values.company}
                                 required
-                                placeholder='Enter Company'
+                                placeholder='Select Company'
+                                options={companyLoading ? [] : companyOptions}
                                 onChange={handleChange}
                                 onBlur={handleBlur}
                                 className={
                                     errors.company && touched.company
-                                        ? 'textError'
-                                        : 'textBase'
+                                        ? 'selectError'
+                                        : 'selectBase'
                                 }
                                 errors={errors.company}
                                 touched={touched.company}
@@ -850,6 +874,59 @@ const AddJob = () => {
                                             handleRemoveOption('hall', value)
                                             document.getElementById(
                                                 'hallRem'
+                                            ).value = ''
+                                        }}
+                                        className='bg-red-500 text-white px-3 py-2 rounded font-semibold hover:bg-red-600'
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* --- Company --- */}
+                            <div>
+                                <h3 className='text-lg font-semibold text-mebablue-dark mb-2'>
+                                    Company
+                                </h3>
+                                <div className='flex flex-col sm:flex-row gap-2'>
+                                    <input
+                                        id='companyAdd'
+                                        type='text'
+                                        placeholder='Add new Company...'
+                                        className='border rounded p-2 flex-1'
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            const value =
+                                                document.getElementById(
+                                                    'companyAdd'
+                                                ).value
+                                            handleAddOption('company', value)
+                                            document.getElementById(
+                                                'companyAdd'
+                                            ).value = ''
+                                        }}
+                                        className='bg-mebagold text-mebablue-dark px-3 py-2 rounded font-semibold hover:bg-yellow-400'
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+                                <div className='flex flex-col sm:flex-row gap-2 mt-2'>
+                                    <input
+                                        id='companyRem'
+                                        type='text'
+                                        placeholder='Remove Company...'
+                                        className='border rounded p-2 flex-1'
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            const value =
+                                                document.getElementById(
+                                                    'companyRem'
+                                                ).value
+                                            handleRemoveOption('company', value)
+                                            document.getElementById(
+                                                'companyRem'
                                             ).value = ''
                                         }}
                                         className='bg-red-500 text-white px-3 py-2 rounded font-semibold hover:bg-red-600'

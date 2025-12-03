@@ -16,6 +16,8 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
     const [typeOptions, setTypeOptions] = useState([])
     const [typeLoading, setTypeLoading] = useState(true)
     const [isOpen, setIsOpen] = useState(true)
+    const [companyOptions, setCompanyOptions] = useState([])
+    const [companyLoading, setCompanyLoading] = useState(true)
 
     function visible(items = []) {
         return items
@@ -104,11 +106,31 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
         }
     }
 
+    async function loadCompanyOptions() {
+        try {
+            const { data, error } = await supabase
+                .from('job_dropdown_options')
+                .select('company')
+                .maybeSingle()
+
+            if (error) {
+                console.error('Load company options error:', error)
+                setCompanyOptions([])
+            } else {
+                const items = Array.isArray(data?.company) ? data.company : []
+                setCompanyOptions(visible(items))
+            }
+        } finally {
+            setCompanyLoading(false)
+        }
+    }
+
     useEffect(() => {
         loadRegionOptions()
         loadHallOptions()
         loadBilletOptions()
         loadTypeOptions()
+        loadCompanyOptions()
     }, [])
     // Form state for all editable fields
     const [formData, setFormData] = useState({
@@ -598,15 +620,22 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                             <span className='text-xs text-gray-500 font-medium block mb-1'>
                                 Company
                             </span>
-                            <input
-                                type='text'
+                            <select
                                 value={formData.company}
                                 onChange={(e) =>
                                     handleInputChange('company', e.target.value)
                                 }
-                                placeholder='Company'
                                 className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
-                            />
+                            >
+                                <option value='' disabled>
+                                    Select Company
+                                </option>
+                                {companyOptions.map((opt) => (
+                                    <option key={opt} value={opt}>
+                                        {opt}
+                                    </option>
+                                ))}
+                            </select>
                             {errors.company && (
                                 <span className='text-red-500 text-xs block mt-1'>
                                     {errors.company}
