@@ -10,14 +10,21 @@ const FSboard = () => {
     const [loading, setLoading] = useState(true) // State to track loading status
     const [error, setError] = useState(null) // State to track errors
 
-    const handleClaimJob = async () => {
-        setLoading(true)
+    const refreshJobs = async () => {
         try {
+            setLoading(true)
             const updatedJobs = await getJobsArray()
             setJobs(updatedJobs)
-        } finally {
+        } catch (err) {
+            console.error("Error refreshing jobs:", err)
+            setError("Failed to refresh jobs")
+        }finally {
             setLoading(false)
         }
+    }
+
+    const handleClaimJob = async () => {
+        refreshJobs()
     }
 
     useEffect(() => {
@@ -25,7 +32,7 @@ const FSboard = () => {
     const fetchedOnce = { current: false }
 
     async function init() {
-        // Get session BEFORE anything else
+        // Ensure auth first
         try {
             const { data } = await supabase.auth.getSession()
             const accessToken = data?.session?.access_token
@@ -59,86 +66,125 @@ const FSboard = () => {
         const channel = supabase.channel("topic:jobs", {
             config: {
                 private: true,
-                // Increase join timeout to reduce spurious timeouts
-                timeout: 15000,
+                timeout: 20000, // a bit longer
                 broadcast: { ack: false }
             }
         })
 
-        // Unified refresh
-        const refreshJobs = async () => {
-            setLoading(true)
-            try {
-                const updated = await getJobsArray()
-                setJobs(updated)
-                setError(null)
-            } catch (err) {
-                console.error("Refresh jobs failed:", err)
-                setError("Failed to refresh jobs")
-            } finally {
-                setLoading(false)
-            }
+        // Incremental updates
+        let isSubscribed = false
+        const onStatus = (status) => {
+            console.log('Channel status:', status)
+            isSubscribed = (status === 'SUBSCRIBED')
         }
 
-        // Listen for DB changes
         channel.on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'Jobs' },
-            async (payload) => {
-                console.log('PG CHANGE:', payload.eventType, payload);
-                await refreshJobs()
-            }
-        )
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'Jobs' },
+          async (payload) => {
+            if (!isSubscribed) return
+            const { eventType, new: newRow, old: oldRow } = payload
 
-        // Retry subscribe with exponential backoff
-        let attempts = 0
-        const maxAttempts = 5
-
-        const subscribeWithRetry = () => {
-            const statusHandler = (status) => {
-                console.log('Channel status:', status)
-                if (status === 'SUBSCRIBED') {
-                    attempts = 0 // reset on success
-                } else if (status === 'TIMED_OUT' || status === 'CLOSED') {
-                    if (attempts < maxAttempts) {
-                        attempts += 1
-                        const delay = Math.min(30000, 1000 * Math.pow(2, attempts)) // 1s,2s,4s,8s,16s...
-                        console.warn(`Realtime ${status}. Retrying subscribe in ${delay}ms (attempt ${attempts}/${maxAttempts})`)
-                        setTimeout(() => {
-                            if (isMounted) {
-                                try {
-                                    channel.subscribe(statusHandler)
-                                } catch (e) {
-                                    console.error("Retry subscribe error:", e)
-                                }
-                            }
-                        }, delay)
-                    } else {
-                        console.error("Max subscribe retry attempts reached.")
-                    }
+            if (eventType === 'UPDATE') {
+                const becameArchived =
+                    (oldRow?.archivedJob === false || oldRow?.archivedJob == null) &&
+                    newRow?.archivedJob === true
+                if (becameArchived) {
+                    await refreshJobs()
+                    return
                 }
             }
 
-            try {
-                channel.subscribe(statusHandler)
-            } catch (e) {
-                console.error("Initial subscribe error:", e)
+            setJobs((prev) => {
+                switch (eventType) {
+                    case 'INSERT': {
+                        const exists = prev.some(j => j.id === newRow.id)
+                        return exists ? prev : [...prev, newRow]
+                    }
+                    case 'UPDATE': {
+                        return prev.map(j => j.id === newRow.id ? { ...j, ...newRow } : j)
+                    }
+                    case 'DELETE': {
+                        const idToRemove = oldRow?.id ?? newRow?.id
+                        return prev.filter(j => j.id !== idToRemove)
+                    }
+                    default:
+                        return prev
+                }
+            })
+          }
+        )
+
+        // Resilient subscribe: wait for visibility + online, backoff on failures
+        let attempts = 0
+        const maxAttempts = 5
+        let retryTimer = null
+
+        const canConnect = () =>
+            document.visibilityState === 'visible' && navigator.onLine
+
+        const scheduleRetry = (reason) => {
+            if (!isMounted) return
+            if (!canConnect()) return // hold retries while offline/hidden
+            if (attempts >= maxAttempts) {
+                console.error("Max subscribe retry attempts reached.")
+                return
             }
+            attempts += 1
+            const delay = Math.min(30000, 1000 * Math.pow(2, attempts))
+            console.warn(`Realtime ${reason}. Retrying subscribe in ${delay}ms (attempt ${attempts}/${maxAttempts})`)
+            clearTimeout(retryTimer)
+            retryTimer = setTimeout(() => {
+                if (isMounted && canConnect()) {
+                    try { channel.subscribe(onStatus) } catch (e) { console.error("Retry subscribe error:", e) }
+                }
+            }, delay)
         }
 
-        subscribeWithRetry()
+        const subscribeSafely = () => {
+            if (!isMounted) return
+            if (!canConnect()) return
+            // small delay to avoid “closed before established” when tab just became visible
+            setTimeout(() => {
+                if (!isMounted || !canConnect()) return
+                attempts = 0
+                try {
+                    channel.subscribe((status) => {
+                        onStatus(status)
+                        if (status === 'SUBSCRIBED') {
+                            attempts = 0
+                        } else if (status === 'TIMED_OUT' || status === 'CLOSED') {
+                            scheduleRetry(status)
+                        }
+                    })
+                } catch (e) {
+                    console.error("Initial subscribe error:", e)
+                    scheduleRetry("ERROR")
+                }
+            }, 250) // small debounce
+        }
 
-        // Polling fallback: refresh every 60s
+        // React to visibility/network changes
+        const onVisible = () => subscribeSafely()
+        const onOnline = () => subscribeSafely()
+        document.addEventListener('visibilitychange', onVisible)
+        window.addEventListener('online', onOnline)
+
+        // Kick off initial subscribe
+        subscribeSafely()
+
+        // Polling fallback (10 min)
         const intervalId = setInterval(() => {
-            if (isMounted) {
-                refreshJobs()
-            }
-        }, 60000)
+            if (isMounted) refreshJobs()
+        }, 60000 * 10)
 
         // Cleanup
         return () => {
             isMounted = false
             clearInterval(intervalId)
+            clearTimeout(retryTimer)
+            document.removeEventListener('visibilitychange', onVisible)
+            window.removeEventListener('online', onOnline)
             try { channel.unsubscribe() } catch (_) {}
             try { supabase.removeChannel(channel) } catch (_) {}
         }
