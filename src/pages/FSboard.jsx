@@ -3,6 +3,7 @@ import FSBheader from '../components/FSBheader'
 import getJobsArray from '../components/jobDataAPI'
 import JobListing from '../components/JobListing'
 import { ArrowDown } from 'lucide-react'
+import supabase from '../api/supabaseClient'
 
 const FSboard = () => {
     const [jobs, setJobs] = useState([]) // State to store the fetched jobs
@@ -20,41 +21,72 @@ const FSboard = () => {
     }
 
     useEffect(() => {
-        let isMounted = true
-        const fetchedOnce = { current: false }
+    let isMounted = true
+    const fetchedOnce = { current: false }
 
-        async function fetchJobs() {
-            // prevent duplicate fetches from StrictMode or re-renders
-            if (fetchedOnce.current) return
-            fetchedOnce.current = true
+    async function init() {
+        // Get session BEFORE anything else
+        try {
+        const sessionResp = await supabase.auth.getSession()
+        const accessToken = sessionResp?.data?.session?.access_token
+        if (accessToken) {
+            await supabase.realtime.setAuth(accessToken)
+        }
+        } catch (_) {}
 
-            try {
-                const fetchedJobs = await getJobsArray()
-                if (!isMounted) return
-                setJobs(fetchedJobs)
-                setError(null)
-            } catch (error) {
-                if (!isMounted) return
-                console.error('Error fetching jobs:', error)
-                setError('Failed to load jobs')
-            } finally {
-                if (isMounted) setLoading(false)
+        // Fetch jobs after auth is ready
+        if (!fetchedOnce.current) {
+        fetchedOnce.current = true
+        try {
+            const fetchedJobs = await getJobsArray()
+            if (isMounted) {
+            setJobs(fetchedJobs)
+            setError(null)
             }
+        } catch (err) {
+            console.error("Error fetching jobs:", err)
+            if (isMounted) setError("Failed to load jobs")
+        } finally {
+            if (isMounted) setLoading(false)
+        }
         }
 
-        fetchJobs()
+        // Create channel (auth token ready)
+        const TOPIC = "topic:jobs"
+        const channel = supabase.channel(TOPIC, {
+        config: { private: true, broadcast: { self: true, ack: false } }
+        })
 
-        // skip auto-refresh interval in tests
-        let intervalId
-        if (process.env.NODE_ENV !== 'test') {
-            intervalId = setInterval(fetchJobs, 60000)
+        channel
+    .on("broadcast", { event: "*" }, async (payload) => {
+        console.log("Realtime broadcast received:", payload)
+
+        // Refresh job list on any DB change
+        try {
+        const updatedJobs = await getJobsArray()
+        setJobs(updatedJobs)
+        } catch (err) {
+        console.error("Error refreshing jobs:", err)
         }
+    })
+    .subscribe((status) => {
+        console.log("Channel status:", status)
+    })
 
+
+        // Cleanup
         return () => {
-            isMounted = false
-            if (intervalId) clearInterval(intervalId)
+        isMounted = false
+        try { channel.unsubscribe() } catch (_) {}
+        try { supabase.removeChannel(channel) } catch (_) {}
         }
+    }
+
+    const cleanupPromise = init()
+    return () => cleanupPromise.then((cleanup) => cleanup && cleanup())
+
     }, [])
+
 
     if (loading) {
         return <div>Loading jobs...</div> // Show a loading message while fetching

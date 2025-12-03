@@ -12,7 +12,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 
 const permissions = {
     admin: ['*'], // admin can access everything
-    dispatch: ['/dispatch/dashboard', '/fsb', '/board', '/addjob', '/history'],
+    dispatch: ['/dispatch/dashboard', '/fsb', '/manage-jobs', '/addjob', '/history'],
     // Display dash will be removed later via update from Client
     display: ['/dashboard/display', '/fsb'],
     guest: ['/login'], // fallback for unauthenticated users
