@@ -27,19 +27,9 @@ const FormInput = ({
     touched,
     submitCount = 0,
     setFieldError,
-    required = false,
 }) => {
     const handleChange = (e) => {
         let val = e.target?.value ?? e
-
-        // If the value is a Date object, reformat it to "yyyy-mm-dd" for database
-        /*         if (val instanceof Date) {
-                    const year = val.getFullYear()
-                    const month = String(val.getMonth() + 1).padStart(2, '0')
-                    const day = String(val.getDate()).padStart(2, '0')
-                    val = `${year}-${month}-${day}` // Format as YYYY-MM-DD for database
-                } */
-
         onChange({ target: { name: e.target?.name ?? name, value: val } })
 
         // Clear the error if the field is now valid
@@ -62,13 +52,10 @@ const FormInput = ({
                     id={inputId}
                     name={name}
                     value={value}
-                    onChange={handleChange}
+                    onChange={handleChange} // Change from onChange={onChange}
                     onBlur={onBlur}
                     disabled={disabled}
                     className={appliedClass}
-                    required={required}
-                    aria-required={required}
-                    aria-invalid={!!errors}
                 >
                     <option value='' disabled>
                         {placeholder || 'Select an option'}
@@ -102,8 +89,8 @@ const FormInput = ({
                         value instanceof Date
                             ? value
                             : value
-                                ? new Date(value)
-                                : null
+                            ? new Date(value)
+                            : null
                     }
                     onChange={(date) =>
                         handleChange({ target: { name, value: date } })
@@ -112,7 +99,6 @@ const FormInput = ({
                     placeholderText={placeholder}
                     className={appliedClass}
                     onBlur={onBlur}
-                    required={required} //(passed to input)
                 />
             )
         }
@@ -128,9 +114,6 @@ const FormInput = ({
                     placeholder={placeholder}
                     disabled={disabled}
                     className={styles.multi}
-                    required={required}
-                    aria-required={required}
-                    aria-invalid={!!errors}
                 />
             )
         }
@@ -146,9 +129,6 @@ const FormInput = ({
                 placeholder={placeholder}
                 disabled={disabled}
                 className={appliedClass}
-                required={required}     
-                aria-required={required}
-                aria-invalid={!!errors} 
             />
         )
     }
@@ -164,9 +144,6 @@ const FormInput = ({
                     className='text-lg font-medium text-mebablue-dark mb-1 font-mont'
                 >
                     {label}
-                    {required && (
-                        <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
-                    )}
                 </label>
 
                 {/* Input */}
