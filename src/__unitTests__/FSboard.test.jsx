@@ -14,12 +14,25 @@ import getJobsArray from '../components/jobDataAPI'
 import { mockJobs } from '../mocks/handlers'
 
 beforeAll(() => {
+    // Mock scrollHeight to be larger than clientHeight to trigger truncation
+    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+        configurable: true,
+        get() {
+            // Check if this element has long text (the notes)
+            if (this.textContent && this.textContent.length > 100) {
+                return 200 // ✅ Force truncation for long text
+            }
+            return 50 // Normal height for short text
+        },
+    })
+
     Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
         configurable: true,
         get() {
             return 200
         },
     })
+
     Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
         configurable: true,
         get() {
@@ -28,9 +41,7 @@ beforeAll(() => {
     })
 
     vi.setSystemTime(new Date('2025-01-01'))
-
     vi.spyOn(Math, 'random').mockReturnValue(0.5)
-
     window.__vitest_environment__ = true
 })
 
@@ -200,26 +211,34 @@ describe('FSBoard components', () => {
                 <FSBoard />
             </MemoryRouter>
         )
+
         await waitForElementToBeRemoved(() =>
             screen.queryByText('Loading jobs...')
         )
 
-        // 1. Identify the unique element for the job row with long notes (Job 3: QMED (Electrician))
-        const uniqueElementInRow = screen.getByText('QMED (Electrician)')
+        // Wait a bit for the truncation check useEffect to run
+        await waitFor(
+            () => {
+                const uniqueElementInRow =
+                    screen.getByText('QMED (Electrician)')
+                const jobRowContainer =
+                    uniqueElementInRow.parentElement.parentElement
 
-        // 2. Find the row container by traversing up.
-        // The cell div is the first parentElement. The row div (grid) is the second parentElement.
-        const jobRowContainer = uniqueElementInRow.parentElement.parentElement
-
-        // Use findByRole (waits for element) and getByTestId (sync) scoped to the specific job row container.
-        const expandButton = await within(jobRowContainer).findByRole(
-            'button',
-            {
-                name: /expand notes/i,
-            }
+                // This will throw if button doesn't exist, causing waitFor to retry
+                within(jobRowContainer).getByRole('button', {
+                    name: /expand notes/i,
+                })
+            },
+            { timeout: 2000 }
         )
 
-        // Find the notes content scoped to this row
+        const uniqueElementInRow = screen.getByText('QMED (Electrician)')
+        const jobRowContainer = uniqueElementInRow.parentElement.parentElement
+
+        const expandButton = within(jobRowContainer).getByRole('button', {
+            name: /expand notes/i,
+        })
+
         const notesContent = within(jobRowContainer).getByTestId('notesContent')
 
         // Initial state

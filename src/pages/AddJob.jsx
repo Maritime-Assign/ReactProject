@@ -24,7 +24,7 @@ const typeOptions = ['Relief', 'Permanent']
 const toDB = (date) => {
     if (!date) return null
     if (!(date instanceof Date)) return null
-    return date.toISOString().split("T")[0]
+    return date.toISOString().split('T')[0]
 }
 
 // Submission function - this will be passed the user as a parameter
