@@ -30,7 +30,6 @@ const ManageUsers = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             const supabaseUsers = await getAllUsers();
-            console.log("Fetched users:", supabaseUsers);
             setUsers(supabaseUsers);
         }
 
