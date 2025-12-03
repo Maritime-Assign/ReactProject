@@ -21,6 +21,12 @@ const statusOptions = ['Open', 'Filled', 'Filled by Company']
 const billetOptions = ['1 A/E', '2M', '3M']
 const typeOptions = ['Relief', 'Permanent']
 
+const toDB = (date) => {
+    if (!date) return null
+    if (!(date instanceof Date)) return null
+    return date.toISOString().split("T")[0]
+}
+
 // Submission function - this will be passed the user as a parameter
 const createOnSubmit = (user, setPopup) => async (values, actions) => {
     console.log('🚀 FORM SUBMITTED')
@@ -42,9 +48,9 @@ const createOnSubmit = (user, setPopup) => async (values, actions) => {
         const jobData = {
             region: values.region || null,
             hall: values.hall || null,
-            dateCalled: values.dateCalled || null,
+            dateCalled: toDB(values.dateCalled),
             shipName: values.shipName || null,
-            joinDate: values.joinDate || null,
+            joinDate: toDB(values.joinDate),
             billet: values.billet || null,
             type: values.type || null,
             days: values.days || null,

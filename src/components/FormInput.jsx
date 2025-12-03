@@ -32,12 +32,12 @@ const FormInput = ({
         let val = e.target?.value ?? e
 
         // If the value is a Date object, reformat it to "yyyy-mm-dd" for database
-        if (val instanceof Date) {
-            const year = val.getFullYear()
-            const month = String(val.getMonth() + 1).padStart(2, '0')
-            const day = String(val.getDate()).padStart(2, '0')
-            val = `${year}-${month}-${day}` // Format as YYYY-MM-DD for database
-        }
+        /*         if (val instanceof Date) {
+                    const year = val.getFullYear()
+                    const month = String(val.getMonth() + 1).padStart(2, '0')
+                    const day = String(val.getDate()).padStart(2, '0')
+                    val = `${year}-${month}-${day}` // Format as YYYY-MM-DD for database
+                } */
 
         onChange({ target: { name: e.target?.name ?? name, value: val } })
 
@@ -92,9 +92,15 @@ const FormInput = ({
         if (type === 'date') {
             return (
                 <DatePicker
-                    id={inputId} // 👈 new line
+                    id={inputId}
                     name={name}
-                    selected={value}
+                    selected={
+                        value instanceof Date
+                            ? value
+                            : value
+                                ? new Date(value)
+                                : null
+                    }
                     onChange={(date) =>
                         handleChange({ target: { name, value: date } })
                     }
