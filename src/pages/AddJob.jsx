@@ -519,7 +519,7 @@ const AddJob = () => {
                                 touched={touched.dateCalled}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('dateCalled')}       // NEW
+                                required={isRequired('dateCalled')}
                             />
                             <FormInput
                                 type='text'
@@ -676,9 +676,72 @@ const AddJob = () => {
                                 touched={touched.crewRelieved}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('crewRelieved')}     // NEW
+                                required={isRequired('crewRelieved')}
                             />
+                          {/* ✅ Job Flags (stacked vertically in right column) */}
+                            <div className='flex flex-col items-start mt-4 space-y-2'>
+                                <label className='flex items-center space-x-2'>
+                                    <input
+                                        type='checkbox'
+                                        name='passThru'
+                                        checked={values.passThru}
+                                        onChange={(e) =>
+                                            handleChange({
+                                                target: {
+                                                    name: e.target.name,
+                                                    value: e.target.checked,
+                                                },
+                                            })
+                                        }
+                                        className='h-4 w-4 accent-mebablue-dark'
+                                    />
+                                    <span className='text-mebablue-dark font-medium'>
+                                        Pass-Thru
+                                    </span>
+                                </label>
+
+                                <label className='flex items-center space-x-2'>
+                                    <input
+                                        type='checkbox'
+                                        name='nightCardEarlyReturn'
+                                        checked={values.nightCardEarlyReturn}
+                                        onChange={(e) =>
+                                            handleChange({
+                                                target: {
+                                                    name: e.target.name,
+                                                    value: e.target.checked,
+                                                },
+                                            })
+                                        }
+                                        className='h-4 w-4 accent-mebablue-dark'
+                                    />
+                                    <span className='text-mebablue-dark font-medium'>
+                                        Night Card Early Return
+                                    </span>
+                                </label>
+
+                                <label className='flex items-center space-x-2'>
+                                    <input
+                                        type='checkbox'
+                                        name='msc'
+                                        checked={values.msc}
+                                        onChange={(e) =>
+                                            handleChange({
+                                                target: {
+                                                    name: e.target.name,
+                                                    value: e.target.checked,
+                                                },
+                                            })
+                                        }
+                                        className='h-4 w-4 accent-mebablue-dark'
+                                    />
+                                    <span className='text-mebablue-dark font-medium'>
+                                        MSC
+                                    </span>
+                                </label>
+                            </div>
                         </div>
+                        
 
                         <div className='col-span-1 md:col-span-2 flex flex-col items-center'>
                             <FormInput
