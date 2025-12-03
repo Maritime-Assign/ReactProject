@@ -27,6 +27,7 @@ const FormInput = ({
     touched,
     submitCount = 0,
     setFieldError,
+    required = false,
 }) => {
     const handleChange = (e) => {
         let val = e.target?.value ?? e
@@ -61,10 +62,13 @@ const FormInput = ({
                     id={inputId}
                     name={name}
                     value={value}
-                    onChange={handleChange} // Change from onChange={onChange}
+                    onChange={handleChange}
                     onBlur={onBlur}
                     disabled={disabled}
                     className={appliedClass}
+                    required={required}
+                    aria-required={required}
+                    aria-invalid={!!errors}
                 >
                     <option value='' disabled>
                         {placeholder || 'Select an option'}
@@ -108,6 +112,7 @@ const FormInput = ({
                     placeholderText={placeholder}
                     className={appliedClass}
                     onBlur={onBlur}
+                    required={required} //(passed to input)
                 />
             )
         }
@@ -123,6 +128,9 @@ const FormInput = ({
                     placeholder={placeholder}
                     disabled={disabled}
                     className={styles.multi}
+                    required={required}
+                    aria-required={required}
+                    aria-invalid={!!errors}
                 />
             )
         }
@@ -138,6 +146,9 @@ const FormInput = ({
                 placeholder={placeholder}
                 disabled={disabled}
                 className={appliedClass}
+                required={required}     
+                aria-required={required}
+                aria-invalid={!!errors} 
             />
         )
     }
@@ -153,6 +164,9 @@ const FormInput = ({
                     className='text-lg font-medium text-mebablue-dark mb-1 font-mont'
                 >
                     {label}
+                    {required && (
+                        <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                    )}
                 </label>
 
                 {/* Input */}

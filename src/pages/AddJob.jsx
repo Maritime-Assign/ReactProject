@@ -366,6 +366,24 @@ const AddJob = () => {
         }
     }, [showModal])
 
+    // NEW: derive required fields from Yup schema
+    const requiredFields = React.useMemo(() => {
+        try {
+            const desc = jobValidationSchema?.describe?.()
+            const fields = desc?.fields ?? {}
+            const names = new Set()
+            Object.entries(fields).forEach(([key, def]) => {
+                const tests = def?.tests ?? []
+                if (tests.some((t) => t?.name === 'required')) names.add(key)
+            })
+            return names
+        } catch {
+            return new Set()
+        }
+    }, [])
+
+    const isRequired = (name) => requiredFields.has(name)
+
     return (
         <div className='w-full pt-4 flex flex-col max-w-[1280px] mx-auto'>
             {/* Popup message */}
@@ -442,6 +460,7 @@ const AddJob = () => {
                                 touched={touched.status}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('status')}  
                             />
                             <FormInput
                                 type='select'
@@ -461,6 +480,7 @@ const AddJob = () => {
                                 touched={touched.region}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('region')}  
                             />
                             <FormInput
                                 type='select'
@@ -480,13 +500,13 @@ const AddJob = () => {
                                 touched={touched.hall}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('hall')}    
                             />
                             <FormInput
                                 type='date'
                                 label='Date Called'
                                 name='dateCalled'
                                 value={values.dateCalled}
-                                required
                                 placeholder='Select a Date'
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -499,6 +519,7 @@ const AddJob = () => {
                                 touched={touched.dateCalled}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('dateCalled')}
                             />
                             <FormInput
                                 type='text'
@@ -517,6 +538,7 @@ const AddJob = () => {
                                 touched={touched.shipName}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('shipName')}
                             />
                             <FormInput
                                 type='date'
@@ -535,6 +557,7 @@ const AddJob = () => {
                                 touched={touched.joinDate}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('joinDate')}
                             />
                         </div>
                         <div className='flex flex-col items-center'>
@@ -556,13 +579,13 @@ const AddJob = () => {
                                 touched={touched.billet}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('billet')}  
                             />
                             <FormInput
                                 type='select'
                                 label='Type'
                                 name='type'
                                 value={values.type}
-                                required
                                 placeholder='Select Type'
                                 options={typeLoading ? [] : typeOptions}
                                 onChange={handleChange}
@@ -576,13 +599,13 @@ const AddJob = () => {
                                 touched={touched.type}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('type')}    
                             />
                             <FormInput
                                 type='text'
-                                label='Days'
+                                label='Days *'
                                 name='days'
                                 value={values.days}
-                                required
                                 placeholder='Enter # of Days'
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -595,13 +618,13 @@ const AddJob = () => {
                                 touched={touched.days}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('days')}    
                             />
                             <FormInput
                                 type='text'
                                 label='Location'
                                 name='location'
                                 value={values.location}
-                                required
                                 placeholder='Enter Location'
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -614,13 +637,13 @@ const AddJob = () => {
                                 touched={touched.location}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('location')}
                             />
                             <FormInput
                                 type='select'
                                 label='Company'
                                 name='company'
                                 value={values.company}
-                                required
                                 placeholder='Select Company'
                                 options={companyLoading ? [] : companyOptions}
                                 onChange={handleChange}
@@ -634,13 +657,13 @@ const AddJob = () => {
                                 touched={touched.company}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('company')} 
                             />
                             <FormInput
                                 type='text'
                                 label='Crew Relieved'
                                 name='crewRelieved'
                                 value={values.crewRelieved}
-                                required={false}
                                 placeholder='Enter Crew Relieved'
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -653,8 +676,9 @@ const AddJob = () => {
                                 touched={touched.crewRelieved}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('crewRelieved')}
                             />
-                            {/* ✅ Job Flags (stacked vertically in right column) */}
+                          {/* ✅ Job Flags (stacked vertically in right column) */}
                             <div className='flex flex-col items-start mt-4 space-y-2'>
                                 <label className='flex items-center space-x-2'>
                                     <input
@@ -717,6 +741,7 @@ const AddJob = () => {
                                 </label>
                             </div>
                         </div>
+                        
 
                         <div className='col-span-1 md:col-span-2 flex flex-col items-center'>
                             <FormInput
@@ -732,6 +757,7 @@ const AddJob = () => {
                                 touched={touched.notes}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
+                                required={isRequired('notes')}   
                             />
                         </div>
                     </div>
