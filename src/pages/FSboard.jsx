@@ -69,8 +69,15 @@ const FSboard = () => {
         channel.on(
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'Jobs' },
-                (payload) => {
+                async (payload) => {
                 console.log('PG CHANGE:', payload.eventType, payload);
+                setLoading(true)
+                try {
+                    const updatedJobs = await getJobsArray()
+                    setJobs(updatedJobs)
+                } finally {
+                    setLoading(false)
+                }
                 }
             )
             .subscribe((status) => console.log('Channel status:', status));
