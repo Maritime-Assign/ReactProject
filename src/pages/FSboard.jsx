@@ -31,8 +31,12 @@ const FSboard = () => {
         const accessToken = sessionResp?.data?.session?.access_token
         if (accessToken) {
             await supabase.realtime.setAuth(accessToken)
+        } else {
+            console.warn("No access token; realtime private channel may fail.")
         }
-        } catch (_) {}
+        } catch (e) {
+            console.error("Failed to get session:", e)
+        }
 
         // Fetch jobs after auth is ready
         if (!fetchedOnce.current) {
@@ -54,31 +58,28 @@ const FSboard = () => {
         // Create channel (auth token ready)
         const TOPIC = "topic:jobs"
         const channel = supabase.channel(TOPIC, {
-        config: { private: true, broadcast: { self: true, ack: false } }
+            config: {
+                private: true,
+                broadcast: { timeout: 1000 }, // ms
+                // Increase join timeout and heartbeat settings to reduce TIMED_OUT in slow tabs
+            }
         })
 
-        channel
-    .on("broadcast", { event: "*" }, async (payload) => {
-        console.log("Realtime broadcast received:", payload)
-
-        // Refresh job list on any DB change
-        try {
-        const updatedJobs = await getJobsArray()
-        setJobs(updatedJobs)
-        } catch (err) {
-        console.error("Error refreshing jobs:", err)
-        }
-    })
-    .subscribe((status) => {
-        console.log("Channel status:", status)
-    })
-
+        let joinAttempted = false
+        channel.on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'Jobs' },
+                (payload) => {
+                console.log('PG CHANGE:', payload.eventType, payload);
+                }
+            )
+            .subscribe((status) => console.log('Channel status:', status));
 
         // Cleanup
         return () => {
-        isMounted = false
-        try { channel.unsubscribe() } catch (_) {}
-        try { supabase.removeChannel(channel) } catch (_) {}
+            isMounted = false
+            try { channel.unsubscribe() } catch (_) {}
+            try { supabase.removeChannel(channel) } catch (_) {}
         }
     }
 
