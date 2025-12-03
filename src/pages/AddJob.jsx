@@ -603,7 +603,7 @@ const AddJob = () => {
                             />
                             <FormInput
                                 type='text'
-                                label='Days'
+                                label='Days *'
                                 name='days'
                                 value={values.days}
                                 placeholder='Enter # of Days'
