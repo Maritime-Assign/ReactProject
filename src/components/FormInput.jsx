@@ -27,7 +27,7 @@ const FormInput = ({
     touched,
     submitCount = 0,
     setFieldError,
-    required = false, // NEW
+    required = false,
 }) => {
     const handleChange = (e) => {
         let val = e.target?.value ?? e
