@@ -27,64 +27,118 @@ const FSboard = () => {
     async function init() {
         // Get session BEFORE anything else
         try {
-        const sessionResp = await supabase.auth.getSession()
-        const accessToken = sessionResp?.data?.session?.access_token
-        if (accessToken) {
-            await supabase.realtime.setAuth(accessToken)
-        } else {
-            console.warn("No access token; realtime private channel may fail.")
-        }
+            const { data } = await supabase.auth.getSession()
+            const accessToken = data?.session?.access_token
+            if (accessToken) {
+                await supabase.realtime.setAuth(accessToken)
+            } else {
+                console.warn("No access token; realtime private channel may fail.")
+            }
         } catch (e) {
             console.error("Failed to get session:", e)
         }
 
-        // Fetch jobs after auth is ready
+        // Initial fetch
         if (!fetchedOnce.current) {
-        fetchedOnce.current = true
-        try {
-            const fetchedJobs = await getJobsArray()
-            if (isMounted) {
-            setJobs(fetchedJobs)
-            setError(null)
+            fetchedOnce.current = true
+            try {
+                const fetchedJobs = await getJobsArray()
+                if (isMounted) {
+                    setJobs(fetchedJobs)
+                    setError(null)
+                }
+            } catch (err) {
+                console.error("Error fetching jobs:", err)
+                if (isMounted) setError("Failed to load jobs")
+            } finally {
+                if (isMounted) setLoading(false)
             }
-        } catch (err) {
-            console.error("Error fetching jobs:", err)
-            if (isMounted) setError("Failed to load jobs")
-        } finally {
-            if (isMounted) setLoading(false)
-        }
         }
 
-        // Create channel (auth token ready)
-        const TOPIC = "topic:jobs"
-        const channel = supabase.channel(TOPIC, {
+        // Create channel with longer join timeout
+        const channel = supabase.channel("topic:jobs", {
             config: {
                 private: true,
-                broadcast: { timeout: 1000 }, // ms
-                // Increase join timeout and heartbeat settings to reduce TIMED_OUT in slow tabs
+                // Increase join timeout to reduce spurious timeouts
+                timeout: 15000,
+                broadcast: { ack: false }
             }
         })
 
-        let joinAttempted = false
+        // Unified refresh
+        const refreshJobs = async () => {
+            setLoading(true)
+            try {
+                const updated = await getJobsArray()
+                setJobs(updated)
+                setError(null)
+            } catch (err) {
+                console.error("Refresh jobs failed:", err)
+                setError("Failed to refresh jobs")
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        // Listen for DB changes
         channel.on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'Jobs' },
-                async (payload) => {
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'Jobs' },
+            async (payload) => {
                 console.log('PG CHANGE:', payload.eventType, payload);
-                setLoading(true)
-                try {
-                    const updatedJobs = await getJobsArray()
-                    setJobs(updatedJobs)
-                } finally {
-                    setLoading(false)
+                await refreshJobs()
+            }
+        )
+
+        // Retry subscribe with exponential backoff
+        let attempts = 0
+        const maxAttempts = 5
+
+        const subscribeWithRetry = () => {
+            const statusHandler = (status) => {
+                console.log('Channel status:', status)
+                if (status === 'SUBSCRIBED') {
+                    attempts = 0 // reset on success
+                } else if (status === 'TIMED_OUT' || status === 'CLOSED') {
+                    if (attempts < maxAttempts) {
+                        attempts += 1
+                        const delay = Math.min(30000, 1000 * Math.pow(2, attempts)) // 1s,2s,4s,8s,16s...
+                        console.warn(`Realtime ${status}. Retrying subscribe in ${delay}ms (attempt ${attempts}/${maxAttempts})`)
+                        setTimeout(() => {
+                            if (isMounted) {
+                                try {
+                                    channel.subscribe(statusHandler)
+                                } catch (e) {
+                                    console.error("Retry subscribe error:", e)
+                                }
+                            }
+                        }, delay)
+                    } else {
+                        console.error("Max subscribe retry attempts reached.")
+                    }
                 }
-                }
-            )
-            .subscribe((status) => console.log('Channel status:', status));
+            }
+
+            try {
+                channel.subscribe(statusHandler)
+            } catch (e) {
+                console.error("Initial subscribe error:", e)
+            }
+        }
+
+        subscribeWithRetry()
+
+        // Polling fallback: refresh every 60s
+        const intervalId = setInterval(() => {
+            if (isMounted) {
+                refreshJobs()
+            }
+        }, 60000)
 
         // Cleanup
         return () => {
             isMounted = false
+            clearInterval(intervalId)
             try { channel.unsubscribe() } catch (_) {}
             try { supabase.removeChannel(channel) } catch (_) {}
         }
@@ -92,7 +146,6 @@ const FSboard = () => {
 
     const cleanupPromise = init()
     return () => cleanupPromise.then((cleanup) => cleanup && cleanup())
-
     }, [])
 
 
