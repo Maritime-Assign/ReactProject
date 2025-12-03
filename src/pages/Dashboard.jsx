@@ -19,7 +19,6 @@ const Dashboard = ({ allowedTiles }) => {
 
     const iconStyle = 'w-[50px] h-[50px] sm:w-[100px] sm:h-[100px]'
 
-    console.log('Allowed Tiles (admin):', allowedTiles)
     return (
         <div className='w-full h-[calc(100vh-80px)] flex items-center justify-center overflow-y-hidden mx-auto'>
             <div className='w-fit flex flex-col gap-3 sm:gap-4 p-6 sm:p-12 shadow-[0_0_10px_rgba(0,0,0,0.1)] rounded-md'>

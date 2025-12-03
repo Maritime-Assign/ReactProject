@@ -130,7 +130,6 @@ const App = () => {
         redirectRoutes,
     ])
 
-    console.log({ user, userRole, loadingSession })
     // Block render until session or role fetch is complete
     if (loadingSession || (user && userRole === null)) {
         return <LoadingSpinner />

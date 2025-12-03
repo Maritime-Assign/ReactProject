@@ -424,6 +424,22 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
         statusColor = 'bg-green-600'
     }
 
+    // Mark fields as required to match validateForm rules
+    const isRequired = (field) =>
+        [
+            'shipName',
+            'location',
+            'days',
+            'dateCalled',
+            'joinDate',
+            'company',
+            'billet',
+            'type',
+            'region',
+            'hall',
+            'open',
+        ].includes(field)
+
     return (
         <div className='fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4'>
             <div className='bg-white max-w-[900px] w-full max-h-[90vh] overflow-y-auto rounded-md shadow-2xl'>
@@ -434,7 +450,6 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                 </div>
 
                 {/* Tile Content container*/}
-                {/* Tile Content container*/}
                 <div className='flex flex-col w-full h-full px-4 mx-auto py-4 gap-3'>
                     {/* Header row: Ship Name, Status, Flags */}
                     <div className='flex items-start justify-between gap-4 pb-3 border-b border-gray-300'>
@@ -442,17 +457,18 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                             <div>
                                 <span className='text-xs text-gray-500 font-medium block mb-1'>
                                     Vessel
+                                    {isRequired('shipName') && (
+                                        <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                                    )}
                                 </span>
                                 <input
                                     type='text'
                                     value={formData.shipName}
                                     onChange={(e) =>
-                                        handleInputChange(
-                                            'shipName',
-                                            e.target.value
-                                        )
+                                        handleInputChange('shipName', e.target.value)
                                     }
                                     placeholder='Ship Name'
+                                    aria-invalid={!!errors.shipName}
                                     className='bg-white border border-gray-300 outline-none focus:border-mebagold outline-none focus:border-mebagold px-3 py-1.5 rounded-md text-gray-900 placeholder-gray-400 text-sm font-semibold'
                                 />
                                 {errors.shipName && (
@@ -464,22 +480,22 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                             <div>
                                 <span className='text-xs text-gray-500 font-medium block mb-1'>
                                     Status
+                                    {isRequired('open') && (
+                                        <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                                    )}
                                 </span>
                                 <select
                                     value={formData.open}
                                     onChange={(e) => {
-                                        handleInputChange(
-                                            'open',
-                                            e.target.value
-                                        )
+                                        handleInputChange('open', e.target.value)
                                     }}
+                                    aria-invalid={!!errors.open}
                                     className='text-gray-900 px-3 py-1.5 rounded-md text-sm font-semibold border border-gray-300 outline-none focus:border-mebagold bg-white'
                                 >
+                                    <option value='' disabled>Select Status</option>
                                     <option value='Open'>Open</option>
                                     <option value='Filled'>Filled</option>
-                                    <option value='Filled by Company'>
-                                        Filled by Company
-                                    </option>
+                                    <option value='Filled by Company'>Filled by Company</option>
                                 </select>
                             </div>
                         </div>
@@ -490,42 +506,38 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div>
                             <span className='text-xs text-gray-500 font-medium block mb-1'>
                                 Region
+                                {isRequired('region') && (
+                                    <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                                )}
                             </span>
                             <select
                                 value={formData.region}
-                                onChange={(e) =>
-                                    handleInputChange('region', e.target.value)
-                                }
+                                onChange={(e) => handleInputChange('region', e.target.value)}
+                                aria-invalid={!!errors.region}
                                 className='bg-gray-100 border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-sm text-gray-700'
                             >
-                                <option value='' disabled>
-                                    Select Region
-                                </option>
+                                <option value='' disabled>Select Region</option>
                                 {regionOptions.map((opt) => (
-                                    <option key={opt} value={opt}>
-                                        {opt}
-                                    </option>
+                                    <option key={opt} value={opt}>{opt}</option>
                                 ))}
                             </select>
                         </div>
                         <div>
                             <span className='text-xs text-gray-500 font-medium block mb-1'>
                                 Hall
+                                {isRequired('hall') && (
+                                    <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                                )}
                             </span>
                             <select
                                 value={formData.hall}
-                                onChange={(e) =>
-                                    handleInputChange('hall', e.target.value)
-                                }
+                                onChange={(e) => handleInputChange('hall', e.target.value)}
+                                aria-invalid={!!errors.hall}
                                 className='bg-gray-100 border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-sm text-gray-700'
                             >
-                                <option value='' disabled>
-                                    Select Hall
-                                </option>
+                                <option value='' disabled>Select Hall</option>
                                 {hallOptions.map((opt) => (
-                                    <option key={opt} value={opt}>
-                                        {opt}
-                                    </option>
+                                    <option key={opt} value={opt}>{opt}</option>
                                 ))}
                             </select>
                         </div>
@@ -536,17 +548,16 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div>
                             <span className='text-xs text-gray-500 font-medium block mb-1'>
                                 Location
+                                {isRequired('location') && (
+                                    <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                                )}
                             </span>
                             <input
                                 type='text'
                                 value={formData.location}
-                                onChange={(e) =>
-                                    handleInputChange(
-                                        'location',
-                                        e.target.value
-                                    )
-                                }
+                                onChange={(e) => handleInputChange('location', e.target.value)}
                                 placeholder='Location'
+                                aria-invalid={!!errors.location}
                                 className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             />
                             {errors.location && (
@@ -558,14 +569,16 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div>
                             <span className='text-xs text-gray-500 font-medium block mb-1'>
                                 Days
+                                {isRequired('days') && (
+                                    <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                                )}
                             </span>
                             <input
                                 type='text'
                                 value={formData.days}
-                                onChange={(e) =>
-                                    handleInputChange('days', e.target.value)
-                                }
+                                onChange={(e) => handleInputChange('days', e.target.value)}
                                 placeholder='Days'
+                                aria-invalid={!!errors.days}
                                 className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             />
                             {errors.days && (
@@ -577,16 +590,15 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div>
                             <span className='text-xs text-gray-500 font-medium block mb-1'>
                                 Date Called
+                                {isRequired('dateCalled') && (
+                                    <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                                )}
                             </span>
                             <input
                                 type='date'
                                 value={formData.dateCalled}
-                                onChange={(e) =>
-                                    handleInputChange(
-                                        'dateCalled',
-                                        e.target.value
-                                    )
-                                }
+                                onChange={(e) => handleInputChange('dateCalled', e.target.value)}
+                                aria-invalid={!!errors.dateCalled}
                                 className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             />
                             {errors.dateCalled && (
@@ -598,16 +610,15 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div>
                             <span className='text-xs text-gray-500 font-medium block mb-1'>
                                 Join Date
+                                {isRequired('joinDate') && (
+                                    <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                                )}
                             </span>
                             <input
                                 type='date'
                                 value={formData.joinDate}
-                                onChange={(e) =>
-                                    handleInputChange(
-                                        'joinDate',
-                                        e.target.value
-                                    )
-                                }
+                                onChange={(e) => handleInputChange('joinDate', e.target.value)}
+                                aria-invalid={!!errors.joinDate}
                                 className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             />
                             {errors.joinDate && (
@@ -619,21 +630,19 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div>
                             <span className='text-xs text-gray-500 font-medium block mb-1'>
                                 Company
+                                {isRequired('company') && (
+                                    <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                                )}
                             </span>
                             <select
                                 value={formData.company}
-                                onChange={(e) =>
-                                    handleInputChange('company', e.target.value)
-                                }
+                                onChange={(e) => handleInputChange('company', e.target.value)}
+                                aria-invalid={!!errors.company}
                                 className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             >
-                                <option value='' disabled>
-                                    Select Company
-                                </option>
+                                <option value='' disabled>Select Company</option>
                                 {companyOptions.map((opt) => (
-                                    <option key={opt} value={opt}>
-                                        {opt}
-                                    </option>
+                                    <option key={opt} value={opt}>{opt}</option>
                                 ))}
                             </select>
                             {errors.company && (
@@ -645,21 +654,19 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div>
                             <span className='text-xs text-gray-500 font-medium block mb-1'>
                                 Billet
+                                {isRequired('billet') && (
+                                    <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                                )}
                             </span>
                             <select
                                 value={formData.billet}
-                                onChange={(e) =>
-                                    handleInputChange('billet', e.target.value)
-                                }
+                                onChange={(e) => handleInputChange('billet', e.target.value)}
+                                aria-invalid={!!errors.billet}
                                 className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             >
-                                <option value='' disabled>
-                                    Select Billet
-                                </option>
+                                <option value='' disabled>Select Billet</option>
                                 {billetOptions.map((opt) => (
-                                    <option key={opt} value={opt}>
-                                        {opt}
-                                    </option>
+                                    <option key={opt} value={opt}>{opt}</option>
                                 ))}
                             </select>
                             {errors.billet && (
@@ -671,21 +678,19 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         <div>
                             <span className='text-xs text-gray-500 font-medium block mb-1'>
                                 Type
+                                {isRequired('type') && (
+                                    <span aria-hidden='true' className='text-red-500 ml-1'>*</span>
+                                )}
                             </span>
                             <select
                                 value={formData.type}
-                                onChange={(e) =>
-                                    handleInputChange('type', e.target.value)
-                                }
+                                onChange={(e) => handleInputChange('type', e.target.value)}
+                                aria-invalid={!!errors.type}
                                 className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
                             >
-                                <option value='' disabled>
-                                    Select Type
-                                </option>
+                                <option value='' disabled>Select Type</option>
                                 {typeOptions.map((opt) => (
-                                    <option key={opt} value={opt}>
-                                        {opt}
-                                    </option>
+                                    <option key={opt} value={opt}>{opt}</option>
                                 ))}
                             </select>
                             {errors.type && (
@@ -701,12 +706,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                             <input
                                 type='text'
                                 value={formData.crewRelieved}
-                                onChange={(e) =>
-                                    handleInputChange(
-                                        'crewRelieved',
-                                        e.target.value
-                                    )
-                                }
+                                onChange={(e) => handleInputChange('crewRelieved', e.target.value)}
                                 placeholder='Crew Relieved'
                                 maxLength={100}
                                 className='w-full bg-white border border-gray-300 outline-none focus:border-mebagold px-3 py-1.5 rounded text-gray-700'
@@ -721,9 +721,7 @@ const EditJobModal = ({ jobData, onClose, onSave }) => {
                         </span>
                         <textarea
                             value={formData.notes}
-                            onChange={(e) =>
-                                handleInputChange('notes', e.target.value)
-                            }
+                            onChange={(e) => handleInputChange('notes', e.target.value)}
                             placeholder='Enter notes/requirements'
                             maxLength={250}
                             rows={3}
