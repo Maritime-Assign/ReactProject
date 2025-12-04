@@ -24,7 +24,7 @@ const typeOptions = ['Relief', 'Permanent']
 const toDB = (date) => {
     if (!date) return null
     if (!(date instanceof Date)) return null
-    return date.toISOString().split("T")[0]
+    return date.toISOString().split('T')[0]
 }
 
 // Submission function - this will be passed the user as a parameter
@@ -366,24 +366,6 @@ const AddJob = () => {
         }
     }, [showModal])
 
-    // NEW: derive required fields from Yup schema
-    const requiredFields = React.useMemo(() => {
-        try {
-            const desc = jobValidationSchema?.describe?.()
-            const fields = desc?.fields ?? {}
-            const names = new Set()
-            Object.entries(fields).forEach(([key, def]) => {
-                const tests = def?.tests ?? []
-                if (tests.some((t) => t?.name === 'required')) names.add(key)
-            })
-            return names
-        } catch {
-            return new Set()
-        }
-    }, [])
-
-    const isRequired = (name) => requiredFields.has(name)
-
     return (
         <div className='w-full pt-4 flex flex-col max-w-[1280px] mx-auto'>
             {/* Popup message */}
@@ -404,7 +386,7 @@ const AddJob = () => {
                 {/* Left-aligned back button */}
                 <button
                     onClick={() => navigate(-1)} // navigate back one page
-                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
+                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300 cursor-pointer'
                 >
                     <IoArrowBack className='w-6 h-6' />
                 </button>
@@ -422,7 +404,7 @@ const AddJob = () => {
                     {/* 1. Full Text Button (Desktop/Tablet) */}
                     <button
                         onClick={() => setShowModal(true)}
-                        className='hidden md:block bg-mebagold text-mebablue-dark px-4 py-2 rounded-md font-semibold shadow hover:bg-yellow-400 transition'
+                        className='hidden md:block bg-mebagold text-mebablue-dark px-4 py-2 rounded-md font-semibold shadow hover:bg-yellow-400 transition cursor-pointer'
                     >
                         Edit Dropdown Options
                     </button>
@@ -430,7 +412,7 @@ const AddJob = () => {
                     {/* 2. Icon-Only Button (Mobile) */}
                     <button
                         onClick={() => setShowModal(true)}
-                        className='block md:hidden bg-mebagold shadow-md rounded-md p-2 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
+                        className='block md:hidden bg-mebagold shadow-md rounded-md p-2 text-2xl text-center text-mebablue-dark hover:bg-yellow-300 cursor-pointer'
                         aria-label='Edit Dropdown Options'
                     >
                         <IoSettingsSharp className='w-6 h-6' />
@@ -444,7 +426,7 @@ const AddJob = () => {
                         <div className='flex flex-col items-center'>
                             <FormInput
                                 type='select'
-                                label='Status'
+                                label='Status*'
                                 name='status'
                                 value={values.status}
                                 placeholder='Select Status'
@@ -460,11 +442,10 @@ const AddJob = () => {
                                 touched={touched.status}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('status')}  
                             />
                             <FormInput
                                 type='select'
-                                label='Region'
+                                label='Region*'
                                 name='region'
                                 value={values.region}
                                 placeholder='Select Region'
@@ -480,11 +461,10 @@ const AddJob = () => {
                                 touched={touched.region}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('region')}  
                             />
                             <FormInput
                                 type='select'
-                                label='Hall'
+                                label='Hall*'
                                 name='hall'
                                 value={values.hall}
                                 placeholder='Select Hall'
@@ -500,13 +480,13 @@ const AddJob = () => {
                                 touched={touched.hall}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('hall')}    
                             />
                             <FormInput
                                 type='date'
-                                label='Date Called'
+                                label='Date Called*'
                                 name='dateCalled'
                                 value={values.dateCalled}
+                                required
                                 placeholder='Select a Date'
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -519,11 +499,10 @@ const AddJob = () => {
                                 touched={touched.dateCalled}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('dateCalled')}
                             />
                             <FormInput
                                 type='text'
-                                label='Vessel'
+                                label='Vessel*'
                                 name='shipName'
                                 value={values.shipName}
                                 placeholder='Enter Ship Name'
@@ -538,11 +517,10 @@ const AddJob = () => {
                                 touched={touched.shipName}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('shipName')}
                             />
                             <FormInput
                                 type='date'
-                                label='Join Date'
+                                label='Join Date*'
                                 name='joinDate'
                                 value={values.joinDate}
                                 placeholder='Select a Date'
@@ -557,13 +535,12 @@ const AddJob = () => {
                                 touched={touched.joinDate}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('joinDate')}
                             />
                         </div>
                         <div className='flex flex-col items-center'>
                             <FormInput
                                 type='select'
-                                label='Billet'
+                                label='Billet*'
                                 name='billet'
                                 value={values.billet}
                                 placeholder='Select Billet'
@@ -579,13 +556,13 @@ const AddJob = () => {
                                 touched={touched.billet}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('billet')}  
                             />
                             <FormInput
                                 type='select'
-                                label='Type'
+                                label='Type*'
                                 name='type'
                                 value={values.type}
+                                required
                                 placeholder='Select Type'
                                 options={typeLoading ? [] : typeOptions}
                                 onChange={handleChange}
@@ -599,13 +576,13 @@ const AddJob = () => {
                                 touched={touched.type}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('type')}    
                             />
                             <FormInput
                                 type='text'
-                                label='Days *'
+                                label='Days*'
                                 name='days'
                                 value={values.days}
+                                required
                                 placeholder='Enter # of Days'
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -618,13 +595,13 @@ const AddJob = () => {
                                 touched={touched.days}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('days')}    
                             />
                             <FormInput
                                 type='text'
-                                label='Location'
+                                label='Location*'
                                 name='location'
                                 value={values.location}
+                                required
                                 placeholder='Enter Location'
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -637,13 +614,13 @@ const AddJob = () => {
                                 touched={touched.location}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('location')}
                             />
                             <FormInput
                                 type='select'
-                                label='Company'
+                                label='Company*'
                                 name='company'
                                 value={values.company}
+                                required
                                 placeholder='Select Company'
                                 options={companyLoading ? [] : companyOptions}
                                 onChange={handleChange}
@@ -657,13 +634,13 @@ const AddJob = () => {
                                 touched={touched.company}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('company')} 
                             />
                             <FormInput
                                 type='text'
                                 label='Crew Relieved'
                                 name='crewRelieved'
                                 value={values.crewRelieved}
+                                required={false}
                                 placeholder='Enter Crew Relieved'
                                 onChange={handleChange}
                                 onBlur={handleBlur}
@@ -676,9 +653,8 @@ const AddJob = () => {
                                 touched={touched.crewRelieved}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('crewRelieved')}
                             />
-                          {/* ✅ Job Flags (stacked vertically in right column) */}
+                            {/* ✅ Job Flags (stacked vertically in right column) */}
                             <div className='flex flex-col items-start mt-4 space-y-2'>
                                 <label className='flex items-center space-x-2'>
                                     <input
@@ -741,7 +717,6 @@ const AddJob = () => {
                                 </label>
                             </div>
                         </div>
-                        
 
                         <div className='col-span-1 md:col-span-2 flex flex-col items-center'>
                             <FormInput
@@ -757,7 +732,6 @@ const AddJob = () => {
                                 touched={touched.notes}
                                 submitCount={submitCount}
                                 setFieldError={setFieldError}
-                                required={isRequired('notes')}   
                             />
                         </div>
                     </div>

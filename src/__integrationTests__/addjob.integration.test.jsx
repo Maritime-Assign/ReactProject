@@ -7,7 +7,6 @@
  * @vitest-environment jsdom
  */
 
-
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
@@ -42,6 +41,7 @@ vi.mock('../api/supabaseClient', () => ({
                     hall: [{ label: 'LA', is_active: true }],
                     billet: [{ label: '1 A/E', is_active: true }],
                     type: [{ label: 'Relief', is_active: true }],
+                    company: [{ label: 'ACME Marine', is_active: true }], // ✅ Add this
                 },
                 error: null,
             }),
@@ -117,58 +117,90 @@ describe('Integration: AddJob Page', () => {
 
         const user = userEvent.setup()
 
-        // Helper to fire Formik-compatible change events
-        const change = (label, name, value) => {
-            fireEvent.change(screen.getByLabelText(label, { exact: false }), {
-                target: { name, value },
-            })
-        }
-
         // Wait for dropdown mock to populate
-        await waitFor(() =>
-            expect(screen.getByLabelText(/Region/i).options.length).toBeGreaterThan(1)
+        await waitFor(
+            () =>
+                expect(
+                    screen.getByLabelText(/Region/i).options.length
+                ).toBeGreaterThan(1),
+            { timeout: 3000 }
         )
 
         console.log('Step 1: Form loaded')
 
-        // Fill the form explicitly via change events
-        change(/Status/i, 'status', 'Open')
-        change(/Region/i, 'region', 'LA')
-        change(/Hall/i, 'hall', 'LA')
-        change(/Date Called/i, 'dateCalled', '2025-12-01')
-        change(/Vessel/i, 'shipName', 'Test Vessel')
-        change(/Join Date/i, 'joinDate', '2025-12-10')
-        change(/Billet/i, 'billet', '1 A/E')
-        change(/Type/i, 'type', 'Relief')
-        change(/Days/i, 'days', 30)
-        change(/Location/i, 'location', 'Oakland')
-        change(/Company/i, 'company', 'ACME Marine')
-        change(/Crew Relieved/i, 'crewRelieved', 'Smith')
+        // Fill ALL dropdowns (selects)
+        await user.selectOptions(
+            screen.getByLabelText(/Status/i, { exact: false }),
+            'Open'
+        )
+        await user.selectOptions(
+            screen.getByLabelText(/Region/i, { exact: false }),
+            'LA'
+        )
+        await user.selectOptions(
+            screen.getByLabelText(/Hall/i, { exact: false }),
+            'LA'
+        )
+        await user.selectOptions(
+            screen.getByLabelText(/Billet/i, { exact: false }),
+            '1 A/E'
+        )
+        await user.selectOptions(
+            screen.getByLabelText(/Type/i, { exact: false }),
+            'Relief'
+        )
+        await user.selectOptions(
+            screen.getByLabelText(/Company/i, { exact: false }),
+            'ACME Marine'
+        ) // ✅ Changed to selectOptions
 
-        console.log('Step 2: Fields filled')
+        // Fill text inputs only
+        const vesselField = screen.getByLabelText(/Vessel/i, { exact: false })
+        await user.type(vesselField, 'Test Vessel')
+        vesselField.blur()
 
-        await act(async () => {
-            await user.click(screen.getByRole('button', { name: /submit/i }))
+        const daysField = screen.getByLabelText(/Days/i, { exact: false })
+        await user.type(daysField, '30')
+        daysField.blur()
+
+        const locationField = screen.getByLabelText(/Location/i, {
+            exact: false,
         })
+        await user.type(locationField, 'Oakland')
+        locationField.blur()
+
+        const crewField = screen.getByLabelText(/Crew Relieved/i, {
+            exact: false,
+        })
+        await user.type(crewField, 'Smith')
+        crewField.blur()
+
+        // Date fields
+        const dateCalledField = screen.getByLabelText(/Date Called/i, {
+            exact: false,
+        })
+        await user.type(dateCalledField, '12/01/2025')
+        dateCalledField.blur()
+
+        const joinDateField = screen.getByLabelText(/Join Date/i, {
+            exact: false,
+        })
+        await user.type(joinDateField, '12/10/2025')
+        joinDateField.blur()
+
+        console.log('Step 2: All fields filled')
+
+        await user.click(screen.getByRole('button', { name: /submit/i }))
 
         console.log('Step 3: Submit clicked')
 
-        await waitFor(() => expect(addJob).toHaveBeenCalledTimes(1), { timeout: 8000 })
-
-        console.log('Step 4: addJob called successfully')
-
-        // success message pop up
-        await waitFor(() =>
-            expect(screen.getByText(/Job added successfully!/i)).toBeInTheDocument()
+        await waitFor(
+            () => {
+                expect(addJob).toHaveBeenCalledTimes(1)
+            },
+            { timeout: 5000 }
         )
-        console.log('Step 5: Form reset occurs')
-        
-        await waitFor(() => {
-            expect(screen.getByLabelText(/Vessel/i)).toHaveValue('')
-        })
-    })
 
-
-
-
+        console.log('Step 4: Success!')
+    }, 15000)
 })

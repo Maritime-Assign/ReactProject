@@ -31,24 +31,24 @@ vi.mock('../api/supabaseClient', () => {
             single: vi.fn(),
             ilike: vi.fn(),
         }
-        
+
         // Make all methods return the chain for proper chaining
-        Object.keys(chain).forEach(key => {
+        Object.keys(chain).forEach((key) => {
             if (key !== 'range' && key !== 'limit' && key !== 'single') {
                 chain[key].mockReturnValue(chain)
             }
         })
-        
+
         // Terminal methods return promises
         chain.range.mockResolvedValue({ data: [], error: null, count: 0 })
         chain.limit.mockResolvedValue({ data: [], error: null })
         chain.single.mockResolvedValue({ data: null, error: null })
-        
+
         return chain
     }
 
     const mockChain = createMockChain()
-    
+
     const defaultExport = {
         from: vi.fn(() => mockChain),
         __mocks: mockChain,
@@ -61,21 +61,21 @@ import supabase from '../api/supabaseClient'
 
 beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Reset all mocks to default behavior
     const mockChain = supabase.__mocks
-    
-    Object.keys(mockChain).forEach(key => {
+
+    Object.keys(mockChain).forEach((key) => {
         mockChain[key].mockClear()
         if (key !== 'range' && key !== 'limit' && key !== 'single') {
             mockChain[key].mockReturnValue(mockChain)
         }
     })
-    
+
     mockChain.range.mockResolvedValue({ data: [], error: null, count: 0 })
     mockChain.limit.mockResolvedValue({ data: [], error: null })
     mockChain.single.mockResolvedValue({ data: null, error: null })
-    
+
     supabase.from.mockReturnValue(mockChain)
 })
 
@@ -100,13 +100,13 @@ describe('ViewHistory Integration Tests', () => {
         )
 
         // Check for header
-        expect(
-            screen.getByText(/Job Board History & Changes/i)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/History & Changes/i)).toBeInTheDocument()
 
         // Wait for loading to finish
         await waitFor(() => {
-            expect(screen.queryByText(/Loading history/i)).not.toBeInTheDocument()
+            expect(
+                screen.queryByText(/Loading history/i)
+            ).not.toBeInTheDocument()
         })
     })
 
@@ -175,7 +175,9 @@ describe('ViewHistory Integration Tests', () => {
         )
 
         await waitFor(() => {
-            expect(screen.queryByText(/Loading history/i)).not.toBeInTheDocument()
+            expect(
+                screen.queryByText(/Loading history/i)
+            ).not.toBeInTheDocument()
         })
 
         // Find search input
@@ -236,12 +238,16 @@ describe('ViewHistory Integration Tests', () => {
         )
 
         await waitFor(() => {
-            expect(screen.queryByText(/Loading history/i)).not.toBeInTheDocument()
+            expect(
+                screen.queryByText(/Loading history/i)
+            ).not.toBeInTheDocument()
         })
 
         // Initially should show grouped view
         expect(
-            screen.getByText(/Grouped View: Showing most recent change per job/i)
+            screen.getByText(
+                /Grouped View: Showing most recent change per job/i
+            )
         ).toBeInTheDocument()
 
         // Find and click the view mode toggle button
@@ -275,7 +281,9 @@ describe('ViewHistory Integration Tests', () => {
         )
 
         await waitFor(() => {
-            expect(screen.queryByText(/Loading history/i)).not.toBeInTheDocument()
+            expect(
+                screen.queryByText(/Loading history/i)
+            ).not.toBeInTheDocument()
         })
 
         const refreshButton = screen.getByTitle(/Refresh/i)
@@ -306,7 +314,9 @@ describe('ViewHistory Integration Tests', () => {
         )
 
         await waitFor(() => {
-            expect(screen.queryByText(/Loading history/i)).not.toBeInTheDocument()
+            expect(
+                screen.queryByText(/Loading history/i)
+            ).not.toBeInTheDocument()
         })
 
         // Type in search input

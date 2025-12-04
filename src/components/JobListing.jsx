@@ -4,40 +4,7 @@ import { UserAuth } from '../auth/AuthContext.jsx'
 import { updateJob } from '../utils/jobHistoryOptimized.js'
 import { Plus, Minus } from 'lucide-react'
 
-const useShouldTruncateNotes = (notes) => {
-    const [windowWidth, setWindowWidth] = useState(0)
-
-    useEffect(() => {
-        const updateWidth = () => setWindowWidth(window.innerWidth)
-        updateWidth() // run once immediately
-        window.addEventListener('resize', updateWidth)
-        return () => window.removeEventListener('resize', updateWidth)
-    }, [])
-
-    const getCharsPerLine = useCallback(() => {
-        if (windowWidth === 0) return 70 // sensible default on first render
-        if (windowWidth >= 1536) return 95
-        if (windowWidth >= 1280) return 85
-        if (windowWidth >= 1024) return 76
-        if (windowWidth >= 768) return 66
-        if (windowWidth >= 640) return 56
-        return 48
-    }, [windowWidth])
-    if (!notes || notes.length === 0) return false
-
-    const charsPerLine = getCharsPerLine()
-    const lines = notes.split('\n')
-    let totalLines = 0
-
-    for (let i = 0; i < lines.length; i++) {
-        totalLines += Math.ceil(lines[i].length / charsPerLine)
-        if (totalLines > 2) return true // early exit
-    }
-
-    return totalLines > 2
-}
-
-const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
+const JobListing = ({ rowIndex, handleClaimJob, isCompact, ...props }) => {
     const { user, role } = UserAuth()
     const [status, setStatus] = useState(true)
     const [makingClaim, setClaim] = useState(false)
@@ -205,29 +172,48 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
         rowIndex % 2 === 0
             ? 'bg-slate-200 border-b border-slate-300'
             : 'bg-slate-100 border-b border-slate-300'
-    const cellStyle = 'items-center justify-center flex h-10 md:h-14'
+
+    const textSize = isCompact
+        ? 'text-[7px] md:text-[0.7rem] leading-none'
+        : 'text-[8px] md:text-[0.8125rem]'
+
+    const cellHeight = isCompact
+        ? 'h-6 md:h-8' // Shorter for 21+ jobs
+        : 'h-10 md:h-14' // Current height for ≤20 jobs
+
+    const cellStyle = `items-center justify-center flex ${cellHeight}`
 
     const displayNotes = props.notes?.trim() || null
 
     return (
-        <div className='grid grid-cols-27 w-full text-[8px] md:text-[0.8125rem] font-mont font-semibold overflow-visible h-10 md:h-14'>
+        <div
+            className={`grid grid-cols-27 w-full ${textSize} font-mont font-semibold overflow-visible ${cellHeight}`}
+        >
             {/*Disable the button if the user's role is display*/}
             <div className={`col-span-1 ${cellStyle} ${rowClass}`}>
                 {status ? (
                     role == 'display' ? (
-                        <div className='inline-flex items-center justify-center bg-linear-to-r from-green-500 to-green-600 text-white px-2 py-1 rounded font-medium text-[8px] md:text-sm'>
-                            Open
+                        <div
+                            className={`inline-flex items-center justify-center bg-linear-to-r from-green-500 to-green-600 text-white ${
+                                isCompact ? 'px-1.5 py-1.5' : 'px-1.5 py-1.5'
+                            } rounded font-medium ${textSize}`}
+                        >
+                            OPEN
                         </div>
                     ) : (
                         <button
                             data-testid='claim-button'
                             onClick={claimJob}
                             disabled={makingClaim}
-                            className='inline-flex items-center justify-center px-1 md:px-2 py-1 rounded bg-linear-to-r from-green-500 to-green-600
+                            className={`inline-flex items-center justify-center rounded bg-linear-to-r from-green-500 to-green-600
                                      text-white hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed
-                                       transition-all duration-200 ease-out font-medium text-[8px] md:text-sm hover:cursor-pointer'
+                                       transition-all duration-200 ease-out font-medium  hover:cursor-pointer ${
+                                           isCompact
+                                               ? 'px-1.5 py-1.5'
+                                               : 'px-1.5 py-1.5'
+                                       } ${textSize}`}
                         >
-                            {makingClaim ? 'Filling...' : 'Open'}
+                            {makingClaim ? 'Filling...' : 'OPEN'}
                         </button>
                     )
                 ) : props.open == 'Filled' ? (
@@ -319,20 +305,27 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                         <button
                             type='button'
                             onClick={toggleExpanded}
-                            className={`flex justify-between items-start px-2 py-1 w-full rounded hover:bg-indigo-200 transition-all cursor-pointer ${
-                                isExpanded
-                                    ? 'absolute z-50 bg-white shadow-lg border border-mebagold'
-                                    : props.nightCard
-                                    ? 'bg-mebagold'
-                                    : 'bg-transparent'
-                            }`}
+                            aria-label={
+                                isExpanded ? 'Collapse notes' : 'Expand notes'
+                            }
+                            className={`flex justify-between items-start w-full rounded hover:bg-indigo-200 transition-all cursor-pointer ${
+                                isCompact ? 'px-1 py-0.5' : 'px-2 py-1'
+                            }
+                                ${
+                                    isExpanded
+                                        ? 'absolute z-50 bg-white shadow-lg border border-mebagold'
+                                        : props.nightCard
+                                        ? 'bg-mebagold'
+                                        : 'bg-transparent'
+                                }`}
                         >
                             <span
-                                className={`flex-1 text-left ${
-                                    isExpanded
-                                        ? 'whitespace-pre-wrap break-words'
-                                        : 'line-clamp-2'
-                                }`}
+                                className={`flex-1 text-left
+                                    ${
+                                        isExpanded
+                                            ? 'whitespace-pre-wrap break-words'
+                                            : 'line-clamp-2'
+                                    }`}
                                 data-testid='notesContent'
                             >
                                 {displayNotes}
@@ -355,9 +348,9 @@ const JobListing = ({ rowIndex, handleClaimJob, ...props }) => {
                     ) : (
                         // Short notes — normal display
                         <span
-                            className={`px-2 py-1 text-center ${
-                                props.nightCard ? 'bg-mebagold rounded' : ''
-                            }`}
+                            className={`text-center ${
+                                isCompact ? 'px-1 py-0.5' : 'px-2 py-1'
+                            } ${props.nightCard ? 'bg-mebagold rounded' : ''}`}
                         >
                             {displayNotes}
                         </span>

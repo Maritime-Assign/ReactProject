@@ -1578,7 +1578,7 @@ ${log.new_state}`
             <div className='flex flex-col sm:flex-row gap-2 sm:gap-0 py-4 bg-mebablue-dark rounded-md w-full shadow-xl relative items-center mb-4'>
                 <button
                     onClick={() => navigate(-1)}
-                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300'
+                    className='bg-mebagold shadow-md rounded-full p-2 absolute left-4 text-2xl text-center text-mebablue-dark hover:bg-yellow-300 cursor-pointer'
                 >
                     <IoArrowBack className='w-6 h-6' />
                 </button>
@@ -1619,7 +1619,7 @@ ${log.new_state}`
                 <div className='flex gap-2 sm:mr-4 mt-2 sm:mt-0'>
                     <button
                         onClick={toggleViewMode}
-                        className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
+                        className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white cursor-pointer'
                         title={
                             viewMode === 'grouped'
                                 ? 'Switch to Flat View'
@@ -1631,7 +1631,7 @@ ${log.new_state}`
 
                     <button
                         onClick={handleRefresh}
-                        className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white'
+                        className='bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white cursor-pointer'
                         title='Refresh'
                     >
                         <IoRefresh className='w-5 h-5' />
@@ -1644,7 +1644,7 @@ ${log.new_state}`
                                 groupedLogs.length === 0) ||
                             (viewMode === 'flat' && logs.length === 0)
                         }
-                        className={`bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white
+                        className={`bg-mebablue-light hover:bg-mebablue-hover p-2 rounded text-white cursor-pointer
                             ${
                                 (viewMode === 'grouped' &&
                                     groupedLogs.length === 0) ||
@@ -2212,7 +2212,7 @@ ${log.new_state}`
                                         handlePageChange(currentPage - 1)
                                     }
                                     disabled={currentPage === 1}
-                                    className='px-3 py-2 border rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50'
+                                    className='px-3 py-2 border rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 cursor-pointer'
                                 >
                                     Previous
                                 </button>
@@ -2244,7 +2244,7 @@ ${log.new_state}`
                                         handlePageChange(currentPage + 1)
                                     }
                                     disabled={currentPage === totalPages}
-                                    className='px-3 py-2 border rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50'
+                                    className='px-3 py-2 border rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 cursor-pointer'
                                 >
                                     Next
                                 </button>

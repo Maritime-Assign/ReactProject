@@ -1,6 +1,5 @@
 import { render, screen, within, waitFor } from '@testing-library/react'
 
-
 // Mock AuthContext
 vi.mock('../auth/AuthContext', () => ({
     UserAuth: () => ({ user: { id: '1', email: 'test@example.com' } }),
@@ -16,7 +15,7 @@ vi.mock('../api/supabaseClient', () => {
     const dataFor = {
         region: makeDropdownItems([
             { label: 'A-Region', sort_order: 1, is_active: true },
-            { label: 'B-Region', sort_order: 2, is_active: true }
+            { label: 'B-Region', sort_order: 2, is_active: true },
         ]),
         hall: makeDropdownItems([
             { label: 'Hall-1', sort_order: 1, is_active: true },
@@ -24,43 +23,48 @@ vi.mock('../api/supabaseClient', () => {
         ]),
         billet: makeDropdownItems([
             { label: '1A/E', sort_order: 1, is_active: true },
-            { label: '3M', sort_order: 2, is_active: true },    
+            { label: '3M', sort_order: 2, is_active: true },
         ]),
         type: makeDropdownItems([
             { label: 'Permanent', sort_order: 1, is_active: true },
             { label: 'Relief', sort_order: 2, is_active: true },
         ]),
+        company: makeDropdownItems([
+            // ✅ Add this
+            { label: 'ACME Marine', sort_order: 1, is_active: true },
+            { label: 'Test Company', sort_order: 2, is_active: true },
+        ]),
     }
 
     const supabaseFromMock = (table) => {
         if (table === 'job_dropdown_options') {
-        return {
-            select: vi.fn((column) => ({
-            maybeSingle: vi.fn(async () => ({
-                data: { [column]: dataFor[column] ?? [] },
-                error: null,
-            })),
-            })),
-        }
+            return {
+                select: vi.fn((column) => ({
+                    maybeSingle: vi.fn(async () => ({
+                        data: { [column]: dataFor[column] ?? [] },
+                        error: null,
+                    })),
+                })),
+            }
         }
         if (table === 'Jobs') {
-        return {
-            update: vi.fn(() => ({
-            eq: vi.fn(() => ({
-                select: vi.fn(() => ({
-                single: vi.fn(async () => ({
-                    data: { id: 1, archivedJob: true, open: false },
-                    error: null,
+            return {
+                update: vi.fn(() => ({
+                    eq: vi.fn(() => ({
+                        select: vi.fn(() => ({
+                            single: vi.fn(async () => ({
+                                data: { id: 1, archivedJob: true, open: false },
+                                error: null,
+                            })),
+                        })),
+                    })),
                 })),
-                })),
-            })),
-            })),
-        }
+            }
         }
         return {
-        select: vi.fn(() => ({
-            maybeSingle: vi.fn(async () => ({ data: null, error: null })),
-        })),
+            select: vi.fn(() => ({
+                maybeSingle: vi.fn(async () => ({ data: null, error: null })),
+            })),
         }
     }
 
@@ -121,10 +125,6 @@ describe('EditJobModal Component', () => {
         // Check for location input
         const locationInput = screen.getByPlaceholderText(/Location/i)
         expect(locationInput).toBeInTheDocument()
-
-        // Check for company input
-        const companyInput = screen.getByPlaceholderText(/Company/i)
-        expect(companyInput).toBeInTheDocument()
     })
 
     test('renders action buttons', () => {
